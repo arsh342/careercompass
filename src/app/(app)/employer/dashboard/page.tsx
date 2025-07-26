@@ -307,15 +307,17 @@ export default function EmployerDashboardPage() {
                             <div className="space-y-4">
                                 {candidates.map((candidate) => (
                                     <div key={candidate.uid} className="flex items-center gap-4">
-                                        <Avatar className="h-9 w-9">
-                                            <AvatarImage src={candidate.photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
-                                            <AvatarFallback>{candidate.displayName.charAt(0)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="grid gap-1 flex-1">
-                                            <p className="text-sm font-medium leading-none">{candidate.displayName}</p>
-                                            <p className="text-sm text-muted-foreground">{candidate.skills.split(',').slice(0,3).join(', ')}</p>
-                                        </div>
-                                        <div className="text-sm font-semibold">{candidate.match}% Match</div>
+                                         <Link href={`/users/${candidate.uid}`} className="flex items-center gap-4 w-full">
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarImage src={candidate.photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
+                                                <AvatarFallback>{candidate.displayName.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="grid gap-1 flex-1">
+                                                <p className="text-sm font-medium leading-none">{candidate.displayName}</p>
+                                                <p className="text-sm text-muted-foreground">{candidate.skills.split(',').slice(0,3).join(', ')}</p>
+                                            </div>
+                                            <div className="text-sm font-semibold">{candidate.match}% Match</div>
+                                        </Link>
                                     </div>
                                 ))}
                            </div>

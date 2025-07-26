@@ -16,11 +16,14 @@ import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
 import { cn } from '@/lib/utils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Opportunity {
   id: string;
   title: string;
+  employerId: string;
   employerName: string;
+  employerPhotoURL?: string;
   location: string;
   type: string;
   companyOverview: string;
@@ -57,14 +60,33 @@ export default function OpportunityDetailPage() {
     if (!id) return;
     const fetchOpportunity = async () => {
       try {
-        const docRef = doc(db, 'opportunities', id as string);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setOpportunity({ id: docSnap.id, ...docSnap.data() } as Opportunity);
+        const oppDocRef = doc(db, 'opportunities', id as string);
+        const oppDocSnap = await getDoc(oppDocRef);
+
+        if (oppDocSnap.exists()) {
+          const oppData = oppDocSnap.data();
+          const employerId = oppData.employerId;
+
+          let employerData: { photoURL?: string } = {};
+          if (employerId) {
+            const userDocRef = doc(db, 'users', employerId);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+              employerData = { photoURL: userDocSnap.data().photoURL };
+            }
+          }
+          
+          setOpportunity({
+            id: oppDocSnap.id,
+            ...oppData,
+            employerPhotoURL: employerData.photoURL
+          } as Opportunity);
+
         } else {
           toast({ title: "Error", description: "Opportunity not found.", variant: "destructive" });
         }
       } catch (error) {
+        console.error("Error fetching details:", error)
         toast({ title: "Error", description: "Failed to fetch opportunity details.", variant: "destructive" });
       } finally {
         setLoading(false);
@@ -131,6 +153,7 @@ export default function OpportunityDetailPage() {
   };
   
   const skillsArray = typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim()) : [];
+  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
   return (
     <div className="container mx-auto">
@@ -149,7 +172,20 @@ export default function OpportunityDetailPage() {
                 <CardHeader>
                     <Badge variant={opportunity.type === 'Internship' ? 'default' : 'secondary'} className="w-fit mb-2">{opportunity.type}</Badge>
                     <CardTitle className="text-3xl font-bold">{opportunity.title}</CardTitle>
-                    <CardDescription className="text-base">{opportunity.employerName} - {opportunity.location}</CardDescription>
+                    <div className="flex items-center gap-4 pt-2">
+                       <Link href={`/users/${opportunity.employerId}`}>
+                        <Avatar>
+                            <AvatarImage src={opportunity.employerPhotoURL} alt={opportunity.employerName} data-ai-hint="company logo" />
+                            <AvatarFallback>{getInitials(opportunity.employerName)}</AvatarFallback>
+                        </Avatar>
+                      </Link>
+                      <div className='flex flex-col'>
+                         <CardDescription className="text-base font-medium text-foreground">
+                            <Link href={`/users/${opportunity.employerId}`}>{opportunity.employerName}</Link>
+                         </CardDescription>
+                         <CardDescription className="text-base">{opportunity.location}</CardDescription>
+                      </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {renderSection("Company Overview", opportunity.companyOverview, Building)}
