@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye, UserSearch } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
@@ -23,18 +23,22 @@ interface Posting {
     title: string;
     status: string;
     applicants: number;
+    skills: string;
     createdAt: {
         toDate: () => Date;
     };
 }
 
-// Mock data for applicants
-const mockApplicants = [
-    { name: 'John Doe', position: 'Software Engineer Intern', match: 92, avatar: 'https://placehold.co/40x40.png' },
-    { name: 'Jane Smith', position: 'Product Manager', match: 88, avatar: 'https://placehold.co/40x40.png' },
-    { name: 'Peter Jones', position: 'UX/UI Designer', match: 85, avatar: 'https://placehold.co/40x40.png' },
-    { name: 'Emily White', position: 'Data Analyst', match: 95, avatar: 'https://placehold.co/40x40.png' },
-];
+interface Candidate {
+    uid: string;
+    displayName: string;
+    skills: string;
+    photoURL?: string;
+}
+
+interface MatchedCandidate extends Candidate {
+    match: number;
+}
 
 export default function EmployerDashboardPage() {
     const { user, loading: authLoading } = useAuth();
@@ -42,24 +46,32 @@ export default function EmployerDashboardPage() {
     const [postings, setPostings] = useState<Posting[]>([]);
     const [stats, setStats] = useState({ totalPostings: 0, totalApplicants: 0, activeJobs: 0 });
     const [loading, setLoading] = useState(true);
+    const [candidates, setCandidates] = useState<MatchedCandidate[]>([]);
+
 
     const fetchDashboardData = async () => {
         if (user) {
+            setLoading(true);
             try {
+                // Fetch Postings and Stats
                 const postingsQuery = query(
                     collection(db, "opportunities"), 
                     where("employerId", "==", user.uid)
                 );
                 
-                const querySnapshot = await getDocs(postingsQuery);
+                const postingsSnapshot = await getDocs(postingsQuery);
                 
                 let totalApplicants = 0;
                 let activeJobs = 0;
-                const postingsData = querySnapshot.docs.map(doc => {
+                const employerSkills = new Set<string>();
+
+                const postingsData = postingsSnapshot.docs.map(doc => {
                     const data = doc.data();
                     totalApplicants += data.applicants || 0;
                     if (data.status === 'Active') {
                         activeJobs++;
+                        const skillsArray = (data.skills || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+                        skillsArray.forEach((skill: string) => employerSkills.add(skill));
                     }
                     return {
                         id: doc.id,
@@ -69,25 +81,49 @@ export default function EmployerDashboardPage() {
 
                 setPostings(postingsData.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
                 setStats({
-                    totalPostings: querySnapshot.size,
+                    totalPostings: postingsSnapshot.size,
                     totalApplicants,
                     activeJobs,
                 });
 
+                // Fetch and Match Candidates
+                if (employerSkills.size > 0) {
+                    const usersQuery = query(collection(db, "users"), where("role", "==", "employee"));
+                    const usersSnapshot = await getDocs(usersQuery);
+                    const allEmployees = usersSnapshot.docs.map(doc => doc.data() as Candidate);
+
+                    const matchedCandidates = allEmployees.map(employee => {
+                        const employeeSkills = new Set((employee.skills || '').split(',').map(s => s.trim().toLowerCase()));
+                        const commonSkills = [...employeeSkills].filter(skill => employerSkills.has(skill));
+                        const matchPercentage = employerSkills.size > 0 ? (commonSkills.length / employerSkills.size) * 100 : 0;
+                        
+                        return {
+                            ...employee,
+                            match: Math.round(matchPercentage),
+                        };
+                    }).filter(c => c.match > 0)
+                      .sort((a, b) => b.match - a.match)
+                      .slice(0, 5);
+                    
+                    setCandidates(matchedCandidates);
+                }
+
+
             } catch (error) {
-                console.error("Error fetching postings:", error);
+                console.error("Error fetching dashboard data:", error);
                  toast({
                     title: "Error",
                     description: "Could not fetch dashboard data.",
                     variant: "destructive",
                 });
+            } finally {
+               setLoading(false);
             }
         }
-        setLoading(false);
     };
 
     useEffect(() => {
-        if (!authLoading) {
+        if (!authLoading && user) {
             fetchDashboardData();
         }
     }, [user, authLoading]);
@@ -263,28 +299,31 @@ export default function EmployerDashboardPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Recent Applicants</CardTitle>
-                            <CardDescription>Top candidates who recently applied.</CardDescription>
+                            <CardTitle>Potential Candidates</CardTitle>
+                            <CardDescription>Top candidates based on your active postings.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                           <div className="space-y-4">
-                                {mockApplicants.map((applicant, index) => (
-                                    <div key={index} className="flex items-center gap-4">
+                           {candidates.length > 0 ? (
+                            <div className="space-y-4">
+                                {candidates.map((candidate) => (
+                                    <div key={candidate.uid} className="flex items-center gap-4">
                                         <Avatar className="h-9 w-9">
-                                            <AvatarImage src={applicant.avatar} alt={applicant.name} data-ai-hint="profile avatar" />
-                                            <AvatarFallback>{applicant.name.charAt(0)}</AvatarFallback>
+                                            <AvatarImage src={candidate.photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
+                                            <AvatarFallback>{candidate.displayName.charAt(0)}</AvatarFallback>
                                         </Avatar>
                                         <div className="grid gap-1 flex-1">
-                                            <p className="text-sm font-medium leading-none">{applicant.name}</p>
-                                            <p className="text-sm text-muted-foreground">{applicant.position}</p>
+                                            <p className="text-sm font-medium leading-none">{candidate.displayName}</p>
+                                            <p className="text-sm text-muted-foreground">{candidate.skills.split(',').slice(0,3).join(', ')}</p>
                                         </div>
-                                        <div className="text-sm font-semibold">{applicant.match}% Match</div>
+                                        <div className="text-sm font-semibold">{candidate.match}% Match</div>
                                     </div>
                                 ))}
                            </div>
-                           {mockApplicants.length === 0 && (
+                           ) : (
                              <div className="text-center text-muted-foreground py-10">
-                                <p>No recent applicants.</p>
+                                <UserSearch className="h-12 w-12 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold">No candidates found</h3>
+                                <p>Post a job to find matched candidates.</p>
                              </div>
                            )}
                         </CardContent>
