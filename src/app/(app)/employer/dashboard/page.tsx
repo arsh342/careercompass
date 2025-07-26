@@ -6,28 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-const postings = [
-  {
-    id: "p1",
-    title: "Software Engineering Intern",
-    status: "Active",
-    applicants: 25,
-    postedDate: "2024-05-20",
-  },
-  {
-    id: "p2",
-    title: "Product Designer",
-    status: "Active",
-    applicants: 12,
-    postedDate: "2024-05-18",
-  },
-  {
-    id: "p3",
-    title: "Data Analyst",
-    status: "Closed",
-    applicants: 45,
-    postedDate: "2024-04-10",
-  },
+const postings: any[] = [
+  // Data will be fetched from a database in a real application
 ];
 
 export default function EmployerDashboardPage() {
@@ -52,49 +32,60 @@ export default function EmployerDashboardPage() {
           <CardDescription>A list of all job opportunities you have posted.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Applicants</TableHead>
-                <TableHead className="text-right">Posted On</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {postings.map((posting) => (
-                <TableRow key={posting.id}>
-                  <TableCell className="font-medium">{posting.title}</TableCell>
-                  <TableCell>
-                    <Badge variant={posting.status === "Active" ? "secondary" : "outline"} className={posting.status === "Active" ? "text-green-600 border-green-200 bg-green-50" : ""}>
-                        {posting.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{posting.applicants}</TableCell>
-                  <TableCell className="text-right">{posting.postedDate}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>View Applicants</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Posting</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+          {postings.length === 0 ? (
+             <div className="text-center py-10 text-muted-foreground">
+                <p>You haven't posted any jobs yet.</p>
+                 <Button variant="link" asChild className="mt-2">
+                    <Link href="/employer/postings/new">
+                        Post your first job
+                    </Link>
+                 </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Applicants</TableHead>
+                  <TableHead className="text-right">Posted On</TableHead>
+                  <TableHead>
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {postings.map((posting) => (
+                  <TableRow key={posting.id}>
+                    <TableCell className="font-medium">{posting.title}</TableCell>
+                    <TableCell>
+                      <Badge variant={posting.status === "Active" ? "secondary" : "outline"} className={posting.status === "Active" ? "text-green-600 border-green-200 bg-green-50" : ""}>
+                          {posting.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{posting.applicants}</TableCell>
+                    <TableCell className="text-right">{posting.postedDate}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button aria-haspopup="true" size="icon" variant="ghost">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem>View Applicants</DropdownMenuItem>
+                          <DropdownMenuItem>Edit Posting</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

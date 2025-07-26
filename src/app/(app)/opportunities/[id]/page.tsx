@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { analyzeOpportunityDescription } from '@/ai/flows/analyze-opportunity-description';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Bot, Heart, Loader2 } from 'lucide-react';
@@ -53,7 +53,7 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
     <div className="container mx-auto">
       <div className="mb-6">
         <Button variant="ghost" asChild>
-            <Link href="/dashboard">
+            <Link href="/opportunities">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Opportunities
             </Link>

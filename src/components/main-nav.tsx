@@ -17,7 +17,16 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-const links = [
+// In a real app, you'd get this from an auth hook
+const useUserRole = () => {
+    const pathname = usePathname();
+    if (pathname.startsWith('/employer')) {
+        return 'employer';
+    }
+    return 'employee';
+}
+
+const employeeLinks = [
   {
     href: '/dashboard',
     label: 'Dashboard',
@@ -43,41 +52,32 @@ const links = [
 const employerLinks = [
     {
       href: '/employer/dashboard',
-      label: 'Employer Dashboard',
+      label: 'Dashboard',
       icon: Building2,
     },
+    {
+      href: '/employer/postings/new',
+      label: 'New Posting',
+      icon: Briefcase,
+    }
 ]
 
 export function MainNav() {
   const pathname = usePathname();
+  const role = useUserRole();
+
+  const links = role === 'employer' ? employerLinks : employeeLinks;
+  const title = role === 'employer' ? 'For Employers' : 'My Compass';
 
   return (
     <div className="flex flex-col gap-4">
       <SidebarMenu>
+        <p className="px-2 text-xs font-semibold text-muted-foreground">{title}</p>
         {links.map((link) => (
           <SidebarMenuItem key={link.href}>
             <Link href={link.href} passHref>
               <SidebarMenuButton
-                isActive={pathname.startsWith(link.href)}
-                className="w-full"
-                asChild
-              >
-                <span>
-                  <link.icon className="h-4 w-4" />
-                  {link.label}
-                </span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-        ))}
-      </SidebarMenu>
-      <SidebarMenu>
-        <p className="px-2 text-xs font-semibold text-muted-foreground">For Employers</p>
-         {employerLinks.map((link) => (
-          <SidebarMenuItem key={link.href}>
-            <Link href={link.href} passHref>
-              <SidebarMenuButton
-                isActive={pathname.startsWith(link.href)}
+                isActive={pathname === link.href}
                 className="w-full"
                 asChild
               >

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 // For the purpose of this example, we will use a mock auth check.
 // In a real application, you would integrate with Firebase Auth.
@@ -17,16 +17,23 @@ const useAuth = () => {
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated) {
-        router.push('/dashboard');
-      } else {
-        router.push('/login');
-      }
+    if (pathname === '/') {
+        if (!isLoading) {
+        if (isAuthenticated) {
+            router.push('/dashboard');
+        } else {
+            router.push('/login');
+        }
+        }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, pathname]);
+
+  if (pathname !== '/') {
+    return null;
+  }
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
