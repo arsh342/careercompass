@@ -7,7 +7,9 @@ import { z } from 'zod';
 import { useState, useTransition } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -26,31 +28,39 @@ const profileSchema = z.object({
   employmentHistory: z.string().optional(),
   references: z.string().optional(),
   portfolioLink: z.string().url().optional().or(z.literal('')),
-  resumeLink: z.string().url().optional().or(z.literal('')),
+  resume: z.any().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const [isPending, startTransition] = useTransition();
   const [summary, setSummary] = useState('');
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
-    // Mock data for demonstration
     defaultValues: {
-      education: 'B.S. in Computer Science, University of Technology (2020-2024)',
-      skills: 'JavaScript, React, Node.js, Python, SQL, Figma',
-      interests: 'Open-source projects, UI/UX design, mobile development',
-      careerGoals: 'To become a full-stack developer at a mission-driven tech company.',
+      education: '',
+      skills: '',
+      interests: '',
+      careerGoals: '',
       employmentHistory: '',
       references: '',
       portfolioLink: '',
-      resumeLink: '',
     },
   });
+
+  useState(() => {
+    if (userProfile) {
+        form.reset({
+            ...userProfile
+        })
+    }
+  }, [userProfile, form]);
+  
+  const resumeRef = form.register("resume");
 
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) {
@@ -58,8 +68,17 @@ export default function ProfilePage() {
         return;
     }
     try {
+        let resumeUrl = userProfile?.resumeLink || '';
+        const resumeFile = values.resume?.[0];
+        if (resumeFile) {
+             const storageRef = ref(storage, `resumes/${user.uid}/${resumeFile.name}`);
+             const uploadResult = await uploadBytes(storageRef, resumeFile);
+             resumeUrl = await getDownloadURL(uploadResult.ref);
+        }
+
         await setDoc(doc(db, "users", user.uid), {
-            ...values
+            ...values,
+            resumeLink: resumeUrl,
         }, { merge: true });
 
         toast({
@@ -79,9 +98,11 @@ export default function ProfilePage() {
     const values = form.getValues();
     const result = profileSchema.safeParse(values);
     if (!result.success) {
-        // This will find the first error and trigger validation for it.
-        const firstError = Object.keys(result.error.errors[0].path)[0] as keyof ProfileFormValues;
-        form.trigger(firstError);
+        const firstErrorField = Object.keys(result.error.format())[0] as keyof ProfileFormValues;
+
+        if (firstErrorField) {
+            form.trigger(firstErrorField);
+        }
         
         toast({
             title: "Incomplete Profile",
@@ -105,6 +126,14 @@ export default function ProfilePage() {
         })
     });
   };
+
+  if (authLoading) {
+    return (
+        <div className="container mx-auto flex justify-center items-center h-96">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    )
+  }
 
   return (
     <div className="container mx-auto">
@@ -216,15 +245,25 @@ export default function ProfilePage() {
                                 </FormItem>
                                 )}
                             />
-                            <FormField
+                           <FormField
                                 control={form.control}
-                                name="resumeLink"
+                                name="resume"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Resume/CV Link (Optional)</FormLabel>
+                                    <FormLabel>Resume/CV</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Link to your online resume (e.g., Google Drive, LinkedIn)" {...field} />
+                                        <Input type="file" {...resumeRef} />
                                     </FormControl>
+                                    <FormDescription>
+                                        {userProfile?.resumeLink ? (
+                                            <>
+                                            Replace your currently saved resume.
+                                            <Button variant="link" asChild className="p-1 h-auto">
+                                                <Link href={userProfile.resumeLink} target="_blank" rel="noopener noreferrer">View Saved Resume</Link>
+                                            </Button>
+                                            </>
+                                        ) : "Upload your resume or CV."}
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}
