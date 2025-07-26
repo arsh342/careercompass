@@ -5,17 +5,26 @@ import { storage } from '@/lib/firebase';
 import formidable from 'formidable';
 import fs from 'fs';
 
+// This is required to disable the default body parser
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+const formidableParse = (req: NextRequest): Promise<{ fields: formidable.Fields; files: formidable.Files }> =>
+  new Promise((resolve, reject) => {
+    const form = formidable({});
+    form.parse(req as any, (err, fields, files) => {
+      if (err) return reject(err);
+      resolve({ fields, files });
+    });
+  });
+
 export async function POST(req: NextRequest) {
   try {
-    const form = formidable({});
-    const [fields, files] = await form.parse(req);
-    
+    const { fields, files } = await formidableParse(req);
+
     const file = files.file?.[0];
     const userId = fields.userId?.[0];
 
