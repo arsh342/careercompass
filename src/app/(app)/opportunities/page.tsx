@@ -1,12 +1,14 @@
+'use client';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import Link from "next/link";
+import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
+import { cn } from "@/lib/utils";
 
 const opportunities: any[] = [
-  // In a real application, this data would be fetched from an API
   {
     id: 1,
     title: "Software Engineering Intern",
@@ -46,6 +48,8 @@ const opportunities: any[] = [
 ];
 
 export default function OpportunitiesPage() {
+  const { saved, toggleSave } = useSavedOpportunities();
+  
   return (
     <div className="container mx-auto">
       <div className="mb-6">
@@ -63,35 +67,38 @@ export default function OpportunitiesPage() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {opportunities.map((opp) => (
-            <Card key={opp.id} className="flex flex-col">
-                <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <Badge variant={opp.type === 'Internship' ? 'default' : 'secondary'} className="mb-2">{opp.type}</Badge>
-                        <CardTitle className="text-lg">{opp.title}</CardTitle>
-                        <CardDescription>{opp.company} - {opp.location}</CardDescription>
+            {opportunities.map((opp) => {
+              const isSaved = saved.some(savedOpp => savedOpp.id === opp.id);
+              return (
+                <Card key={opp.id} className="flex flex-col">
+                    <CardHeader>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <Badge variant={opp.type === 'Internship' ? 'default' : 'secondary'} className="mb-2">{opp.type}</Badge>
+                            <CardTitle className="text-lg">{opp.title}</CardTitle>
+                            <CardDescription>{opp.company} - {opp.location}</CardDescription>
+                        </div>
+                        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toggleSave(opp)}>
+                            <Heart className={cn("w-5 h-5", isSaved && "fill-primary text-primary")} />
+                            <span className="sr-only">Save opportunity</span>
+                        </Button>
                     </div>
-                    <Button variant="ghost" size="icon" className="shrink-0">
-                        <Heart className="w-5 h-5" />
-                        <span className="sr-only">Save opportunity</span>
-                    </Button>
-                </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
-                    <div className="flex flex-wrap gap-2">
-                        {opp.skills.map(skill => (
-                            <Badge key={skill} variant="outline">{skill}</Badge>
-                        ))}
-                    </div>
-                </CardContent>
-                <CardFooter className="flex justify-between items-center">
-                    <div className="text-sm font-semibold text-primary">{opp.match}% Match</div>
-                     <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
-                </CardFooter>
-            </Card>
-            ))}
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                    <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
+                        <div className="flex flex-wrap gap-2">
+                            {opp.skills.map(skill => (
+                                <Badge key={skill} variant="outline">{skill}</Badge>
+                            ))}
+                        </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between items-center">
+                        <div className="text-sm font-semibold text-primary">{opp.match}% Match</div>
+                         <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
+                    </CardFooter>
+                </Card>
+              )
+            })}
         </div>
       )}
     </div>

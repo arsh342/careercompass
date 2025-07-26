@@ -9,6 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Bot, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
+import { cn } from '@/lib/utils';
 
 const opportunity = {
   id: 1,
@@ -28,6 +30,9 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [analysis, setAnalysis] = useState<Analysis>(null);
+  const { saved, toggleSave } = useSavedOpportunities();
+  
+  const isSaved = saved.some(savedOpp => savedOpp.id === opportunity.id);
 
   const onAnalyze = () => {
     startTransition(async () => {
@@ -74,8 +79,8 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
                 </CardContent>
                 <CardFooter className="gap-2">
                     <Button className="w-full" size="lg">Apply Now</Button>
-                    <Button variant="outline" size="lg">
-                        <Heart className="mr-2 h-4 w-4" /> Save
+                    <Button variant="outline" size="lg" onClick={() => toggleSave(opportunity)}>
+                        <Heart className={cn("mr-2 h-4 w-4", isSaved && "fill-primary text-primary")} /> {isSaved ? 'Saved' : 'Save'}
                     </Button>
                 </CardFooter>
             </Card>
