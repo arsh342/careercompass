@@ -7,6 +7,8 @@ import { collection, query, where, getDocs, orderBy, doc, updateDoc, getCountFro
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
+import { findAndRankCandidates, FindAndRankCandidatesOutput } from '@/ai/flows/find-and-rank-candidates';
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,22 +25,13 @@ interface Posting {
     title: string;
     status: string;
     applicants: number;
-    skills: string;
     createdAt: {
         toDate: () => Date;
     };
 }
 
-interface Candidate {
-    uid: string;
-    displayName: string;
-    skills: string;
-    photoURL?: string;
-}
+type RankedCandidate = FindAndRankCandidatesOutput['candidates'][0];
 
-interface MatchedCandidate extends Candidate {
-    match: number;
-}
 
 export default function EmployerDashboardPage() {
     const { user, loading: authLoading } = useAuth();
@@ -46,7 +39,8 @@ export default function EmployerDashboardPage() {
     const [postings, setPostings] = useState<Posting[]>([]);
     const [stats, setStats] = useState({ totalPostings: 0, totalApplicants: 0, activeJobs: 0 });
     const [loading, setLoading] = useState(true);
-    const [candidates, setCandidates] = useState<MatchedCandidate[]>([]);
+    const [candidates, setCandidates] = useState<RankedCandidate[]>([]);
+    const [loadingCandidates, setLoadingCandidates] = useState(true);
 
 
     const fetchDashboardData = async () => {
@@ -63,15 +57,12 @@ export default function EmployerDashboardPage() {
                 
                 let totalApplicants = 0;
                 let activeJobs = 0;
-                const employerSkills = new Set<string>();
 
                 const postingsData = postingsSnapshot.docs.map(doc => {
                     const data = doc.data();
                     totalApplicants += data.applicants || 0;
                     if (data.status === 'Active') {
                         activeJobs++;
-                        const skillsArray = (data.skills || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean);
-                        skillsArray.forEach((skill: string) => employerSkills.add(skill));
                     }
                     return {
                         id: doc.id,
@@ -85,35 +76,12 @@ export default function EmployerDashboardPage() {
                     totalApplicants,
                     activeJobs,
                 });
-
-                // Fetch and Match Candidates
-                if (employerSkills.size > 0) {
-                    const usersQuery = query(collection(db, "users"), where("role", "==", "employee"));
-                    const usersSnapshot = await getDocs(usersQuery);
-                    const allEmployees = usersSnapshot.docs.map(doc => doc.data() as Candidate);
-
-                    const matchedCandidates = allEmployees.map(employee => {
-                        const employeeSkills = new Set((employee.skills || '').split(',').map(s => s.trim().toLowerCase()));
-                        const commonSkills = [...employeeSkills].filter(skill => employerSkills.has(skill));
-                        const matchPercentage = employerSkills.size > 0 ? (commonSkills.length / employerSkills.size) * 100 : 0;
-                        
-                        return {
-                            ...employee,
-                            match: Math.round(matchPercentage),
-                        };
-                    }).filter(c => c.match > 0)
-                      .sort((a, b) => b.match - a.match)
-                      .slice(0, 5);
-                    
-                    setCandidates(matchedCandidates);
-                }
-
-
+                
             } catch (error) {
-                console.error("Error fetching dashboard data:", error);
+                console.error("Error fetching postings data:", error);
                  toast({
                     title: "Error",
-                    description: "Could not fetch dashboard data.",
+                    description: "Could not fetch job postings.",
                     variant: "destructive",
                 });
             } finally {
@@ -121,10 +89,31 @@ export default function EmployerDashboardPage() {
             }
         }
     };
+    
+    const fetchRankedCandidates = async () => {
+        if (user) {
+            setLoadingCandidates(true);
+             try {
+                const { candidates } = await findAndRankCandidates({ employerId: user.uid });
+                setCandidates(candidates.slice(0,5));
+            } catch (error) {
+                 console.error("Error fetching ranked candidates:", error);
+                 toast({
+                    title: "Candidate Search Error",
+                    description: "Could not fetch potential candidates.",
+                    variant: "destructive",
+                });
+            } finally {
+                setLoadingCandidates(false);
+            }
+        }
+    }
+
 
     useEffect(() => {
         if (!authLoading && user) {
             fetchDashboardData();
+            fetchRankedCandidates();
         }
     }, [user, authLoading]);
 
@@ -149,6 +138,8 @@ export default function EmployerDashboardPage() {
             });
         }
     }
+    
+    const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('') || '';
 
 
   return (
@@ -299,24 +290,28 @@ export default function EmployerDashboardPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Potential Candidates</CardTitle>
+                            <CardTitle>AI-Ranked Candidates</CardTitle>
                             <CardDescription>Top candidates based on your active postings.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                           {candidates.length > 0 ? (
+                           {loadingCandidates ? (
+                               <div className="flex justify-center items-center py-10">
+                                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                               </div>
+                           ): candidates.length > 0 ? (
                             <div className="space-y-4">
                                 {candidates.map((candidate) => (
-                                    <div key={candidate.uid} className="flex items-center gap-4">
-                                         <Link href={`/users/${candidate.uid}`} className="flex items-center gap-4 w-full">
+                                    <div key={candidate.uid} className="flex items-start gap-4">
+                                         <Link href={`/users/${candidate.uid}`} className="flex items-start gap-4 w-full">
                                             <Avatar className="h-9 w-9">
                                                 <AvatarImage src={candidate.photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
-                                                <AvatarFallback>{candidate.displayName.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback>{getInitials(candidate.displayName)}</AvatarFallback>
                                             </Avatar>
                                             <div className="grid gap-1 flex-1">
                                                 <p className="text-sm font-medium leading-none">{candidate.displayName}</p>
-                                                <p className="text-sm text-muted-foreground">{candidate.skills.split(',').slice(0,3).join(', ')}</p>
+                                                <p className="text-xs text-muted-foreground">{candidate.justification}</p>
                                             </div>
-                                            <div className="text-sm font-semibold">{candidate.match}% Match</div>
+                                            <div className="text-sm font-semibold text-primary">{candidate.matchPercentage}%</div>
                                         </Link>
                                     </div>
                                 ))}
