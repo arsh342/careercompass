@@ -39,7 +39,8 @@ export default function DashboardPage() {
       }
       
       try {
-        const opportunitiesSnapshot = await getDocs(collection(db, "opportunities"));
+        const q = query(collection(db, "opportunities"), where("status", "==", "Active"));
+        const opportunitiesSnapshot = await getDocs(q);
         const opportunitiesData = opportunitiesSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
