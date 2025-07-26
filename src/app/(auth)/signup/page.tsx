@@ -170,8 +170,8 @@ export default function SignupPage() {
         </Form>
         <div className="mt-6 text-center text-sm">
           Already have an account?{' '}
-           <Link href="/login" passHref legacyBehavior>
-             <a className="text-primary hover:underline">Sign in</a>
+           <Link href="/login" passHref>
+             <Button variant="link" className="p-0 h-auto">Sign in</Button>
           </Link>
         </div>
       </CardContent>
