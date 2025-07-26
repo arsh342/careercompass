@@ -25,6 +25,7 @@ const profileSchema = z.object({
   lastName: z.string().min(1, 'Last name is required.'),
   middleName: z.string().optional(),
   contactNumber: z.string().optional(),
+  supportEmail: z.string().email().optional().or(z.literal('')),
   education: z.string().min(1, 'Education is required.'),
   skills: z.string().min(1, 'Skills are required.'),
   interests: z.string().min(1, 'Interests are required.'),
@@ -52,6 +53,7 @@ export default function ProfilePage() {
       lastName: '',
       middleName: '',
       contactNumber: '',
+      supportEmail: '',
       education: '',
       skills: '',
       interests: '',
@@ -208,7 +210,7 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-6 mb-6">
                       <div className="relative">
                         <Avatar className="h-24 w-24">
-                            <AvatarImage src={user?.photoURL || ''} alt="Profile picture" />
+                            <AvatarImage src={user?.photoURL || ''} alt="Profile picture" data-ai-hint="profile avatar" />
                             <AvatarFallback className="text-3xl">
                                 {user?.displayName ? getInitials(user.displayName) : 'U'}
                             </AvatarFallback>
@@ -293,6 +295,20 @@ export default function ProfilePage() {
                                 )}
                             />
                         </div>
+                         <FormField
+                            control={form.control}
+                            name="supportEmail"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Support Email (Optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="support@example.com" {...field} />
+                                </FormControl>
+                                 <FormDescription>A public email for support inquiries.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
                     </form>
                 </Form>
               </CardContent>

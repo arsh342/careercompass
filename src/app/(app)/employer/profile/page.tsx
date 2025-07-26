@@ -11,7 +11,7 @@ import { updateProfile } from 'firebase/auth';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const profileSchema = z.object({
   companyName: z.string().min(1, 'Company name is required.'),
   contactNumber: z.string().optional(),
+  supportEmail: z.string().email().optional().or(z.literal('')),
   companyOverview: z.string().min(1, 'Company overview is required.'),
 });
 
@@ -37,6 +38,7 @@ export default function EmployerProfilePage() {
     defaultValues: {
       companyName: '',
       contactNumber: '',
+      supportEmail: '',
       companyOverview: '',
     },
   });
@@ -46,6 +48,7 @@ export default function EmployerProfilePage() {
         form.reset({
             companyName: userProfile.companyName || userProfile.displayName || '',
             contactNumber: userProfile.contactNumber || '',
+            supportEmail: userProfile.supportEmail || '',
             companyOverview: userProfile.companyOverview || '',
         })
     }
@@ -156,7 +159,7 @@ export default function EmployerProfilePage() {
                          <div className="flex items-center gap-6">
                             <div className="relative">
                                 <Avatar className="h-24 w-24">
-                                    <AvatarImage src={user?.photoURL || ''} alt="Company logo" />
+                                    <AvatarImage src={user?.photoURL || ''} alt="Company logo" data-ai-hint="company logo" />
                                     <AvatarFallback className="text-3xl">
                                         {user?.displayName ? getInitials(user.displayName) : 'C'}
                                     </AvatarFallback>
@@ -205,6 +208,20 @@ export default function EmployerProfilePage() {
                                 <FormControl>
                                     <Input placeholder="(123) 456-7890" {...field} />
                                 </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="supportEmail"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Support Email (Optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="support@yourcompany.com" {...field} />
+                                </FormControl>
+                                <FormDescription>A public email for support inquiries.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                             )}
