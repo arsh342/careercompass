@@ -1,7 +1,12 @@
 
 import { NextResponse } from 'next/server';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
 
 export async function POST(request: Request) {
   try {
@@ -15,24 +20,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
     }
     
-    let storagePath = `resumes/${userId}/${fileName}`;
+    let public_id = `resumes/${userId}/${fileName}`;
     if (opportunityId && opportunityId !== 'undefined' && opportunityId !== 'null') {
-        storagePath = `resumes/${userId}/${opportunityId}/${fileName}`;
+        public_id = `resumes/${userId}/${opportunityId}/${fileName}`;
     }
-
-    const storageRef = ref(storage, storagePath);
 
     // Convert file to buffer for upload
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    await uploadBytes(storageRef, buffer, {
-      contentType: file.type,
+    const result = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                public_id,
+                resource_type: 'raw',
+            },
+            (error, result) => {
+                if (error) {
+                    return reject(error);
+                }
+                resolve(result);
+            }
+        );
+        uploadStream.end(buffer);
     });
+    
+    // @ts-ignore
+    const { secure_url } = result;
 
-    const url = await getDownloadURL(storageRef);
-
-    return NextResponse.json({ url });
+    return NextResponse.json({ url: secure_url });
   } catch (error) {
     console.error('Upload failed:', error);
     return NextResponse.json({ error: 'File upload failed.' }, { status: 500 });
