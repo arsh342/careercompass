@@ -3,20 +3,51 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users can only read and write to their own user document.
+    
+    // Users Collection
     match /users/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null;
+      // Any authenticated user can read public profile data.
+      allow read: if request.auth != null;
+      
+      // A user can create their own profile document.
+      allow create: if request.auth.uid == userId;
+      
+      // A user can only update their own profile document.
+      allow update: if request.auth.uid == userId;
+      
+      // Users cannot delete their own accounts through the app.
+      allow delete: if false;
     }
 
-    // Opportunities can be read by anyone.
-    // Only authenticated employers can create opportunities.
-    // Only the employer who created an opportunity can update or delete it.
+    // Opportunities Collection
     match /opportunities/{opportunityId} {
-      allow read: if true;
-      allow create: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employer';
-      allow update, delete: if request.auth != null && request.auth.uid == resource.data.employerId;
+      // Any authenticated user can read job opportunities.
+      allow read: if request.auth != null;
+      
+      // An authenticated user who is an 'employer' can create an opportunity.
+      allow create: if request.auth != null 
+                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employer'
+                    && request.resource.data.employerId == request.auth.uid;
+                    
+      // Only the employer who created the opportunity can update or delete it.
+      allow update, delete: if request.auth != null && get(/databases/$(database)/documents/opportunities/$(opportunityId)).data.employerId == request.auth.uid;
+    }
+
+    // Applications Collection
+    match /applications/{applicationId} {
+      // An employee can create an application.
+      allow create: if request.auth != null 
+                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employee'
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Users can read their own application. Employers can read applications for their jobs.
+      allow read: if request.auth != null && (
+                    request.resource.data.userId == request.auth.uid ||
+                    get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.employerId == request.auth.uid
+                  );
+                  
+      // Users cannot update or delete applications once submitted.
+      allow update, delete: if false;
     }
   }
 }
