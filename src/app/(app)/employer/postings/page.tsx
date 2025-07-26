@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -12,8 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, MoreHorizontal, Loader2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { PlusCircle, MoreHorizontal, Loader2, Edit, Trash2, Users } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 
 interface Posting {
     id: string;
@@ -27,35 +30,63 @@ interface Posting {
 
 export default function EmployerPostingsPage() {
     const { user, loading: authLoading } = useAuth();
+    const { toast } = useToast();
     const [postings, setPostings] = useState<Posting[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchPostings = async () => {
-            if (user) {
-                try {
-                    const q = query(
-                        collection(db, "opportunities"), 
-                        where("employerId", "==", user.uid),
-                        orderBy("createdAt", "desc")
-                    );
-                    const querySnapshot = await getDocs(q);
-                    const postingsData = querySnapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    } as Posting));
-                    setPostings(postingsData);
-                } catch (error) {
-                    console.error("Error fetching postings:", error);
-                }
+    const fetchPostings = async () => {
+        if (user) {
+            try {
+                const q = query(
+                    collection(db, "opportunities"), 
+                    where("employerId", "==", user.uid),
+                    orderBy("createdAt", "desc")
+                );
+                const querySnapshot = await getDocs(q);
+                const postingsData = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as Posting));
+                setPostings(postingsData);
+            } catch (error) {
+                console.error("Error fetching postings:", error);
+                toast({
+                    title: "Error",
+                    description: "Could not fetch postings.",
+                    variant: "destructive"
+                });
             }
-            setLoading(false);
-        };
+        }
+        setLoading(false);
+    };
 
+    useEffect(() => {
         if (!authLoading) {
             fetchPostings();
         }
     }, [user, authLoading]);
+
+    const handleArchive = async (postingId: string) => {
+        try {
+            const postingRef = doc(db, "opportunities", postingId);
+            await updateDoc(postingRef, {
+                status: "Archived"
+            });
+            toast({
+                title: "Posting Archived",
+                description: "The job posting has been successfully archived."
+            });
+            // Refetch data to update UI
+            fetchPostings();
+        } catch (error) {
+            console.error("Error archiving posting:", error);
+            toast({
+                title: "Error",
+                description: "Could not archive the posting.",
+                variant: "destructive"
+            });
+        }
+    }
 
 
   return (
@@ -126,9 +157,32 @@ export default function EmployerPostingsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>View Applicants</DropdownMenuItem>
-                          <DropdownMenuItem>Edit Posting</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/employer/postings/${posting.id}/applicants`}><Users className="mr-2 h-4 w-4" />View Applicants</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/employer/postings/${posting.id}/edit`}><Edit className="mr-2 h-4 w-4" />Edit Posting</Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                      <Trash2 className="mr-2 h-4 w-4" />Archive
+                                </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will archive the job posting. Applicants will no longer be able to see it.
+                                </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleArchive(posting.id)} className="bg-destructive hover:bg-destructive/90">Archive</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
