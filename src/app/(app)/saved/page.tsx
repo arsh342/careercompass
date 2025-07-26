@@ -65,13 +65,13 @@ export default function SavedOpportunitiesPage() {
                 <CardContent className="flex-grow">
                     <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
                     <div className="flex flex-wrap gap-2">
-                        {skillsArray.map(skill => (
-                            <Badge key={skill} variant="outline">{skill}</Badge>
+                        {skillsArray.map((skill, index) => (
+                            <Badge key={`${skill}-${index}`} variant="outline">{skill}</Badge>
                         ))}
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                    <div className="text-sm font-semibold text-primary">{matchPercentage}% Match</div>
+                    <div className="text-sm font-semibold text-primary">{matchPercentage > 0 && `${matchPercentage}% Match`}</div>
                         <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
                 </CardFooter>
                 </Card>

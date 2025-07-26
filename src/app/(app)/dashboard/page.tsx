@@ -132,8 +132,8 @@ export default function DashboardPage() {
                    <p className="text-sm text-muted-foreground mb-4">Based on your skills in:</p>
                     <div className="flex flex-wrap gap-2">
                         {Array.isArray(opp.matchedSkills) && opp.matchedSkills.length > 0 ? (
-                           opp.matchedSkills.map(skill => (
-                            <Badge key={skill} variant="outline">{skill}</Badge>
+                           opp.matchedSkills.map((skill, index) => (
+                            <Badge key={`${skill}-${index}`} variant="outline">{skill}</Badge>
                            ))
                         ) : (
                            <p className="text-xs text-muted-foreground">No matching skills from profile.</p>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                    <div className="text-sm font-semibold text-primary">{opp.match}% Match</div>
+                    <div className="text-sm font-semibold text-primary">{opp.match > 0 && `${opp.match}% Match`}</div>
                     <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
                 </CardFooter>
               </Card>
