@@ -7,7 +7,8 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { addDoc, collection, doc, getDoc, increment, serverTimestamp, updateDoc } from "firebase/firestore"; 
-import { db } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -24,7 +25,7 @@ const applicationSchema = z.object({
   employmentHistory: z.string().optional(),
   references: z.string().optional(),
   portfolioLink: z.string().url().optional().or(z.literal('')),
-  resumeLink: z.string().url().optional().or(z.literal('')),
+  resume: z.any().optional(),
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
@@ -50,7 +51,6 @@ export default function ApplyPage() {
       employmentHistory: '',
       references: '',
       portfolioLink: '',
-      resumeLink: '',
     },
   });
 
@@ -61,7 +61,6 @@ export default function ApplyPage() {
             employmentHistory: userProfile.employmentHistory || '',
             references: userProfile.references || '',
             portfolioLink: userProfile.portfolioLink || '',
-            resumeLink: userProfile.resumeLink || '',
         });
     }
   }, [userProfile, form]);
@@ -98,13 +97,25 @@ export default function ApplyPage() {
     }
     
     try {
+        let resumeUrl = userProfile.resumeLink || '';
+        const resumeFile = values.resume?.[0];
+
+        if (resumeFile) {
+            const storageRef = ref(storage, `resumes/${user.uid}/${id}/${resumeFile.name}`);
+            const uploadResult = await uploadBytes(storageRef, resumeFile);
+            resumeUrl = await getDownloadURL(uploadResult.ref);
+        }
+
       await addDoc(collection(db, "applications"), {
         opportunityId: id,
         userId: user.uid,
         userName: user.displayName,
         userEmail: user.email,
-        ...values, // includes coverLetter and other form fields
-        // Add profile data that is not on the form
+        coverLetter: values.coverLetter,
+        employmentHistory: values.employmentHistory,
+        references: values.references,
+        portfolioLink: values.portfolioLink,
+        resumeLink: resumeUrl,
         education: userProfile.education,
         skills: userProfile.skills,
         interests: userProfile.interests,
@@ -132,6 +143,8 @@ export default function ApplyPage() {
       });
     }
   };
+  
+  const resumeRef = form.register("resume");
 
   if (loading || authLoading) {
     return (
@@ -234,13 +247,23 @@ export default function ApplyPage() {
                             />
                             <FormField
                                 control={form.control}
-                                name="resumeLink"
+                                name="resume"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Resume/CV Link (Optional)</FormLabel>
+                                    <FormLabel>Resume/CV</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Link to your online resume (e.g., Google Drive, LinkedIn)" {...field} />
+                                        <Input type="file" {...resumeRef} />
                                     </FormControl>
+                                    <FormDescription>
+                                        {userProfile?.resumeLink ? (
+                                            <>
+                                            A resume is already saved to your profile. Uploading a new one will override it for this application only.
+                                            <Button variant="link" asChild className="p-1 h-auto">
+                                                <Link href={userProfile.resumeLink} target="_blank" rel="noopener noreferrer">View Saved Resume</Link>
+                                            </Button>
+                                            </>
+                                        ) : "Upload your resume or CV."}
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}
