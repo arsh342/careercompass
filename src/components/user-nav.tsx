@@ -27,6 +27,7 @@ export function UserNav() {
   const router = useRouter();
 
   const getInitials = (name: string) => {
+    if (!name) return '';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -67,7 +68,7 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={user.photoURL || `https://placehold.co/40x40.png`} alt={`@${user.displayName}`} data-ai-hint="profile avatar" />
+            <AvatarImage src={user.photoURL || ''} alt={`@${user.displayName}`} data-ai-hint="profile avatar" />
             <AvatarFallback>{user.displayName ? getInitials(user.displayName) : 'U'}</AvatarFallback>
           </Avatar>
         </Button>
