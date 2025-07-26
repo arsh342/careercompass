@@ -197,22 +197,9 @@ export default function OpportunityDetailPage() {
                    {renderSection("Equal Opportunity Statement", opportunity.legalStatement, Info)}
                 </CardContent>
                 <CardFooter className="gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button className="w-full" size="lg">Apply Now</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Application Instructions</DialogTitle>
-                          <DialogDescription>
-                            Follow the instructions below to apply for the {opportunity.title} position.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="py-4 whitespace-pre-wrap break-words">
-                          {opportunity.applicationInstructions}
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Button asChild className="w-full" size="lg">
+                      <Link href={`/opportunities/${opportunity.id}/apply`}>Apply Now</Link>
+                    </Button>
                     <Button variant="outline" size="lg" onClick={() => opportunity && toggleSave(opportunity)}>
                         <Heart className={cn("mr-2 h-4 w-4", isSaved && "fill-primary text-primary")} /> {isSaved ? 'Saved' : 'Save'}
                     </Button>
@@ -268,5 +255,3 @@ export default function OpportunityDetailPage() {
     </div>
   );
 }
-
-    
