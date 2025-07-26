@@ -187,7 +187,7 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
                 </CardContent>
                 <CardFooter className="gap-2">
                     <Button className="w-full" size="lg">Apply Now</Button>
-                    <Button variant="outline" size="lg" onClick={() => toggleSave(opportunity)}>
+                    <Button variant="outline" size="lg" onClick={() => opportunity && toggleSave(opportunity)}>
                         <Heart className={cn("mr-2 h-4 w-4", isSaved && "fill-primary text-primary")} /> {isSaved ? 'Saved' : 'Save'}
                     </Button>
                 </CardFooter>
