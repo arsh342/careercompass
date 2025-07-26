@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
 import { cn } from '@/lib/utils';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
@@ -57,10 +57,21 @@ export default function OpportunityDetailPage() {
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const [hasApplied, setHasApplied] = useState(false);
 
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !user) return;
+
+    const checkApplicationStatus = async () => {
+        const q = query(
+            collection(db, "applications"),
+            where("userId", "==", user.uid),
+            where("opportunityId", "==", id)
+        );
+        const querySnapshot = await getDocs(q);
+        setHasApplied(!querySnapshot.empty);
+    }
 
     const fetchOpportunity = async () => {
       setLoading(true);
@@ -85,7 +96,8 @@ export default function OpportunityDetailPage() {
       }
     };
     fetchOpportunity();
-  }, [id, toast]);
+    checkApplicationStatus();
+  }, [id, toast, user]);
   
   const isSaved = opportunity ? saved.some(savedOpp => savedOpp.id === opportunity.id) : false;
 
@@ -225,8 +237,8 @@ export default function OpportunityDetailPage() {
                    {renderSection("Equal Opportunity Statement", opportunity.legalStatement, Info)}
                 </CardContent>
                 <CardFooter className="gap-2">
-                    <Button asChild className="w-full" size="lg">
-                      <Link href={`/opportunities/${opportunity.id}/apply`}>Apply Now</Link>
+                    <Button asChild className="w-full" size="lg" disabled={hasApplied}>
+                      {hasApplied ? <span>Applied</span> : <Link href={`/opportunities/${opportunity.id}/apply`}>Apply Now</Link>}
                     </Button>
                     <Button variant="outline" size="lg" onClick={() => opportunity && toggleSave(opportunity)}>
                         <Heart className={cn("mr-2 h-4 w-4", isSaved && "fill-primary text-primary")} /> {isSaved ? 'Saved' : 'Save'}
