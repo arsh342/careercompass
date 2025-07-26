@@ -50,6 +50,11 @@ const employerLinks = [
       label: 'Dashboard',
       icon: Building2,
     },
+     {
+      href: '/employer/profile',
+      label: 'Profile',
+      icon: User,
+    },
     {
       href: '/employer/postings',
       label: 'Postings',
