@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,7 +27,6 @@ const profileSchema = z.object({
   references: z.string().optional(),
   portfolioLink: z.string().url().optional().or(z.literal('')),
   linkedinLink: z.string().url().optional().or(z.literal('')),
-  resume: z.any().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -61,7 +59,6 @@ export default function ProfilePage() {
     }
   }, [userProfile, form]);
   
-  const resumeRef = form.register("resume");
 
   const onSubmit = async (values: ProfileFormValues) => {
     if (!user) {
@@ -69,30 +66,8 @@ export default function ProfilePage() {
         return;
     }
     try {
-        let resumeUrl = userProfile?.resumeLink || '';
-        const resumeFile = values.resume?.[0];
-
-        if (resumeFile) {
-            const formData = new FormData();
-            formData.append('file', resumeFile);
-            formData.append('userId', user.uid);
-            formData.append('fileName', resumeFile.name);
-
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('File upload failed');
-            }
-            const data = await response.json();
-            resumeUrl = data.url;
-        }
-
         await setDoc(doc(db, "users", user.uid), {
             ...values,
-            resumeLink: resumeUrl,
         }, { merge: true });
 
         toast({
@@ -268,29 +243,6 @@ export default function ProfilePage() {
                                     <FormControl>
                                         <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
                                     </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                           <FormField
-                                control={form.control}
-                                name="resume"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Resume/CV</FormLabel>
-                                    <FormControl>
-                                        <Input type="file" {...resumeRef} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        {userProfile?.resumeLink ? (
-                                            <>
-                                            Replace your currently saved resume.
-                                            <Button variant="link" asChild className="p-1 h-auto">
-                                                <Link href={userProfile.resumeLink} target="_blank" rel="noopener noreferrer">View Saved Resume</Link>
-                                            </Button>
-                                            </>
-                                        ) : "Upload your resume or CV."}
-                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}

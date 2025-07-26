@@ -25,7 +25,6 @@ const applicationSchema = z.object({
   references: z.string().optional(),
   portfolioLink: z.string().url().optional().or(z.literal('')),
   linkedinLink: z.string().url().optional().or(z.literal('')),
-  resume: z.any().optional(),
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
@@ -99,28 +98,6 @@ export default function ApplyPage() {
     }
     
     try {
-        let resumeUrl = userProfile.resumeLink || '';
-        const resumeFile = values.resume?.[0];
-
-        if (resumeFile) {
-            const formData = new FormData();
-            formData.append('file', resumeFile);
-            formData.append('userId', user.uid);
-            formData.append('opportunityId', id as string);
-            formData.append('fileName', resumeFile.name);
-
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('File upload failed');
-            }
-            const data = await response.json();
-            resumeUrl = data.url;
-        }
-
       await addDoc(collection(db, "applications"), {
         opportunityId: id,
         userId: user.uid,
@@ -131,7 +108,6 @@ export default function ApplyPage() {
         references: values.references,
         portfolioLink: values.portfolioLink,
         linkedinLink: values.linkedinLink,
-        resumeLink: resumeUrl,
         education: userProfile.education,
         skills: userProfile.skills,
         interests: userProfile.interests,
@@ -160,7 +136,6 @@ export default function ApplyPage() {
     }
   };
   
-  const resumeRef = form.register("resume");
 
   if (loading || authLoading) {
     return (
@@ -270,29 +245,6 @@ export default function ApplyPage() {
                                     <FormControl>
                                         <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
                                     </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="resume"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Resume/CV</FormLabel>
-                                    <FormControl>
-                                        <Input type="file" {...resumeRef} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        {userProfile?.resumeLink ? (
-                                            <>
-                                            A resume is already saved to your profile. Uploading a new one will override it for this application only.
-                                            <Button variant="link" asChild className="p-1 h-auto">
-                                                <Link href={userProfile.resumeLink} target="_blank" rel="noopener noreferrer">View Saved Resume</Link>
-                                            </Button>
-                                            </>
-                                        ) : "Upload your resume or CV."}
-                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                                 )}
