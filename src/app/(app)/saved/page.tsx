@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -48,7 +49,7 @@ export default function SavedOpportunitiesPage() {
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
                   <div className="flex flex-wrap gap-2">
-                      {opp.skills.map(skill => (
+                      {Array.isArray(opp.skills) && opp.skills.map(skill => (
                           <Badge key={skill} variant="outline">{skill}</Badge>
                       ))}
                   </div>

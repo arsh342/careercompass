@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface Opportunity {
-  id: number;
+  id: string;
   [key: string]: any;
 }
 

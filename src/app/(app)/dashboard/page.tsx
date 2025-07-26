@@ -18,7 +18,7 @@ interface Opportunity {
   location: string;
   type: string;
   match: number;
-  skills: string[];
+  skills: string[] | string;
   [key: string]: any;
 }
 
@@ -44,7 +44,7 @@ export default function DashboardPage() {
         const opportunitiesWithMockData = opportunitiesData.map(opp => ({
             ...opp,
             match: Math.floor(Math.random() * (98 - 75 + 1) + 75),
-            skills: opp.skills || ["React", "Node.js", "TypeScript"]
+            skills: typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || ["React", "Node.js", "TypeScript"])
         }))
         setOpportunities(opportunitiesWithMockData);
       } catch (error) {
@@ -100,7 +100,7 @@ export default function DashboardPage() {
                 <CardContent className="flex-grow">
                    <p className="text-sm text-muted-foreground mb-4">Based on your skills in:</p>
                     <div className="flex flex-wrap gap-2">
-                        {opp.skills.map(skill => (
+                        {Array.isArray(opp.skills) && opp.skills.map(skill => (
                             <Badge key={skill} variant="outline">{skill}</Badge>
                         ))}
                     </div>
