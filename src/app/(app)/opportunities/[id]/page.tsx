@@ -162,9 +162,15 @@ export default function OpportunityDetailPage() {
                         <Award className="h-5 w-5 text-primary" />
                         <h3 className="text-lg font-semibold">Qualifications</h3>
                     </div>
-                     <div className="prose prose-sm max-w-none text-muted-foreground space-y-4">
-                        <p>{opportunity.experience}</p>
-                        <p>{opportunity.education}</p>
+                     <div className="prose prose-sm max-w-none text-muted-foreground space-y-4 whitespace-pre-wrap break-words">
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1 text-foreground">Experience</h4>
+                          <p>{opportunity.experience}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-sm mb-1 text-foreground">Education</h4>
+                          <p>{opportunity.education}</p>
+                        </div>
                         <div>
                           <h4 className="font-semibold text-sm mb-2 text-foreground">Required Skills</h4>
                           <div className="flex flex-wrap gap-2">
