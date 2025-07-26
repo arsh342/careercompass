@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const userId = formData.get('userId') as string;
-    const opportunityId = formData.get('opportunityId') as string;
+    const opportunityId = formData.get('opportunityId') as string | null;
     const fileName = formData.get('fileName') as string;
 
     if (!file || !userId || !fileName) {
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
     
     let storagePath = `resumes/${userId}/${fileName}`;
-    if (opportunityId && opportunityId !== 'undefined') { // Check for undefined string
+    if (opportunityId && opportunityId !== 'undefined' && opportunityId !== 'null') {
         storagePath = `resumes/${userId}/${opportunityId}/${fileName}`;
     }
 
