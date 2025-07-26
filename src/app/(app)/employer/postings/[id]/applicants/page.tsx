@@ -7,33 +7,65 @@ import { ArrowLeft, Users, UserSearch, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { findMatchingCandidates, FindMatchingCandidatesOutput } from '@/ai/flows/find-matching-candidates';
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { format } from 'date-fns';
 
-type Candidate = FindMatchingCandidatesOutput['candidates'][0];
+type PotentialCandidate = FindMatchingCandidatesOutput['candidates'][0];
+
+interface Applicant {
+    id: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    photoURL?: string;
+    submittedAt: {
+        toDate: () => Date;
+    };
+    [key: string]: any;
+}
+
 
 export default function ApplicantsPage() {
     const params = useParams();
     const { id } = params;
     const { toast } = useToast();
-    const [matchingCandidates, setMatchingCandidates] = useState<Candidate[]>([]);
+    const [potentialCandidates, setPotentialCandidates] = useState<PotentialCandidate[]>([]);
+    const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [loading, setLoading] = useState(true);
 
      useEffect(() => {
         if (!id) return;
 
-        const fetchMatches = async () => {
+        const fetchPageData = async () => {
             setLoading(true);
             try {
+                // Fetch potential candidates
                 const { candidates } = await findMatchingCandidates({ opportunityId: id as string });
-                setMatchingCandidates(candidates);
+                setPotentialCandidates(candidates);
+
+                // Fetch actual applicants
+                const applicantsQuery = query(
+                    collection(db, "applications"),
+                    where("opportunityId", "==", id),
+                    orderBy("submittedAt", "desc")
+                );
+                const applicantsSnapshot = await getDocs(applicantsQuery);
+                const applicantsData = applicantsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as Applicant));
+                setApplicants(applicantsData);
+
             } catch (error) {
-                console.error("Error finding matching candidates:", error);
+                console.error("Error fetching page data:", error);
                 toast({
                     title: "Error",
-                    description: "Could not fetch potential candidates.",
+                    description: "Could not fetch candidate and applicant data.",
                     variant: "destructive"
                 });
             } finally {
@@ -41,7 +73,7 @@ export default function ApplicantsPage() {
             }
         };
 
-        fetchMatches();
+        fetchPageData();
     }, [id, toast]);
 
     const handleNotify = () => {
@@ -49,7 +81,7 @@ export default function ApplicantsPage() {
         // For now, we'll just show a toast notification as a simulation.
         toast({
             title: "Notifications Simulated",
-            description: `If configured, emails would be sent to ${matchingCandidates.length} candidates.`
+            description: `If configured, emails would be sent to ${potentialCandidates.length} candidates.`
         })
     }
     
@@ -75,7 +107,7 @@ export default function ApplicantsPage() {
                                     Users with skills matching this opportunity.
                                 </CardDescription>
                             </div>
-                            <Button size="sm" onClick={handleNotify} disabled={matchingCandidates.length === 0}>
+                             <Button size="sm" onClick={handleNotify} disabled={potentialCandidates.length === 0}>
                                 <Send className="mr-2 h-4 w-4" />
                                 Notify All
                             </Button>
@@ -86,7 +118,7 @@ export default function ApplicantsPage() {
                              <div className="flex justify-center items-center py-20">
                                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                              </div>
-                        ) : matchingCandidates.length === 0 ? (
+                        ) : potentialCandidates.length === 0 ? (
                             <div className="text-center py-20 text-muted-foreground">
                                 <UserSearch className="h-12 w-12 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold">No matches found</h3>
@@ -94,10 +126,9 @@ export default function ApplicantsPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {matchingCandidates.map((candidate) => (
+                                {potentialCandidates.map((candidate) => (
                                     <Link key={candidate.uid} href={`/users/${candidate.uid}`} className="flex items-center gap-4 p-2 rounded-md hover:bg-accent">
                                         <Avatar className="h-10 w-10">
-                                            {/* Assuming candidates have a photoURL, otherwise fallback */}
                                             <AvatarImage src={(candidate as any).photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
                                             <AvatarFallback>{getInitials(candidate.displayName)}</AvatarFallback>
                                         </Avatar>
@@ -123,11 +154,34 @@ export default function ApplicantsPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-center py-20 text-muted-foreground">
-                            <Users className="h-12 w-12 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold">No applicants yet</h3>
-                            <p>Check back later to see who has applied for this role.</p>
-                        </div>
+                         {loading ? (
+                             <div className="flex justify-center items-center py-20">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                             </div>
+                        ) : applicants.length === 0 ? (
+                            <div className="text-center py-20 text-muted-foreground">
+                                <Users className="h-12 w-12 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold">No applicants yet</h3>
+                                <p>Check back later to see who has applied for this role.</p>
+                            </div>
+                        ) : (
+                             <div className="space-y-4">
+                                {applicants.map((applicant) => (
+                                    <Link key={applicant.id} href={`/users/${applicant.userId}`} className="flex items-center gap-4 p-2 rounded-md hover:bg-accent">
+                                        <Avatar className="h-10 w-10">
+                                            <AvatarImage src={applicant.photoURL} alt={applicant.userName} data-ai-hint="profile avatar" />
+                                            <AvatarFallback>{getInitials(applicant.userName)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium leading-none">{applicant.userName}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Applied on {format(applicant.submittedAt.toDate(), 'PPP')}
+                                            </p>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>
