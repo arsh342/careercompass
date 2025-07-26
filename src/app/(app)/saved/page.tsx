@@ -55,7 +55,7 @@ export default function SavedOpportunitiesPage() {
                   </div>
               </CardContent>
               <CardFooter className="flex justify-between items-center">
-                  <div className="text-sm font-semibold text-primary">{opp.match}% Match</div>
+                  <div className="text-sm font-semibold text-primary">{opp.match || 0}% Match</div>
                     <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
               </CardFooter>
             </Card>
