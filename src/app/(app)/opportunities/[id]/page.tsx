@@ -60,7 +60,7 @@ export default function OpportunityDetailPage() {
 
 
   useEffect(() => {
-    if (!id || authLoading) return;
+    if (!id) return;
 
     const fetchOpportunity = async () => {
       setLoading(true);
@@ -69,21 +69,9 @@ export default function OpportunityDetailPage() {
         const oppDocSnap = await getDoc(oppDocRef);
 
         if (oppDocSnap.exists()) {
-          const oppData = oppDocSnap.data();
-          let employerData: { photoURL?: string } = {};
-
-          if (oppData.employerId) {
-             const userDocRef = doc(db, 'users', oppData.employerId);
-             const userDocSnap = await getDoc(userDocRef);
-             if (userDocSnap.exists()) {
-                employerData = { photoURL: userDocSnap.data().photoURL };
-             }
-          }
-          
-          setOpportunity({
+           setOpportunity({
             id: oppDocSnap.id,
-            ...oppData,
-            employerPhotoURL: employerData.photoURL
+            ...oppDocSnap.data(),
           } as Opportunity);
 
         } else {
@@ -97,7 +85,7 @@ export default function OpportunityDetailPage() {
       }
     };
     fetchOpportunity();
-  }, [id, toast, authLoading, user]);
+  }, [id, toast]);
   
   const isSaved = opportunity ? saved.some(savedOpp => savedOpp.id === opportunity.id) : false;
 

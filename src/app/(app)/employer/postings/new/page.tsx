@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, auth } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +42,7 @@ type PostingFormValues = z.infer<typeof postingSchema>;
 export default function NewPostingPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const form = useForm<PostingFormValues>({
     resolver: zodResolver(postingSchema),
@@ -62,7 +65,7 @@ export default function NewPostingPage() {
   });
 
   const onSubmit = async (values: PostingFormValues) => {
-    if (!auth.currentUser) {
+    if (!user) {
       toast({
         title: "Authentication Error",
         description: "You must be logged in to create a posting.",
@@ -73,8 +76,9 @@ export default function NewPostingPage() {
     try {
       const docRef = await addDoc(collection(db, "opportunities"), {
         ...values,
-        employerId: auth.currentUser.uid,
-        employerName: auth.currentUser.displayName,
+        employerId: user.uid,
+        employerName: user.displayName,
+        employerPhotoURL: user.photoURL,
         createdAt: serverTimestamp(),
         status: 'Active',
         applicants: 0,
