@@ -47,7 +47,7 @@ export default function DashboardPage() {
             skills: opp.skills || ["React", "Node.js", "TypeScript"]
         }))
         setOpportunities(opportunitiesWithMockData);
-      } catch (error) => {
+      } catch (error) {
         console.error("Error fetching opportunities:", error);
       } finally {
         setLoading(false);
