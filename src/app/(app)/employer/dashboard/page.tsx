@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import { collection, query, where, getDocs, orderBy, doc, updateDoc, getCountFromServer } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc, getCountFromServer } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye, UserSearch } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye, UserSearch, ArchiveRestore, Archive } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
@@ -117,23 +117,39 @@ export default function EmployerDashboardPage() {
         }
     }, [user, authLoading]);
 
-    const handleArchive = async (postingId: string) => {
+    const handleUpdateStatus = async (postingId: string, status: 'Archived' | 'Active') => {
         try {
             const postingRef = doc(db, "opportunities", postingId);
-            await updateDoc(postingRef, {
-                status: "Archived"
-            });
+            await updateDoc(postingRef, { status });
             toast({
-                title: "Posting Archived",
-                description: "The job posting has been successfully archived."
+                title: `Posting ${status === 'Active' ? 'Restored' : 'Archived'}`,
+                description: `The job posting has been successfully ${status === 'Active' ? 'restored' : 'archived'}.`
             });
-            // Refetch data to update UI
             fetchDashboardData();
         } catch (error) {
-            console.error("Error archiving posting:", error);
+            console.error(`Error updating status for posting ${postingId}:`, error);
             toast({
                 title: "Error",
-                description: "Could not archive the posting.",
+                description: "Could not update the posting status.",
+                variant: "destructive"
+            });
+        }
+    }
+
+    const handleDelete = async (postingId: string) => {
+         try {
+            const postingRef = doc(db, "opportunities", postingId);
+            await deleteDoc(postingRef);
+            toast({
+                title: "Posting Deleted",
+                description: "The job posting has been permanently deleted."
+            });
+            fetchDashboardData();
+        } catch (error) {
+            console.error(`Error deleting posting ${postingId}:`, error);
+            toast({
+                title: "Error",
+                description: "Could not delete the posting.",
                 variant: "destructive"
             });
         }
@@ -252,22 +268,31 @@ export default function EmployerDashboardPage() {
                                             <Link href={`/employer/postings/${posting.id}/edit`}><Edit className="mr-2 h-4 w-4" />Edit Posting</Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
+                                         {posting.status === 'Archived' ? (
+                                            <DropdownMenuItem onClick={() => handleUpdateStatus(posting.id, 'Active')}>
+                                                <ArchiveRestore className="mr-2 h-4 w-4" />Unarchive
+                                            </DropdownMenuItem>
+                                         ) : (
+                                            <DropdownMenuItem onClick={() => handleUpdateStatus(posting.id, 'Archived')}>
+                                               <Archive className="mr-2 h-4 w-4" />Archive
+                                            </DropdownMenuItem>
+                                         )}
                                         <AlertDialog>
                                             <AlertDialogTrigger asChild>
                                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
-                                                     <Trash2 className="mr-2 h-4 w-4" />Archive
+                                                     <Trash2 className="mr-2 h-4 w-4" />Delete
                                                 </DropdownMenuItem>
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    This will archive the job posting. Applicants will no longer be able to see it.
+                                                    This action cannot be undone. This will permanently delete this job posting and all related data.
                                                 </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
                                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleArchive(posting.id)} className="bg-destructive hover:bg-destructive/90">Archive</AlertDialogAction>
+                                                <AlertDialogAction onClick={() => handleDelete(posting.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
                                         </AlertDialog>
