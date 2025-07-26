@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/context/AuthContext';
 
 interface Opportunity {
   id: string;
@@ -55,25 +56,28 @@ export default function OpportunityDetailPage() {
   const { saved, toggleSave } = useSavedOpportunities();
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user, loading: authLoading } = useAuth();
+
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || authLoading) return;
+
     const fetchOpportunity = async () => {
+      setLoading(true);
       try {
         const oppDocRef = doc(db, 'opportunities', id as string);
         const oppDocSnap = await getDoc(oppDocRef);
 
         if (oppDocSnap.exists()) {
           const oppData = oppDocSnap.data();
-          const employerId = oppData.employerId;
-
           let employerData: { photoURL?: string } = {};
-          if (employerId) {
-            const userDocRef = doc(db, 'users', employerId);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-              employerData = { photoURL: userDocSnap.data().photoURL };
-            }
+
+          if (oppData.employerId) {
+             const userDocRef = doc(db, 'users', oppData.employerId);
+             const userDocSnap = await getDoc(userDocRef);
+             if (userDocSnap.exists()) {
+                employerData = { photoURL: userDocSnap.data().photoURL };
+             }
           }
           
           setOpportunity({
@@ -93,7 +97,7 @@ export default function OpportunityDetailPage() {
       }
     };
     fetchOpportunity();
-  }, [id, toast]);
+  }, [id, toast, authLoading, user]);
   
   const isSaved = opportunity ? saved.some(savedOpp => savedOpp.id === opportunity.id) : false;
 
@@ -118,7 +122,7 @@ export default function OpportunityDetailPage() {
     });
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
         <div className="container mx-auto flex justify-center items-center h-96">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -142,7 +146,7 @@ export default function OpportunityDetailPage() {
     if (!content) return null;
     const Icon = icon;
     return (
-      <div>
+      <div key={title}>
         <div className="flex items-center gap-2 mb-2">
             <Icon className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">{title}</h3>
@@ -153,7 +157,7 @@ export default function OpportunityDetailPage() {
   };
   
   const skillsArray = typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim()) : [];
-  const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
+  const getInitials = (name: string) => name ? name.split(' ').map(n => n[0]).join('') : '';
 
   return (
     <div className="container mx-auto">
@@ -194,7 +198,7 @@ export default function OpportunityDetailPage() {
                   <Separator/>
                   {renderSection("Roles and Responsibilities", opportunity.rolesAndResponsibilities, Briefcase)}
                   <Separator/>
-                  <div>
+                  <div key="qualifications">
                     <div className="flex items-center gap-2 mb-2">
                         <Award className="h-5 w-5 text-primary" />
                         <h3 className="text-lg font-semibold">Qualifications</h3>
@@ -211,8 +215,8 @@ export default function OpportunityDetailPage() {
                         <div>
                           <h4 className="font-semibold text-sm mb-2 text-foreground">Required Skills</h4>
                           <div className="flex flex-wrap gap-2">
-                              {skillsArray.map(skill => (
-                                  <Badge key={skill} variant="secondary">{skill}</Badge>
+                              {skillsArray.map((skill, index) => (
+                                  <Badge key={`${skill}-${index}`} variant="secondary">{skill}</Badge>
                               ))}
                           </div>
                         </div>
@@ -258,8 +262,8 @@ export default function OpportunityDetailPage() {
                             <div>
                                 <h4 className="font-semibold text-sm mb-2">Required Skills</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {analysis.skills.map(skill => (
-                                        <Badge key={skill} variant="secondary">{skill}</Badge>
+                                    {analysis.skills.map((skill, index) => (
+                                        <Badge key={`${skill}-${index}`} variant="secondary">{skill}</Badge>
                                     ))}
                                 </div>
                             </div>
