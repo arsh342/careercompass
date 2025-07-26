@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
 
 interface Opportunity {
   id: string;
@@ -10,6 +10,7 @@ interface Opportunity {
 
 interface SavedOpportunitiesContextType {
   saved: Opportunity[];
+  setSaved: Dispatch<SetStateAction<Opportunity[]>>;
   toggleSave: (opportunity: Opportunity) => void;
 }
 
@@ -30,7 +31,7 @@ export const SavedOpportunitiesProvider = ({ children }: { children: ReactNode }
   };
 
   return (
-    <SavedOpportunitiesContext.Provider value={{ saved, toggleSave }}>
+    <SavedOpportunitiesContext.Provider value={{ saved, setSaved, toggleSave }}>
       {children}
     </SavedOpportunitiesContext.Provider>
   );

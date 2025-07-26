@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +36,7 @@ export default function OpportunitiesPage() {
    useEffect(() => {
     const fetchOpportunities = async () => {
       try {
-        const q = query(collection(db, "opportunities"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, "opportunities"), where("status", "==", "Active"), orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
         const opportunitiesData = querySnapshot.docs.map(doc => ({
             id: doc.id,

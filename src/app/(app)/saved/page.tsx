@@ -9,11 +9,20 @@ import Link from "next/link";
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
 
 export default function SavedOpportunitiesPage() {
-  const { saved, toggleSave } = useSavedOpportunities();
+  const { saved, setSaved, toggleSave } = useSavedOpportunities();
   const { userProfile } = useAuth();
   
+  useEffect(() => {
+    // Filter out any saved opportunities that are no longer active
+    const activeSaved = saved.filter(opp => opp.status !== 'Archived');
+    if (activeSaved.length !== saved.length) {
+      setSaved(activeSaved);
+    }
+  }, [saved, setSaved]);
+
   const calculateMatch = (opportunity: any) => {
       if (!userProfile?.skills) return 0;
       const userSkills = new Set((userProfile.skills || '').split(',').map(s => s.trim().toLowerCase()));
