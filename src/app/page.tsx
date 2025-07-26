@@ -2,34 +2,24 @@
 
 import { useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-
-// For the purpose of this example, we will use a mock auth check.
-// In a real application, you would integrate with Firebase Auth.
-const useAuth = () => {
-  // Mocking auth state. In a real app, this would check Firebase Auth state.
-  // We'll default to unauthenticated to show the login flow.
-  const isAuthenticated = false; 
-  const isLoading = false;
-  
-  return { isAuthenticated, isLoading };
-};
+import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (pathname === '/') {
-        if (!isLoading) {
-        if (isAuthenticated) {
-            router.push('/dashboard');
+      if (!loading) {
+        if (user) {
+          router.push('/dashboard');
         } else {
-            router.push('/login');
+          router.push('/login');
         }
-        }
+      }
     }
-  }, [isAuthenticated, isLoading, router, pathname]);
+  }, [user, loading, router, pathname]);
 
   if (pathname !== '/') {
     return null;

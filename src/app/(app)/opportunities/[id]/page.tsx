@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { analyzeOpportunityDescription } from '@/ai/flows/analyze-opportunity-description';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,15 +11,18 @@ import { ArrowLeft, Bot, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
 import { cn } from '@/lib/utils';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
-const opportunity = {
-  id: 1,
-  title: 'Software Engineering Intern',
-  company: 'Innovatech Solutions',
-  location: 'Remote',
-  type: 'Internship',
-  description: `Innovatech Solutions is seeking a motivated Software Engineering Intern to join our dynamic team. In this role, you will work on our flagship product, contributing to both front-end and back-end development. Key responsibilities include developing new features with React and TypeScript, writing and maintaining APIs with Node.js, and collaborating with our design team to implement user-friendly interfaces. The ideal candidate has a solid understanding of web development principles, experience with modern JavaScript frameworks, and a passion for creating high-quality software. Experience with databases like PostgreSQL is a plus.`
-};
+interface Opportunity {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  description: string;
+  [key: string]: any;
+}
 
 type Analysis = {
   skills: string[];
@@ -31,10 +34,32 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
   const [isPending, startTransition] = useTransition();
   const [analysis, setAnalysis] = useState<Analysis>(null);
   const { saved, toggleSave } = useSavedOpportunities();
+  const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOpportunity = async () => {
+      try {
+        const docRef = doc(db, 'opportunities', params.id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setOpportunity({ id: docSnap.id, ...docSnap.data() } as Opportunity);
+        } else {
+          toast({ title: "Error", description: "Opportunity not found.", variant: "destructive" });
+        }
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to fetch opportunity details.", variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOpportunity();
+  }, [params.id, toast]);
   
-  const isSaved = saved.some(savedOpp => savedOpp.id === opportunity.id);
+  const isSaved = opportunity ? saved.some(savedOpp => savedOpp.id === opportunity.id) : false;
 
   const onAnalyze = () => {
+    if (!opportunity) return;
     startTransition(async () => {
       try {
         const result = await analyzeOpportunityDescription({ description: opportunity.description });
@@ -53,6 +78,26 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
       }
     });
   };
+
+  if (loading) {
+    return (
+        <div className="container mx-auto flex justify-center items-center h-96">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    )
+  }
+
+  if (!opportunity) {
+     return (
+        <div className="container mx-auto text-center py-20">
+            <h1 className="text-2xl font-bold">Opportunity not found</h1>
+            <p className="text-muted-foreground">The opportunity you are looking for does not exist.</p>
+             <Button variant="link" asChild className="mt-4">
+                <Link href="/opportunities">Back to Opportunities</Link>
+             </Button>
+        </div>
+    )
+  }
 
   return (
     <div className="container mx-auto">

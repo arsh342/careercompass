@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"; 
+import { db, auth } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,13 +38,37 @@ export default function NewPostingPage() {
     },
   });
 
-  const onSubmit = (values: PostingFormValues) => {
-    console.log(values);
-    toast({
-      title: 'Posting Created',
-      description: 'Your new job posting is now live.',
-    });
-    router.push('/employer/dashboard');
+  const onSubmit = async (values: PostingFormValues) => {
+    if (!auth.currentUser) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to create a posting.",
+        variant: "destructive"
+      });
+      return;
+    }
+    try {
+      await addDoc(collection(db, "opportunities"), {
+        ...values,
+        employerId: auth.currentUser.uid,
+        employerName: auth.currentUser.displayName,
+        createdAt: serverTimestamp(),
+        status: 'Active',
+        applicants: 0,
+      });
+
+      toast({
+        title: 'Posting Created',
+        description: 'Your new job posting is now live.',
+      });
+      router.push('/employer/dashboard');
+    } catch (error) {
+       toast({
+        title: 'Error',
+        description: 'There was an error creating the posting.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -123,7 +149,9 @@ export default function NewPostingPage() {
                          <Button variant="outline" asChild>
                             <Link href="/employer/dashboard">Cancel</Link>
                          </Button>
-                        <Button type="submit">Create Posting</Button>
+                        <Button type="submit" disabled={form.formState.isSubmitting}>
+                          {form.formState.isSubmitting ? 'Creating...' : 'Create Posting'}
+                        </Button>
                     </div>
                 </form>
             </Form>

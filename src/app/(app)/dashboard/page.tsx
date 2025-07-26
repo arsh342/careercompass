@@ -1,36 +1,58 @@
 'use client';
-
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart } from "lucide-react";
-import Link from 'next/link';
-import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
+import { Heart, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const opportunities: any[] = [
-    {
-    id: 1,
-    title: "Software Engineering Intern",
-    company: "Innovatech Solutions",
-    location: "Remote",
-    type: "Internship",
-    match: 95,
-    skills: ["React", "Node.js", "TypeScript"],
-  },
-  {
-    id: 2,
-    title: "Product Design Volunteer",
-    company: "Creative Minds Foundation",
-    location: "New York, NY",
-    type: "Volunteer",
-    match: 88,
-    skills: ["Figma", "UI/UX", "User Research"],
-  },
-];
+interface Opportunity {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  type: string;
+  match: number;
+  skills: string[];
+}
 
 export default function DashboardPage() {
   const { saved, toggleSave } = useSavedOpportunities();
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+   useEffect(() => {
+    const fetchOpportunities = async () => {
+      try {
+        const q = query(
+            collection(db, "opportunities"), 
+            orderBy("createdAt", "desc"),
+            limit(6)
+        );
+        const querySnapshot = await getDocs(q);
+        const opportunitiesData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        } as Opportunity));
+        // Mock match and skills for now
+        const opportunitiesWithMockData = opportunitiesData.map(opp => ({
+            ...opp,
+            match: Math.floor(Math.random() * (98 - 75 + 1) + 75),
+            skills: opp.skills || ["React", "Node.js", "TypeScript"]
+        }))
+        setOpportunities(opportunitiesWithMockData);
+      } catch (error) {
+        console.error("Error fetching opportunities:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOpportunities();
+  }, []);
   
   return (
     <div className="container mx-auto">
@@ -39,10 +61,14 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Personalized recommendations based on your profile.</p>
       </div>
 
-      {opportunities.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : opportunities.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-muted-foreground">
+            <div className="text-center text-muted-foreground py-10">
               <p>No opportunities found.</p>
               <Button variant="link" asChild>
                 <Link href="/opportunities">Browse opportunities</Link>

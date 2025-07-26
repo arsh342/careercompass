@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { cn } from '@/lib/utils';
 import {
@@ -16,15 +18,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-
-// In a real app, you'd get this from an auth hook
-const useUserRole = () => {
-    const pathname = usePathname();
-    if (pathname.startsWith('/employer')) {
-        return 'employer';
-    }
-    return 'employee';
-}
 
 const employeeLinks = [
   {
@@ -64,7 +57,18 @@ const employerLinks = [
 
 export function MainNav() {
   const pathname = usePathname();
-  const role = useUserRole();
+  const { role, loading } = useAuth();
+
+  if (loading) {
+      return (
+          <div className="flex flex-col gap-4 p-2">
+              <Skeleton className="h-4 w-24 mb-2" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+          </div>
+      )
+  }
 
   const links = role === 'employer' ? employerLinks : employeeLinks;
   const title = role === 'employer' ? 'For Employers' : 'My Compass';

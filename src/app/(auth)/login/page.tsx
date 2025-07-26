@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,24 +33,39 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = (values: LoginFormValues) => {
-    // Mock successful login
-    console.log('Login successful with:', values);
-    toast({
-      title: 'Login Successful',
-      description: "Welcome back! You're being redirected to your dashboard.",
-    });
-    router.push('/dashboard');
+  const onSubmit = async (values: LoginFormValues) => {
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      toast({
+        title: 'Login Successful',
+        description: "Welcome back! You're being redirected to your dashboard.",
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: 'Login Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    // Mock successful Google sign-in
-    console.log('Google Sign-In initiated');
-    toast({
-      title: 'Login Successful',
-      description: "Welcome! You're being redirected to your dashboard.",
-    });
-    router.push('/dashboard');
+  const handleGoogleSignIn = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+      toast({
+        title: 'Login Successful',
+        description: "Welcome! You're being redirected to your dashboard.",
+      });
+      router.push('/dashboard');
+    } catch (error: any) {
+       toast({
+        title: 'Google Sign-In Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

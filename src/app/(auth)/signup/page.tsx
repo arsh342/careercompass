@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from "firebase/firestore"; 
+import { auth, db } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,14 +38,34 @@ export default function SignupPage() {
     },
   });
 
-  const onSubmit = (values: SignupFormValues) => {
-    // Mock successful signup
-    console.log('Signup successful with:', values);
-    toast({
-      title: 'Account Created',
-      description: 'Your account has been successfully created. Please log in.',
-    });
-    router.push('/login');
+  const onSubmit = async (values: SignupFormValues) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+      
+      await updateProfile(user, {
+        displayName: values.fullName,
+      });
+
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        displayName: values.fullName,
+        email: values.email,
+        role: values.role,
+      });
+
+      toast({
+        title: 'Account Created',
+        description: 'Your account has been successfully created. Please log in.',
+      });
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        title: 'Signup Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
