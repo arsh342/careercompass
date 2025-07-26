@@ -28,11 +28,6 @@ const employeeLinks = [
     icon: LayoutDashboard,
   },
   {
-    href: '/profile',
-    label: 'Profile',
-    icon: User,
-  },
-  {
     href: '/opportunities',
     label: 'Opportunities',
     icon: Briefcase,
@@ -42,6 +37,11 @@ const employeeLinks = [
     label: 'Saved',
     icon: Heart,
   },
+  {
+    href: '/profile',
+    label: 'Profile',
+    icon: User,
+  },
 ];
 
 const employerLinks = [
@@ -50,15 +50,15 @@ const employerLinks = [
       label: 'Dashboard',
       icon: Building2,
     },
-     {
-      href: '/employer/profile',
-      label: 'Profile',
-      icon: User,
-    },
     {
       href: '/employer/postings',
       label: 'Postings',
       icon: FileText,
+    },
+     {
+      href: '/employer/profile',
+      label: 'Profile',
+      icon: User,
     },
 ]
 
