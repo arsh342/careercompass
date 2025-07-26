@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -5,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
-  const { user, loading } = useAuth();
+  const { user, loading, role } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -13,13 +14,17 @@ export default function Home() {
     if (pathname === '/') {
       if (!loading) {
         if (user) {
-          router.push('/dashboard');
+          if (role === 'employer') {
+            router.push('/employer/dashboard');
+          } else {
+            router.push('/dashboard');
+          }
         } else {
           router.push('/login');
         }
       }
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, role, router, pathname]);
 
   if (pathname !== '/') {
     return null;
