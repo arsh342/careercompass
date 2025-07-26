@@ -16,24 +16,28 @@ export function SearchBar() {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    if (role === 'employer') return; // Do not redirect for employers
+    if (role === 'employer') return; 
 
+    const currentPath = window.location.pathname;
+    const targetPath = debouncedSearchTerm ? `/opportunities?q=${debouncedSearchTerm}` : '/opportunities';
+    
     if (debouncedSearchTerm) {
-      router.push(`/opportunities?q=${debouncedSearchTerm}`);
-    } else if (debouncedSearchTerm === '' && searchParams.has('q')) {
+        if (currentPath !== '/opportunities' || searchParams.get('q') !== debouncedSearchTerm) {
+             router.push(targetPath);
+        }
+    } else if (currentPath === '/opportunities' && searchParams.has('q')) {
         router.push('/opportunities');
     }
+
   }, [debouncedSearchTerm, router, searchParams, role]);
   
   useEffect(() => {
-    // Keep search bar in sync with URL params
-    if (role !== 'employer') {
-        setSearchTerm(searchParams.get('q') || '');
-    }
+    if (role === 'employer') return;
+    setSearchTerm(searchParams.get('q') || '');
   }, [searchParams, role]);
 
   if (role === 'employer') {
-    return null; // Don't render search bar for employers
+    return null; // Don't render search bar or run its logic for employers
   }
 
   return (
