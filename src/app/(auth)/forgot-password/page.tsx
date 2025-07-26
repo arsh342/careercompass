@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,14 +31,21 @@ export default function ForgotPasswordPage() {
     },
   });
 
-  const onSubmit = (values: ForgotPasswordFormValues) => {
-    // Mock successful password reset request
-    console.log('Password reset requested for:', values.email);
-    toast({
-      title: 'Check Your Email',
-      description: 'If an account with that email exists, we have sent a password reset link.',
-    });
-    router.push('/login');
+  const onSubmit = async (values: ForgotPasswordFormValues) => {
+    try {
+      await sendPasswordResetEmail(auth, values.email);
+      toast({
+        title: 'Check Your Email',
+        description: 'If an account with that email exists, we have sent a password reset link.',
+      });
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

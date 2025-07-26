@@ -1,16 +1,62 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from "next/link";
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
+import { format } from 'date-fns';
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, MoreHorizontal } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-const postings: any[] = [
-  // Data will be fetched from a database in a real application
-];
+interface Posting {
+    id: string;
+    title: string;
+    status: string;
+    applicants: number;
+    createdAt: {
+        toDate: () => Date;
+    };
+}
 
 export default function EmployerDashboardPage() {
+    const { user, loading: authLoading } = useAuth();
+    const [postings, setPostings] = useState<Posting[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPostings = async () => {
+            if (user) {
+                try {
+                    const q = query(
+                        collection(db, "opportunities"), 
+                        where("employerId", "==", user.uid),
+                        orderBy("createdAt", "desc")
+                    );
+                    const querySnapshot = await getDocs(q);
+                    const postingsData = querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    } as Posting));
+                    setPostings(postingsData);
+                } catch (error) {
+                    console.error("Error fetching postings:", error);
+                }
+            }
+            setLoading(false);
+        };
+
+        if (!authLoading) {
+            fetchPostings();
+        }
+    }, [user, authLoading]);
+
+
   return (
     <div className="container mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -32,7 +78,11 @@ export default function EmployerDashboardPage() {
           <CardDescription>A list of all job opportunities you have posted.</CardDescription>
         </CardHeader>
         <CardContent>
-          {postings.length === 0 ? (
+          {loading ? (
+             <div className="flex justify-center items-center py-10">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+             </div>
+          ) : postings.length === 0 ? (
              <div className="text-center py-10 text-muted-foreground">
                 <p>You haven't posted any jobs yet.</p>
                  <Button variant="link" asChild className="mt-2">
@@ -64,7 +114,7 @@ export default function EmployerDashboardPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">{posting.applicants}</TableCell>
-                    <TableCell className="text-right">{posting.postedDate}</TableCell>
+                    <TableCell className="text-right">{format(posting.createdAt.toDate(), 'PPP')}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
