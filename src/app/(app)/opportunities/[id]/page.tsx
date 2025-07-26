@@ -6,9 +6,10 @@ import { analyzeOpportunityDescription } from '@/ai/flows/analyze-opportunity-de
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Bot, Heart, Loader2, Building, Briefcase, BookOpen, Star, FileText, Clock, Plane, Info, University, Award } from 'lucide-react';
+import { ArrowLeft, Bot, Heart, Loader2, Building, Briefcase, BookOpen, Star, FileText, Clock, Plane, Info, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
@@ -196,7 +197,22 @@ export default function OpportunityDetailPage() {
                    {renderSection("Equal Opportunity Statement", opportunity.legalStatement, Info)}
                 </CardContent>
                 <CardFooter className="gap-2">
-                    <Button className="w-full" size="lg">Apply Now</Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="w-full" size="lg">Apply Now</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Application Instructions</DialogTitle>
+                          <DialogDescription>
+                            Follow the instructions below to apply for the {opportunity.title} position.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="py-4 whitespace-pre-wrap break-words">
+                          {opportunity.applicationInstructions}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     <Button variant="outline" size="lg" onClick={() => opportunity && toggleSave(opportunity)}>
                         <Heart className={cn("mr-2 h-4 w-4", isSaved && "fill-primary text-primary")} /> {isSaved ? 'Saved' : 'Save'}
                     </Button>
@@ -252,3 +268,5 @@ export default function OpportunityDetailPage() {
     </div>
   );
 }
+
+    

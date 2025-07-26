@@ -82,21 +82,15 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href="/profile">
-            <DropdownMenuItem>
-              Profile
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/dashboard">
-            <DropdownMenuItem>
-              Dashboard
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/saved">
-            <DropdownMenuItem>
-              Saved
-            </DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem asChild>
+              <Link href="/profile">Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard">Dashboard</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/saved">Saved</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
@@ -106,3 +100,5 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
+
+    
