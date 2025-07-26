@@ -6,24 +6,27 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
     const userId = formData.get('userId') as string;
     const opportunityId = formData.get('opportunityId') as string;
     const fileName = formData.get('fileName') as string;
 
-    if (!file || !userId) {
-      return NextResponse.json({ error: 'File or user ID is missing.' }, { status: 400 });
+    if (!file || !userId || !fileName) {
+      return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
     }
     
     let storagePath = `resumes/${userId}/${fileName}`;
-    if (opportunityId) {
+    if (opportunityId && opportunityId !== 'undefined') { // Check for undefined string
         storagePath = `resumes/${userId}/${opportunityId}/${fileName}`;
     }
 
     const storageRef = ref(storage, storagePath);
 
-    const fileBuffer = await file.arrayBuffer();
-    await uploadBytes(storageRef, fileBuffer, {
+    // Convert file to buffer for upload
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    await uploadBytes(storageRef, buffer, {
       contentType: file.type,
     });
 
