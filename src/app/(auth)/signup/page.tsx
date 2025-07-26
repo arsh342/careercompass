@@ -170,8 +170,8 @@ export default function SignupPage() {
         </Form>
         <div className="mt-6 text-center text-sm">
           Already have an account?{' '}
-           <Link href="/login" passHref>
-             <Button variant="link" className="p-0 h-auto">Sign in</Button>
+           <Link href="/login" className="font-medium text-primary hover:underline">
+             Sign in
           </Link>
         </div>
       </CardContent>
