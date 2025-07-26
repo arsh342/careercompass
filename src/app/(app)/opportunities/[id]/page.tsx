@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Bot, Heart, Loader2 } from 'lucide-react';
+import { ArrowLeft, Bot, Heart, Loader2, Building, Briefcase, BookOpen, Star, FileText, Clock, Plane, Info, University, Award } from 'lucide-react';
 import Link from 'next/link';
 import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
 import { cn } from '@/lib/utils';
@@ -17,10 +18,21 @@ import { db } from '@/lib/firebase';
 interface Opportunity {
   id: string;
   title: string;
-  company: string;
+  employerName: string;
   location: string;
   type: string;
+  companyOverview: string;
   description: string;
+  rolesAndResponsibilities: string;
+  skills: string;
+  education: string;
+  experience: string;
+  preferredQualifications?: string;
+  compensationAndBenefits: string;
+  applicationInstructions: string;
+  legalStatement: string;
+  workingHours?: string;
+  travelRequirements?: string;
   [key: string]: any;
 }
 
@@ -99,6 +111,22 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
     )
   }
 
+  const renderSection = (title: string, content: string | undefined, icon: React.ElementType) => {
+    if (!content) return null;
+    const Icon = icon;
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+            <Icon className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">{title}</h3>
+        </div>
+        <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">{content}</div>
+      </div>
+    );
+  };
+  
+  const skillsArray = typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim()) : [];
+
   return (
     <div className="container mx-auto">
       <div className="mb-6">
@@ -111,16 +139,51 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 space-y-6">
             <Card>
                 <CardHeader>
                     <Badge variant={opportunity.type === 'Internship' ? 'default' : 'secondary'} className="w-fit mb-2">{opportunity.type}</Badge>
-                    <CardTitle className="text-2xl">{opportunity.title}</CardTitle>
-                    <CardDescription>{opportunity.company} - {opportunity.location}</CardDescription>
+                    <CardTitle className="text-3xl font-bold">{opportunity.title}</CardTitle>
+                    <CardDescription className="text-base">{opportunity.employerName} - {opportunity.location}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <h3 className="font-semibold mb-2">Job Description</h3>
-                    <p className="text-muted-foreground whitespace-pre-wrap">{opportunity.description}</p>
+                <CardContent className="space-y-6">
+                  {renderSection("Company Overview", opportunity.companyOverview, Building)}
+                  <Separator/>
+                  {renderSection("Job Description", opportunity.description, FileText)}
+                  <Separator/>
+                  {renderSection("Roles and Responsibilities", opportunity.rolesAndResponsibilities, Briefcase)}
+                  <Separator/>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Award className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold">Qualifications</h3>
+                    </div>
+                     <div className="prose prose-sm max-w-none text-muted-foreground space-y-4">
+                        <p>{opportunity.experience}</p>
+                        <p>{opportunity.education}</p>
+                        <div>
+                          <h4 className="font-semibold text-sm mb-2 text-foreground">Required Skills</h4>
+                          <div className="flex flex-wrap gap-2">
+                              {skillsArray.map(skill => (
+                                  <Badge key={skill} variant="secondary">{skill}</Badge>
+                              ))}
+                          </div>
+                        </div>
+                     </div>
+                  </div>
+                  <Separator/>
+                  {renderSection("Preferred Qualifications", opportunity.preferredQualifications, Star)}
+                  <Separator/>
+                  {renderSection("Compensation and Benefits", opportunity.compensationAndBenefits, Star)}
+                   <Separator/>
+                  {renderSection("Application Instructions", opportunity.applicationInstructions, BookOpen)}
+                  <Separator/>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {renderSection("Working Hours", opportunity.workingHours, Clock)}
+                        {renderSection("Travel Requirements", opportunity.travelRequirements, Plane)}
+                   </div>
+                   <Separator/>
+                   {renderSection("Equal Opportunity Statement", opportunity.legalStatement, Info)}
                 </CardContent>
                 <CardFooter className="gap-2">
                     <Button className="w-full" size="lg">Apply Now</Button>
