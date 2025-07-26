@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import Link from 'next/link';
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
+import { cn } from "@/lib/utils";
 
 const opportunities: any[] = [
     {
