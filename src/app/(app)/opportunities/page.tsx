@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 interface Opportunity {
   id: string;
   title: string;
-  company: string;
+  employerName: string;
   location: string;
   type: string;
   match: number;
@@ -64,7 +64,7 @@ export default function OpportunitiesPage() {
     if (searchQuery) {
         const filtered = opportunities.filter(opp => 
             opp.title.toLowerCase().includes(searchQuery) ||
-            (opp.company && opp.company.toLowerCase().includes(searchQuery)) ||
+            (opp.employerName && opp.employerName.toLowerCase().includes(searchQuery)) ||
             (Array.isArray(opp.skills) && opp.skills.some(skill => skill.toLowerCase().includes(searchQuery)))
         );
         setFilteredOpportunities(filtered);
@@ -103,7 +103,7 @@ export default function OpportunitiesPage() {
                         <div>
                             <Badge variant={opp.type === 'Internship' ? 'default' : 'secondary'} className="mb-2">{opp.type}</Badge>
                             <CardTitle className="text-lg">{opp.title}</CardTitle>
-                            <CardDescription>{opp.company} - {opp.location}</CardDescription>
+                            <CardDescription>{opp.employerName} - {opp.location}</CardDescription>
                         </div>
                         <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toggleSave(opp)}>
                             <Heart className={cn("w-5 h-5", isSaved && "fill-primary text-primary")} />

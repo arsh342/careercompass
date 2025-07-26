@@ -38,7 +38,7 @@ export default function SavedOpportunitiesPage() {
                     <div>
                         <Badge variant={opp.type === 'Internship' ? 'default' : 'secondary'} className="mb-2">{opp.type}</Badge>
                         <CardTitle className="text-lg">{opp.title}</CardTitle>
-                        <CardDescription>{opp.company} - {opp.location}</CardDescription>
+                        <CardDescription>{opp.employerName} - {opp.location}</CardDescription>
                     </div>
                     <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toggleSave(opp)}>
                         <Heart className={cn("w-5 h-5", "fill-primary text-primary")} />
