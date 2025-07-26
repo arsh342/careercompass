@@ -1,12 +1,9 @@
 
 import { NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { app } from '@/lib/firebase';
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
-  api_secret: process.env.CLOUDINARY_API_SECRET 
-});
+const storage = getStorage(app);
 
 export async function POST(request: Request) {
   try {
@@ -20,37 +17,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 });
     }
     
-    let public_id = `resumes/${userId}/${fileName}`;
+    let filePath = `resumes/${userId}/${fileName}`;
     if (opportunityId && opportunityId !== 'undefined' && opportunityId !== 'null') {
-        public_id = `resumes/${userId}/${opportunityId}/${fileName}`;
+        filePath = `resumes/${userId}/${opportunityId}/${fileName}`;
     }
 
-    // Convert file to buffer for upload
+    const storageRef = ref(storage, filePath);
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const result = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-            {
-                public_id,
-                resource_type: 'raw',
-                folder: 'resumes'
-            },
-            (error, result) => {
-                if (error) {
-                    console.error('Cloudinary Upload Error:', error);
-                    return reject(error);
-                }
-                resolve(result);
-            }
-        );
-        stream.end(buffer);
+    const snapshot = await uploadBytes(storageRef, buffer, {
+        contentType: file.type,
     });
-    
-    // @ts-ignore
-    const { secure_url } = result;
 
-    return NextResponse.json({ url: secure_url });
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    return NextResponse.json({ url: downloadURL });
   } catch (error) {
     console.error('Upload failed:', error);
     return NextResponse.json({ error: 'File upload failed.' }, { status: 500 });
