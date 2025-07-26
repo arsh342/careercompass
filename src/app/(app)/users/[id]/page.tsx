@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Building, User, Mail, Briefcase, Star, Lightbulb, Target, Phone } from 'lucide-react';
+import { Loader2, ArrowLeft, Building, User, Mail, Briefcase, Star, Lightbulb, Target, Phone, HelpCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ interface UserProfile {
   firstName?: string;
   lastName?: string;
   contactNumber?: string;
+  supportEmail?: string;
   companyName?: string;
   companyOverview?: string;
   education?: string;
@@ -128,6 +129,12 @@ export default function UserProfilePage() {
                         <span>{profile.contactNumber}</span>
                      </div>
                    )}
+                    {profile.supportEmail && (
+                        <div className="flex items-center gap-2">
+                            <HelpCircle className="h-4 w-4" />
+                            <a href={`mailto:${profile.supportEmail}`} className="hover:underline">{profile.supportEmail}</a>
+                        </div>
+                    )}
                 </div>
             </div>
 
