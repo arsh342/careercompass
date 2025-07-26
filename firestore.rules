@@ -1,0 +1,22 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users can only read and write to their own user document.
+    match /users/{userId} {
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Opportunities can be read by anyone.
+    // Only authenticated employers can create opportunities.
+    // Only the employer who created an opportunity can update or delete it.
+    match /opportunities/{opportunityId} {
+      allow read: if true;
+      allow create: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employer';
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.employerId;
+    }
+  }
+}
