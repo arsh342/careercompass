@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -21,7 +22,7 @@ import {
 import { Skeleton } from './ui/skeleton';
 
 export function UserNav() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -82,15 +83,28 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-              <Link href="/profile">Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/dashboard">Dashboard</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/saved">Saved</Link>
-          </DropdownMenuItem>
+          {role === 'employer' ? (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/employer/dashboard">Dashboard</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/employer/postings">Postings</Link>
+              </DropdownMenuItem>
+            </>
+          ) : (
+             <>
+              <DropdownMenuItem asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+              </DropdownMenuItem>
+               <DropdownMenuItem asChild>
+                  <Link href="/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/saved">Saved</Link>
+              </DropdownMenuItem>
+             </>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
