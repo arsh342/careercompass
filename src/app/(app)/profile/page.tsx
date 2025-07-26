@@ -3,10 +3,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { updateProfile } from 'firebase/auth';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateProfileSummary } from '@/ai/flows/generate-profile-summary';
-import { Bot, Loader2 } from 'lucide-react';
+import { Bot, Loader2, Edit } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
   education: z.string().min(1, 'Education is required.'),
@@ -36,6 +38,8 @@ export default function ProfilePage() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const [isPending, startTransition] = useTransition();
   const [summary, setSummary] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -116,6 +120,46 @@ export default function ProfilePage() {
     });
   };
 
+   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('userId', user.uid);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const { url } = await response.json();
+      
+      await updateProfile(user, { photoURL: url });
+      await setDoc(doc(db, "users", user.uid), { photoURL: url }, { merge: true });
+
+      toast({
+        title: 'Profile Picture Updated',
+        description: 'Your new picture has been saved.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Upload Error',
+        description: 'Failed to upload profile picture.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+
   if (authLoading) {
     return (
         <div className="container mx-auto flex justify-center items-center h-96">
@@ -123,6 +167,14 @@ export default function ProfilePage() {
         </div>
     )
   }
+  
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('');
+  };
+
 
   return (
     <div className="container mx-auto">
@@ -132,6 +184,42 @@ export default function ProfilePage() {
       </div>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Profile Picture</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center gap-6">
+                  <div className="relative">
+                    <Avatar className="h-24 w-24">
+                        <AvatarImage src={user?.photoURL || ''} alt="Profile picture" />
+                        <AvatarFallback className="text-3xl">
+                            {user?.displayName ? getInitials(user.displayName) : 'U'}
+                        </AvatarFallback>
+                    </Avatar>
+                     <Button 
+                        size="icon" 
+                        className="absolute bottom-0 right-0 rounded-full h-8 w-8"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        >
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit className="h-4 w-4" />}
+                         <span className="sr-only">Edit profile picture</span>
+                     </Button>
+                     <Input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        onChange={handleFileChange}
+                        accept="image/png, image/jpeg"
+                     />
+                </div>
+                <div>
+                    <h2 className="text-xl font-semibold">{user?.displayName}</h2>
+                    <p className="text-muted-foreground">{user?.email}</p>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
                     <CardTitle>Profile Details</CardTitle>
