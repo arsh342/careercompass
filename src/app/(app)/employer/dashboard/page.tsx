@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from "next/link";
-import { collection, query, where, getDocs, orderBy, getCountFromServer } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, updateDoc, getCountFromServer } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { format } from 'date-fns';
@@ -13,8 +13,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
 interface Posting {
     id: string;
@@ -36,53 +38,81 @@ const mockApplicants = [
 
 export default function EmployerDashboardPage() {
     const { user, loading: authLoading } = useAuth();
+    const { toast } = useToast();
     const [postings, setPostings] = useState<Posting[]>([]);
     const [stats, setStats] = useState({ totalPostings: 0, totalApplicants: 0, activeJobs: 0 });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            if (user) {
-                try {
-                    const postingsQuery = query(
-                        collection(db, "opportunities"), 
-                        where("employerId", "==", user.uid)
-                    );
-                    
-                    const querySnapshot = await getDocs(postingsQuery);
-                    
-                    let totalApplicants = 0;
-                    let activeJobs = 0;
-                    const postingsData = querySnapshot.docs.map(doc => {
-                        const data = doc.data();
-                        totalApplicants += data.applicants || 0;
-                        if (data.status === 'Active') {
-                            activeJobs++;
-                        }
-                        return {
-                            id: doc.id,
-                            ...data
-                        } as Posting;
-                    });
+    const fetchDashboardData = async () => {
+        if (user) {
+            try {
+                const postingsQuery = query(
+                    collection(db, "opportunities"), 
+                    where("employerId", "==", user.uid)
+                );
+                
+                const querySnapshot = await getDocs(postingsQuery);
+                
+                let totalApplicants = 0;
+                let activeJobs = 0;
+                const postingsData = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    totalApplicants += data.applicants || 0;
+                    if (data.status === 'Active') {
+                        activeJobs++;
+                    }
+                    return {
+                        id: doc.id,
+                        ...data
+                    } as Posting;
+                });
 
-                    setPostings(postingsData.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
-                    setStats({
-                        totalPostings: querySnapshot.size,
-                        totalApplicants,
-                        activeJobs,
-                    });
+                setPostings(postingsData.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
+                setStats({
+                    totalPostings: querySnapshot.size,
+                    totalApplicants,
+                    activeJobs,
+                });
 
-                } catch (error) {
-                    console.error("Error fetching postings:", error);
-                }
+            } catch (error) {
+                console.error("Error fetching postings:", error);
+                 toast({
+                    title: "Error",
+                    description: "Could not fetch dashboard data.",
+                    variant: "destructive",
+                });
             }
-            setLoading(false);
-        };
+        }
+        setLoading(false);
+    };
 
+    useEffect(() => {
         if (!authLoading) {
             fetchDashboardData();
         }
     }, [user, authLoading]);
+
+    const handleArchive = async (postingId: string) => {
+        try {
+            const postingRef = doc(db, "opportunities", postingId);
+            await updateDoc(postingRef, {
+                status: "Archived"
+            });
+            toast({
+                title: "Posting Archived",
+                description: "The job posting has been successfully archived."
+            });
+            // Refetch data to update UI
+            fetchDashboardData();
+        } catch (error) {
+            console.error("Error archiving posting:", error);
+            toast({
+                title: "Error",
+                description: "Could not archive the posting.",
+                variant: "destructive"
+            });
+        }
+    }
 
 
   return (
@@ -168,7 +198,7 @@ export default function EmployerDashboardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {postings.map((posting) => (
+                                {postings.slice(0, 5).map((posting) => (
                                 <TableRow key={posting.id}>
                                     <TableCell className="font-medium">{posting.title}</TableCell>
                                     <TableCell>
@@ -188,9 +218,32 @@ export default function EmployerDashboardPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                        <DropdownMenuItem>View Applicants</DropdownMenuItem>
-                                        <DropdownMenuItem>Edit Posting</DropdownMenuItem>
-                                        <DropdownMenuItem className="text-destructive">Archive</DropdownMenuItem>
+                                         <DropdownMenuItem asChild>
+                                            <Link href={`/employer/postings/${posting.id}/applicants`}><Users className="mr-2 h-4 w-4" />View Applicants</Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href={`/employer/postings/${posting.id}/edit`}><Edit className="mr-2 h-4 w-4" />Edit Posting</Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
+                                                     <Trash2 className="mr-2 h-4 w-4" />Archive
+                                                </DropdownMenuItem>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This will archive the job posting. Applicants will no longer be able to see it.
+                                                </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleArchive(posting.id)} className="bg-destructive hover:bg-destructive/90">Archive</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                     </TableCell>
@@ -198,6 +251,13 @@ export default function EmployerDashboardPage() {
                                 ))}
                             </TableBody>
                             </Table>
+                        )}
+                         {postings.length > 5 && (
+                            <div className="mt-4 text-center">
+                                <Button variant="link" asChild>
+                                    <Link href="/employer/postings">View All Postings</Link>
+                                </Button>
+                            </div>
                         )}
                         </CardContent>
                     </Card>
@@ -222,6 +282,11 @@ export default function EmployerDashboardPage() {
                                     </div>
                                 ))}
                            </div>
+                           {mockApplicants.length === 0 && (
+                             <div className="text-center text-muted-foreground py-10">
+                                <p>No recent applicants.</p>
+                             </div>
+                           )}
                         </CardContent>
                     </Card>
                  </div>
