@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -97,8 +98,8 @@ export default function LoginPage() {
                 <FormItem>
                   <div className="flex items-center justify-between">
                     <FormLabel>Password</FormLabel>
-                    <Link href="/forgot-password" passHref>
-                      <Button variant="link" className="h-auto p-0 text-sm">Forgot password?</Button>
+                     <Link href="/forgot-password" passHref className="text-sm">
+                      <Button variant="link" className="h-auto p-0">Forgot password?</Button>
                     </Link>
                   </div>
                   <FormControl>
