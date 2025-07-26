@@ -7,9 +7,10 @@ import { ArrowLeft, Users, UserSearch, Loader2, Send, Check, X } from "lucide-re
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs, orderBy, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { findMatchingCandidates, FindMatchingCandidatesOutput } from '@/ai/flows/find-matching-candidates';
+import { sendApplicationStatusEmail } from '@/ai/flows/send-application-status-email';
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +31,11 @@ interface Applicant {
     [key: string]: any;
 }
 
+interface Opportunity {
+    title: string;
+    employerName: string;
+}
+
 
 export default function ApplicantsPage() {
     const params = useParams();
@@ -37,6 +43,7 @@ export default function ApplicantsPage() {
     const { toast } = useToast();
     const [potentialCandidates, setPotentialCandidates] = useState<PotentialCandidate[]>([]);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
+    const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
     const [loading, setLoading] = useState(true);
 
      useEffect(() => {
@@ -45,6 +52,14 @@ export default function ApplicantsPage() {
         const fetchPageData = async () => {
             setLoading(true);
             try {
+                // Fetch opportunity details
+                const oppDocRef = doc(db, 'opportunities', id as string);
+                const oppDocSnap = await getDoc(oppDocRef);
+                if (oppDocSnap.exists()) {
+                    setOpportunity(oppDocSnap.data() as Opportunity);
+                }
+
+
                 // Fetch potential candidates
                 const { candidates } = await findMatchingCandidates({ opportunityId: id as string });
                 
@@ -99,17 +114,37 @@ export default function ApplicantsPage() {
         toast({ title: "Invitation Sent (Simulated)", description: "An invitation to apply has been sent to the candidate."});
     }
 
-    const handleUpdateStatus = async (applicationId: string, status: 'Approved' | 'Rejected') => {
+    const handleUpdateStatus = async (applicant: Applicant, status: 'Approved' | 'Rejected') => {
         try {
-            const appRef = doc(db, 'applications', applicationId);
+            const appRef = doc(db, 'applications', applicant.id);
             await updateDoc(appRef, { status });
             setApplicants(prev => 
-                prev.map(app => app.id === applicationId ? { ...app, status } : app)
+                prev.map(app => app.id === applicant.id ? { ...app, status } : app)
             );
             toast({
                 title: `Application ${status}`,
                 description: `The candidate has been notified of their application status.`
             });
+
+            // Send email notification
+            if (opportunity) {
+                 const subject = `Update on your application for ${opportunity.title}`;
+                 const body = `
+                    <p>Hello ${applicant.userName},</p>
+                    <p>This is an update regarding your application for the <strong>${opportunity.title}</strong> position at <strong>${opportunity.employerName}</strong>.</p>
+                    <p>Your application has been <strong>${status}</strong>.</p>
+                    ${status === 'Approved' ? '<p>Congratulations! We will be in touch shortly with the next steps.</p>' : '<p>Thank you for your interest. We encourage you to apply for other openings in the future.</p>'}
+                    <p>Best regards,</p>
+                    <p>The ${opportunity.employerName} Team</p>
+                `;
+                
+                await sendApplicationStatusEmail({
+                    to: applicant.userEmail,
+                    subject: subject,
+                    body: body,
+                });
+            }
+
         } catch (error) {
             console.error("Error updating status:", error);
             toast({ title: "Error", description: "Could not update the application status.", variant: "destructive" });
@@ -221,10 +256,10 @@ export default function ApplicantsPage() {
                                             </div>
                                         </Link>
                                          <div className="flex gap-2">
-                                            <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleUpdateStatus(applicant.id, 'Approved')}>
+                                            <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleUpdateStatus(applicant, 'Approved')}>
                                                 <Check className="h-4 w-4" />
                                             </Button>
-                                            <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 hover:text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleUpdateStatus(applicant.id, 'Rejected')}>
+                                            <Button size="icon" variant="outline" className="h-8 w-8 text-red-600 hover:text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleUpdateStatus(applicant, 'Rejected')}>
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
