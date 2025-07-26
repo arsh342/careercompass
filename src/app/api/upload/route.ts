@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     const result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
+        cloudinary.uploader.upload_stream(
             {
                 public_id,
                 resource_type: 'raw',
@@ -41,8 +41,7 @@ export async function POST(request: Request) {
                 }
                 resolve(result);
             }
-        );
-        uploadStream.end(buffer);
+        ).end(buffer);
     });
     
     // @ts-ignore
