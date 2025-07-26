@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -6,6 +7,7 @@ import {
   Heart,
   LayoutDashboard,
   User,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,10 +51,10 @@ const employerLinks = [
       icon: Building2,
     },
     {
-      href: '/employer/postings/new',
-      label: 'New Posting',
-      icon: Briefcase,
-    }
+      href: '/employer/postings',
+      label: 'Postings',
+      icon: FileText,
+    },
 ]
 
 export function MainNav() {
