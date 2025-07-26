@@ -21,7 +21,10 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 
 const applicationSchema = z.object({
   coverLetter: z.string().min(10, 'Please provide a brief cover letter.'),
-  // We can add resume upload later
+  employmentHistory: z.string().optional(),
+  references: z.string().optional(),
+  portfolioLink: z.string().url().optional().or(z.literal('')),
+  resumeLink: z.string().url().optional().or(z.literal('')),
 });
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
@@ -35,7 +38,7 @@ export default function ApplyPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { user, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const { id } = params;
@@ -44,8 +47,24 @@ export default function ApplyPage() {
     resolver: zodResolver(applicationSchema),
     defaultValues: {
       coverLetter: '',
+      employmentHistory: '',
+      references: '',
+      portfolioLink: '',
+      resumeLink: '',
     },
   });
+
+  useEffect(() => {
+    if (userProfile) {
+        form.reset({
+            ...form.getValues(),
+            employmentHistory: userProfile.employmentHistory || '',
+            references: userProfile.references || '',
+            portfolioLink: userProfile.portfolioLink || '',
+            resumeLink: userProfile.resumeLink || '',
+        });
+    }
+  }, [userProfile, form]);
 
   useEffect(() => {
     const fetchOpportunity = async () => {
@@ -73,7 +92,7 @@ export default function ApplyPage() {
   }, [id, router, toast, authLoading]);
 
   const onSubmit = async (values: ApplicationFormValues) => {
-    if (!user) {
+    if (!user || !userProfile) {
       toast({ title: "Authentication Error", description: "You must be logged in to apply.", variant: "destructive" });
       return;
     }
@@ -84,7 +103,12 @@ export default function ApplyPage() {
         userId: user.uid,
         userName: user.displayName,
         userEmail: user.email,
-        coverLetter: values.coverLetter,
+        ...values, // includes coverLetter and other form fields
+        // Add profile data that is not on the form
+        education: userProfile.education,
+        skills: userProfile.skills,
+        interests: userProfile.interests,
+        careerGoals: userProfile.careerGoals,
         status: 'Submitted',
         submittedAt: serverTimestamp(),
       });
@@ -130,7 +154,7 @@ export default function ApplyPage() {
       <Card>
         <CardHeader>
             <CardTitle>Apply for {opportunity?.title}</CardTitle>
-            <CardDescription>Submit your application to {opportunity?.employerName}.</CardDescription>
+            <CardDescription>Submit your application to {opportunity?.employerName}. Your profile information has been pre-filled.</CardDescription>
         </CardHeader>
         <CardContent>
             <Form {...form}>
@@ -147,12 +171,6 @@ export default function ApplyPage() {
                         </FormItem>
                     </div>
 
-                    <FormItem>
-                        <FormLabel>Resume</FormLabel>
-                        <Input type="file" disabled />
-                        <FormDescription>Resume upload functionality is not yet implemented.</FormDescription>
-                    </FormItem>
-
                     <FormField
                       control={form.control}
                       name="coverLetter"
@@ -166,6 +184,69 @@ export default function ApplyPage() {
                         </FormItem>
                       )}
                     />
+                    
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Supporting Information</CardTitle>
+                            <CardDescription>Please review and update your information below.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <FormField
+                            control={form.control}
+                            name="employmentHistory"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Employment History</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="List your previous roles, companies, and key achievements." {...field} rows={6}/>
+                                </FormControl>
+                                <FormDescription>Use bullet points for clarity.</FormDescription>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                             <FormField
+                            control={form.control}
+                            name="references"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>References</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Provide contact information for your professional references." {...field} rows={4}/>
+                                </FormControl>
+                                <FormDescription>e.g., Name, Title, Company, Email, Phone.</FormDescription>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="portfolioLink"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Portfolio Link (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://your-portfolio.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="resumeLink"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Resume/CV Link (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Link to your online resume (e.g., Google Drive, LinkedIn)" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </CardContent>
+                    </Card>
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button variant="outline" asChild>
