@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { findMatchingCandidates } from '@/ai/flows/find-matching-candidates';
 
 const postingSchema = z.object({
   title: z.string().min(1, 'Job title is required.'),
@@ -70,7 +71,7 @@ export default function NewPostingPage() {
       return;
     }
     try {
-      await addDoc(collection(db, "opportunities"), {
+      const docRef = await addDoc(collection(db, "opportunities"), {
         ...values,
         employerId: auth.currentUser.uid,
         employerName: auth.currentUser.displayName,
@@ -81,8 +82,35 @@ export default function NewPostingPage() {
 
       toast({
         title: 'Posting Created',
-        description: 'Your new job posting is now live.',
+        description: 'Your new job posting is now live. Finding matching candidates...',
       });
+      
+      // After creating the posting, find and log matching candidates.
+      // This is a placeholder for a full email notification system.
+      try {
+        const { candidates } = await findMatchingCandidates({ opportunityId: docRef.id });
+        if (candidates.length > 0) {
+            console.log("Found matching candidates:", candidates);
+            toast({
+                title: "Candidates Found",
+                description: `${candidates.length} matching candidates were found for your new role.`
+            });
+        } else {
+             toast({
+                title: "No Candidates Found",
+                description: "No candidates matched the skills for this specific role at this time."
+            });
+        }
+      } catch (matchError) {
+          console.error("Failed to find matching candidates:", matchError);
+          toast({
+            title: "Matching Error",
+            description: "Could not find matching candidates due to an error.",
+            variant: "destructive"
+          });
+      }
+
+
       router.push('/employer/dashboard');
     } catch (error) {
        toast({
