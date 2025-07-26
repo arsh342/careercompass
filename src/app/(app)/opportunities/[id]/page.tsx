@@ -124,7 +124,7 @@ export default function OpportunityDetailPage() {
             <Icon className="h-5 w-5 text-primary" />
             <h3 className="text-lg font-semibold">{title}</h3>
         </div>
-        <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">{content}</div>
+        <div className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap break-words">{content}</div>
       </div>
     );
   };
