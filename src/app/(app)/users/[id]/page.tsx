@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, Building, User, Mail, Briefcase, Star, Lightbulb, Target } from 'lucide-react';
+import { Loader2, ArrowLeft, Building, User, Mail, Briefcase, Star, Lightbulb, Target, Phone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +18,10 @@ interface UserProfile {
   email: string;
   role: 'employee' | 'employer';
   photoURL?: string;
+  firstName?: string;
+  lastName?: string;
+  contactNumber?: string;
+  companyName?: string;
   companyOverview?: string;
   education?: string;
   skills?: string;
@@ -93,6 +96,8 @@ export default function UserProfilePage() {
     );
   }
 
+  const displayName = profile.role === 'employer' ? profile.companyName : `${profile.firstName} ${profile.lastName}`;
+
   return (
     <div className="container mx-auto max-w-4xl">
       <div className="mb-6">
@@ -107,15 +112,23 @@ export default function UserProfilePage() {
           <div className="flex flex-col md:flex-row items-start gap-8">
             <div className="flex flex-col items-center md:w-1/4">
                 <Avatar className="h-32 w-32 mb-4 border-4 border-primary/20">
-                    <AvatarImage src={profile.photoURL} alt={profile.displayName} data-ai-hint="profile avatar" />
-                    <AvatarFallback className="text-4xl">{getInitials(profile.displayName)}</AvatarFallback>
+                    <AvatarImage src={profile.photoURL} alt={displayName} data-ai-hint="profile avatar" />
+                    <AvatarFallback className="text-4xl">{getInitials(displayName || '')}</AvatarFallback>
                 </Avatar>
-                <h1 className="text-2xl font-bold text-center">{profile.displayName}</h1>
-                <div className="flex items-center gap-2 text-muted-foreground mt-1">
-                    <Mail className="h-4 w-4" />
-                    <a href={`mailto:${profile.email}`} className="text-sm hover:underline">{profile.email}</a>
+                <h1 className="text-2xl font-bold text-center">{displayName}</h1>
+                 <Badge variant="secondary" className="mt-2 capitalize">{profile.role}</Badge>
+                <div className="flex flex-col gap-2 text-muted-foreground mt-4 text-sm">
+                   <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        <a href={`mailto:${profile.email}`} className="hover:underline">{profile.email}</a>
+                   </div>
+                   {profile.contactNumber && (
+                     <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        <span>{profile.contactNumber}</span>
+                     </div>
+                   )}
                 </div>
-                 <Badge variant="secondary" className="mt-4">{profile.role === 'employer' ? 'Employer' : 'Employee'}</Badge>
             </div>
 
             <div className="w-full md:w-3/4">

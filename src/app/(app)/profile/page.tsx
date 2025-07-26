@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -21,6 +21,10 @@ import { Bot, Loader2, Edit } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
+  firstName: z.string().min(1, 'First name is required.'),
+  lastName: z.string().min(1, 'Last name is required.'),
+  middleName: z.string().optional(),
+  contactNumber: z.string().optional(),
   education: z.string().min(1, 'Education is required.'),
   skills: z.string().min(1, 'Skills are required.'),
   interests: z.string().min(1, 'Interests are required.'),
@@ -44,6 +48,10 @@ export default function ProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      firstName: '',
+      lastName: '',
+      middleName: '',
+      contactNumber: '',
       education: '',
       skills: '',
       interests: '',
@@ -55,7 +63,7 @@ export default function ProfilePage() {
     },
   });
 
-  useState(() => {
+  useEffect(() => {
     if (userProfile) {
         form.reset({
             ...userProfile
@@ -70,8 +78,16 @@ export default function ProfilePage() {
         return;
     }
     try {
+        const newDisplayName = `${values.firstName} ${values.lastName}`.trim();
+
+        if (user.displayName !== newDisplayName) {
+            await updateProfile(user, { displayName: newDisplayName });
+        }
+
         await setDoc(doc(db, "users", user.uid), {
+            ...userProfile,
             ...values,
+            displayName: newDisplayName
         }, { merge: true });
 
         toast({
@@ -186,43 +202,105 @@ export default function ProfilePage() {
         <div className="md:col-span-2">
             <Card className="mb-8">
               <CardHeader>
-                <CardTitle>Profile Picture</CardTitle>
+                <CardTitle>Personal Information</CardTitle>
               </CardHeader>
-              <CardContent className="flex items-center gap-6">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24">
-                        <AvatarImage src={user?.photoURL || ''} alt="Profile picture" />
-                        <AvatarFallback className="text-3xl">
-                            {user?.displayName ? getInitials(user.displayName) : 'U'}
-                        </AvatarFallback>
-                    </Avatar>
-                     <Button 
-                        size="icon" 
-                        className="absolute bottom-0 right-0 rounded-full h-8 w-8"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={uploading}
-                        >
-                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit className="h-4 w-4" />}
-                         <span className="sr-only">Edit profile picture</span>
-                     </Button>
-                     <Input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        className="hidden" 
-                        onChange={handleFileChange}
-                        accept="image/png, image/jpeg"
-                     />
+              <CardContent>
+                <div className="flex items-center gap-6 mb-6">
+                      <div className="relative">
+                        <Avatar className="h-24 w-24">
+                            <AvatarImage src={user?.photoURL || ''} alt="Profile picture" />
+                            <AvatarFallback className="text-3xl">
+                                {user?.displayName ? getInitials(user.displayName) : 'U'}
+                            </AvatarFallback>
+                        </Avatar>
+                         <Button 
+                            size="icon" 
+                            className="absolute bottom-0 right-0 rounded-full h-8 w-8"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            >
+                            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit className="h-4 w-4" />}
+                             <span className="sr-only">Edit profile picture</span>
+                         </Button>
+                         <Input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            className="hidden" 
+                            onChange={handleFileChange}
+                            accept="image/png, image/jpeg"
+                         />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-semibold">{user?.displayName}</h2>
+                        <p className="text-muted-foreground">{user?.email}</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-xl font-semibold">{user?.displayName}</h2>
-                    <p className="text-muted-foreground">{user?.email}</p>
-                </div>
+                 <Form {...form}>
+                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="firstName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>First Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="John" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="lastName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Last Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Doe" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="middleName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Middle Name (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Michael" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="contactNumber"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Contact Number (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="(123) 456-7890" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                        </div>
+                    </form>
+                </Form>
               </CardContent>
             </Card>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Profile Details</CardTitle>
+                    <CardTitle>Professional Details</CardTitle>
                     <CardDescription>This information will be used to match you with opportunities and pre-fill applications.</CardDescription>
                 </CardHeader>
                 <CardContent>
