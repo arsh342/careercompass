@@ -30,18 +30,21 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
+        const stream = cloudinary.uploader.upload_stream(
             {
                 public_id,
                 resource_type: 'raw',
+                folder: 'resumes'
             },
             (error, result) => {
                 if (error) {
+                    console.error('Cloudinary Upload Error:', error);
                     return reject(error);
                 }
                 resolve(result);
             }
-        ).end(buffer);
+        );
+        stream.end(buffer);
     });
     
     // @ts-ignore
