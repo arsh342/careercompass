@@ -28,6 +28,7 @@ const profileSchema = z.object({
   employmentHistory: z.string().optional(),
   references: z.string().optional(),
   portfolioLink: z.string().url().optional().or(z.literal('')),
+  linkedinLink: z.string().url().optional().or(z.literal('')),
   resume: z.any().optional(),
 });
 
@@ -49,6 +50,7 @@ export default function ProfilePage() {
       employmentHistory: '',
       references: '',
       portfolioLink: '',
+      linkedinLink: '',
     },
   });
 
@@ -240,6 +242,19 @@ export default function ProfilePage() {
                                     <FormLabel>Portfolio Link (Optional)</FormLabel>
                                     <FormControl>
                                         <Input placeholder="https://your-portfolio.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="linkedinLink"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>LinkedIn Profile (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

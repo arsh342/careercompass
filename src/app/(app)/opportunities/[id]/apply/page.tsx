@@ -25,6 +25,7 @@ const applicationSchema = z.object({
   employmentHistory: z.string().optional(),
   references: z.string().optional(),
   portfolioLink: z.string().url().optional().or(z.literal('')),
+  linkedinLink: z.string().url().optional().or(z.literal('')),
   resume: z.any().optional(),
 });
 
@@ -51,6 +52,7 @@ export default function ApplyPage() {
       employmentHistory: '',
       references: '',
       portfolioLink: '',
+      linkedinLink: '',
     },
   });
 
@@ -61,6 +63,7 @@ export default function ApplyPage() {
             employmentHistory: userProfile.employmentHistory || '',
             references: userProfile.references || '',
             portfolioLink: userProfile.portfolioLink || '',
+            linkedinLink: userProfile.linkedinLink || '',
         });
     }
   }, [userProfile, form]);
@@ -115,6 +118,7 @@ export default function ApplyPage() {
         employmentHistory: values.employmentHistory,
         references: values.references,
         portfolioLink: values.portfolioLink,
+        linkedinLink: values.linkedinLink,
         resumeLink: resumeUrl,
         education: userProfile.education,
         skills: userProfile.skills,
@@ -240,6 +244,19 @@ export default function ApplyPage() {
                                     <FormLabel>Portfolio Link (Optional)</FormLabel>
                                     <FormControl>
                                         <Input placeholder="https://your-portfolio.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                             <FormField
+                                control={form.control}
+                                name="linkedinLink"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>LinkedIn Profile (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="https://linkedin.com/in/your-profile" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
