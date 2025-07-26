@@ -53,17 +53,18 @@ export default function ApplyPage() {
     },
   });
 
-  useEffect(() => {
+   useEffect(() => {
     if (userProfile) {
-        form.reset({
-            coverLetter: form.getValues('coverLetter') || '',
-            employmentHistory: userProfile.employmentHistory || '',
-            references: userProfile.references || '',
-            portfolioLink: userProfile.portfolioLink || '',
-            linkedinLink: userProfile.linkedinLink || '',
-        });
+      form.reset({
+        coverLetter: form.getValues('coverLetter') || '',
+        employmentHistory: userProfile.employmentHistory || '',
+        references: userProfile.references || '',
+        portfolioLink: userProfile.portfolioLink || '',
+        linkedinLink: userProfile.linkedinLink || '',
+      });
     }
-  }, [userProfile, form]);
+  }, [userProfile, form.getValues, form]);
+
 
   useEffect(() => {
     const fetchOpportunity = async () => {
@@ -97,25 +98,26 @@ export default function ApplyPage() {
     }
     
     try {
-      await addDoc(collection(db, "applications"), {
+      const applicationData = {
         opportunityId: id,
         userId: user.uid,
         userName: user.displayName || '',
         userEmail: user.email || '',
         coverLetter: values.coverLetter || '',
-        employmentHistory: values.employmentHistory || '',
-        references: values.references || '',
-        portfolioLink: values.portfolioLink || '',
-        linkedinLink: values.linkedinLink || '',
+        employmentHistory: values.employmentHistory || userProfile.employmentHistory || '',
+        references: values.references || userProfile.references || '',
+        portfolioLink: values.portfolioLink || userProfile.portfolioLink || '',
+        linkedinLink: values.linkedinLink || userProfile.linkedinLink || '',
         education: userProfile.education || '',
         skills: userProfile.skills || '',
         interests: userProfile.interests || '',
         careerGoals: userProfile.careerGoals || '',
         status: 'Submitted',
         submittedAt: serverTimestamp(),
-      });
+      };
 
-      // Increment applicant count on the opportunity
+      await addDoc(collection(db, "applications"), applicationData);
+
       const opportunityRef = doc(db, "opportunities", id as string);
       await updateDoc(opportunityRef, {
         applicants: increment(1)
@@ -126,10 +128,10 @@ export default function ApplyPage() {
         description: 'Your application has been sent successfully.',
       });
       router.push(`/opportunities/${id}`);
-    } catch (error) {
+    } catch (error: any) {
        toast({
         title: 'Error',
-        description: 'There was an error submitting your application.',
+        description: `There was an error submitting your application: ${error.message}`,
         variant: 'destructive',
       });
     }
