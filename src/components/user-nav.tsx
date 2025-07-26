@@ -89,6 +89,9 @@ export function UserNav() {
                 <Link href="/employer/dashboard">Dashboard</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <Link href="/employer/profile">Profile</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link href="/employer/postings">Postings</Link>
               </DropdownMenuItem>
             </>
@@ -114,5 +117,3 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
-
-    
