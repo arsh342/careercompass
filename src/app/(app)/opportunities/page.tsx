@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,7 +19,7 @@ interface Opportunity {
   location: string;
   type: string;
   match: number;
-  skills: string[];
+  skills: string[] | string;
 }
 
 export default function OpportunitiesPage() {
@@ -40,7 +41,7 @@ export default function OpportunitiesPage() {
         const opportunitiesWithMockData = opportunitiesData.map(opp => ({
             ...opp,
             match: Math.floor(Math.random() * (98 - 75 + 1) + 75),
-            skills: opp.skills || ["React", "Node.js", "TypeScript", "Python", "SQL"]
+            skills: typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || ["React", "Node.js", "TypeScript", "Python", "SQL"])
         }))
 
         setOpportunities(opportunitiesWithMockData);
@@ -94,7 +95,7 @@ export default function OpportunitiesPage() {
                     <CardContent className="flex-grow">
                     <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
                         <div className="flex flex-wrap gap-2">
-                            {opp.skills.map(skill => (
+                            {Array.isArray(opp.skills) && opp.skills.map(skill => (
                                 <Badge key={skill} variant="outline">{skill}</Badge>
                             ))}
                         </div>
