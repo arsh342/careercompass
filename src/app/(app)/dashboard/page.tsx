@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -18,6 +19,7 @@ interface Opportunity {
   type: string;
   match: number;
   skills: string[];
+  [key: string]: any;
 }
 
 export default function DashboardPage() {
@@ -38,14 +40,14 @@ export default function DashboardPage() {
             id: doc.id,
             ...doc.data()
         } as Opportunity));
-        // Mock match and skills for now
+        
         const opportunitiesWithMockData = opportunitiesData.map(opp => ({
             ...opp,
             match: Math.floor(Math.random() * (98 - 75 + 1) + 75),
             skills: opp.skills || ["React", "Node.js", "TypeScript"]
         }))
         setOpportunities(opportunitiesWithMockData);
-      } catch (error) {
+      } catch (error) => {
         console.error("Error fetching opportunities:", error);
       } finally {
         setLoading(false);
