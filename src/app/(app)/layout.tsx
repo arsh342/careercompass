@@ -19,7 +19,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <Sidebar>
           <SidebarHeader className="border-b">
-            <div className="flex items-center gap-2 p-1">
+            <div className="flex items-center gap-2 p-2">
               <CompassIcon className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold tracking-tight">CareerCompass</span>
             </div>
@@ -29,12 +29,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarContent>
         </Sidebar>
         <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:px-6">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 px-4 backdrop-blur-sm sm:h-auto sm:px-6">
             <div className="flex items-center gap-2 md:hidden">
               <SidebarTrigger />
               <Link href="/dashboard" className="flex items-center gap-2 text-primary">
                   <CompassIcon className="h-6 w-6" />
-                  <span className="text-lg font-bold tracking-tight">CareerCompass</span>
+                  <span className="sr-only">CareerCompass</span>
               </Link>
             </div>
             <div className="flex-1">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -156,7 +157,7 @@ export default function EmployerProfilePage() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                         <div className="flex items-center gap-6">
+                         <div className="flex flex-col sm:flex-row items-center gap-6">
                             <div className="relative">
                                 <Avatar className="h-24 w-24">
                                     <AvatarImage src={user?.photoURL || ''} alt="Company logo" data-ai-hint="company logo" />
@@ -182,7 +183,7 @@ export default function EmployerProfilePage() {
                                     accept="image/png, image/jpeg"
                                 />
                             </div>
-                            <div className="flex-1">
+                            <div className="flex-1 w-full">
                                 <FormField
                                 control={form.control}
                                 name="companyName"

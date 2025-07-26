@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -207,7 +208,7 @@ export default function ProfilePage() {
                 <CardTitle>Personal Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-6 mb-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
                       <div className="relative">
                         <Avatar className="h-24 w-24">
                             <AvatarImage src={user?.photoURL || ''} alt="Profile picture" data-ai-hint="profile avatar" />
@@ -232,7 +233,7 @@ export default function ProfilePage() {
                             accept="image/png, image/jpeg"
                          />
                     </div>
-                    <div>
+                    <div className="text-center sm:text-left">
                         <h2 className="text-xl font-semibold">{user?.displayName}</h2>
                         <p className="text-muted-foreground">{user?.email}</p>
                     </div>

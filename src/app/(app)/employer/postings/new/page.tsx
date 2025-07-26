@@ -378,7 +378,7 @@ export default function NewPostingPage() {
                          <Button variant="outline" asChild>
                             <Link href="/employer/dashboard">Cancel</Link>
                          </Button>
-                        <Button type="submit" disabled={form.formState.isSubmitting} size="lg">
+                        <Button type="submit" disabled={form.formState.isSubmitting}>
                           {form.formState.isSubmitting ? 'Creating...' : 'Create Posting'}
                         </Button>
                     </div>
