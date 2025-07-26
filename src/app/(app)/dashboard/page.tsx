@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
@@ -18,9 +18,12 @@ interface Opportunity {
   employerName: string;
   location: string;
   type: string;
-  match: number;
+  match?: number;
   skills: string[] | string;
   matchedSkills?: string[];
+  createdAt?: {
+      toDate: () => Date;
+  }
   [key: string]: any;
 }
 
@@ -48,35 +51,41 @@ export default function DashboardPage() {
         
         const userSkills = new Set((userProfile.skills || '').split(',').map(s => s.trim().toLowerCase()));
 
-        if (userSkills.size === 0) {
-            setOpportunities([]);
-            setLoading(false);
-            return;
+        let recommendedOpportunities = [];
+
+        if (userSkills.size > 0) {
+            recommendedOpportunities = opportunitiesData.map(opp => {
+                const requiredSkills = new Set(typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim().toLowerCase()) : (opp.skills || []).map(s => String(s).toLowerCase()));
+                const commonSkills = [...userSkills].filter(skill => requiredSkills.has(skill));
+                const matchPercentage = requiredSkills.size > 0 
+                    ? Math.round((commonSkills.length / requiredSkills.size) * 100)
+                    : 0;
+                
+                const originalSkillsArray = typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []);
+
+                return {
+                    ...opp,
+                    skills: originalSkillsArray,
+                    match: matchPercentage,
+                    matchedSkills: commonSkills.map(s => {
+                        const originalSkill = originalSkillsArray.find(os => os.toLowerCase() === s);
+                        return originalSkill || s;
+                    }),
+                };
+            }).filter(opp => opp.match && opp.match > 0)
+              .sort((a, b) => b.match! - a.match!);
         }
 
-        const matchedOpportunities = opportunitiesData.map(opp => {
-            const requiredSkills = new Set(typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim().toLowerCase()) : (opp.skills || []).map(s => String(s).toLowerCase()));
-            const commonSkills = [...userSkills].filter(skill => requiredSkills.has(skill));
-            const matchPercentage = requiredSkills.size > 0 
-                ? Math.round((commonSkills.length / requiredSkills.size) * 100)
-                : 0;
-            
-            const originalSkillsArray = typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []);
-
-            return {
-                ...opp,
-                skills: originalSkillsArray,
-                match: matchPercentage,
-                matchedSkills: commonSkills.map(s => {
-                    const originalSkill = originalSkillsArray.find(os => os.toLowerCase() === s);
-                    return originalSkill || s;
-                }),
-            };
-        }).filter(opp => opp.match > 0)
-          .sort((a, b) => b.match - a.match)
-          .slice(0, 6);
-
-        setOpportunities(matchedOpportunities);
+        if (recommendedOpportunities.length > 0) {
+            setOpportunities(recommendedOpportunities.slice(0,6));
+        } else {
+            // Fallback: Show the 6 most recent job postings if no matches are found
+            const recentOpps = opportunitiesData
+                .sort((a, b) => b.createdAt!.toDate().getTime() - a.createdAt!.toDate().getTime())
+                .slice(0, 6)
+                .map(opp => ({ ...opp, match: 0, matchedSkills: [] })); // Add default match info
+            setOpportunities(recentOpps);
+        }
 
       } catch (error) {
         console.error("Error fetching opportunities:", error);
@@ -91,7 +100,7 @@ export default function DashboardPage() {
     <div className="container mx-auto">
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Your Dashboard</h1>
-        <p className="text-muted-foreground">Personalized recommendations based on your profile.</p>
+        <p className="text-muted-foreground">Personalized recommendations and recent opportunities.</p>
       </div>
 
       {loading || authLoading ? (
@@ -102,10 +111,10 @@ export default function DashboardPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground py-10">
-                <h3 className="text-lg font-semibold">No recommendations yet.</h3>
-              <p>Complete your profile to see matched opportunities.</p>
+                <h3 className="text-lg font-semibold">No opportunities available right now.</h3>
+              <p>Please check back later for new job postings.</p>
               <Button variant="link" asChild className="mt-2">
-                <Link href="/profile">Complete Your Profile</Link>
+                <Link href="/opportunities">Browse All Opportunities</Link>
               </Button>
             </div>
           </CardContent>
@@ -130,19 +139,25 @@ export default function DashboardPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                   <p className="text-sm text-muted-foreground mb-4">Based on your skills in:</p>
+                   <p className="text-sm text-muted-foreground mb-4">
+                        {opp.match && opp.match > 0 ? "Because you're skilled in:" : "Top skills for this role:"}
+                   </p>
                     <div className="flex flex-wrap gap-2">
-                        {Array.isArray(opp.matchedSkills) && opp.matchedSkills.length > 0 ? (
+                        {(opp.matchedSkills && opp.matchedSkills.length > 0) ? (
                            opp.matchedSkills.map((skill, index) => (
                             <Badge key={`${skill}-${index}`} variant="outline">{skill}</Badge>
                            ))
+                        ) : (opp.skills && typeof opp.skills !== 'string') ? (
+                           (opp.skills as string[]).slice(0, 4).map((skill, index) => (
+                                <Badge key={`${skill}-${index}`} variant="outline">{skill}</Badge>
+                           ))
                         ) : (
-                           <p className="text-xs text-muted-foreground">No matching skills from profile.</p>
+                           <p className="text-xs text-muted-foreground">No specific skills listed.</p>
                         )}
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                    <div className="text-sm font-semibold text-primary">{opp.match > 0 && `${opp.match}% Match`}</div>
+                    <div className="text-sm font-semibold text-primary">{opp.match && opp.match > 0 && `${opp.match}% Match`}</div>
                     <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
                 </CardFooter>
               </Card>
