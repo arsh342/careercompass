@@ -66,21 +66,6 @@ export default function ApplicantsPage() {
                 </Button>
             </div>
             <div className="grid gap-8 lg:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Applicants</CardTitle>
-                        <CardDescription>
-                            People who have applied for this posting.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-center py-20 text-muted-foreground">
-                            <Users className="h-12 w-12 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold">No applicants yet</h3>
-                            <p>Check back later to see who has applied for this role.</p>
-                        </div>
-                    </CardContent>
-                </Card>
                  <Card>
                     <CardHeader>
                         <div className="flex justify-between items-start">
@@ -128,6 +113,21 @@ export default function ApplicantsPage() {
                                 ))}
                             </div>
                         )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Applicants</CardTitle>
+                        <CardDescription>
+                            People who have applied for this posting.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center py-20 text-muted-foreground">
+                            <Users className="h-12 w-12 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold">No applicants yet</h3>
+                            <p>Check back later to see who has applied for this role.</p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
