@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Bot, Heart, Loader2, Building, Briefcase, BookOpen, Star, FileText, Clock, Plane, Info, University, Award } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useSavedOpportunities } from '@/context/SavedOpportunitiesContext';
 import { cn } from '@/lib/utils';
 import { doc, getDoc } from 'firebase/firestore';
@@ -41,7 +42,9 @@ type Analysis = {
   fitAnalysis: string;
 } | null;
 
-export default function OpportunityDetailPage({ params }: { params: { id: string } }) {
+export default function OpportunityDetailPage() {
+  const params = useParams();
+  const { id } = params;
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [analysis, setAnalysis] = useState<Analysis>(null);
@@ -50,9 +53,10 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
     const fetchOpportunity = async () => {
       try {
-        const docRef = doc(db, 'opportunities', params.id);
+        const docRef = doc(db, 'opportunities', id as string);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           setOpportunity({ id: docSnap.id, ...docSnap.data() } as Opportunity);
@@ -66,7 +70,7 @@ export default function OpportunityDetailPage({ params }: { params: { id: string
       }
     };
     fetchOpportunity();
-  }, [params.id, toast]);
+  }, [id, toast]);
   
   const isSaved = opportunity ? saved.some(savedOpp => savedOpp.id === opportunity.id) : false;
 
