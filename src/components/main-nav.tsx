@@ -32,15 +32,15 @@ const employeeLinks = [
     label: 'Opportunities',
     icon: Briefcase,
   },
+   {
+    href: '/applied',
+    label: 'Applied',
+    icon: FileText,
+  },
   {
     href: '/saved',
     label: 'Saved',
     icon: Heart,
-  },
-  {
-    href: '/profile',
-    label: 'Profile',
-    icon: User,
   },
 ];
 
@@ -55,12 +55,20 @@ const employerLinks = [
       label: 'Postings',
       icon: FileText,
     },
-     {
-      href: '/employer/profile',
-      label: 'Profile',
-      icon: User,
-    },
 ]
+
+const profileLink = {
+    href: '/profile',
+    label: 'Profile',
+    icon: User,
+};
+
+const employerProfileLink = {
+    href: '/employer/profile',
+    label: 'Profile',
+    icon: User,
+}
+
 
 export function MainNav() {
   const pathname = usePathname();
@@ -73,16 +81,18 @@ export function MainNav() {
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
           </div>
       )
   }
 
   const links = role === 'employer' ? employerLinks : employeeLinks;
+  const currentProfileLink = role === 'employer' ? employerProfileLink : profileLink;
   const title = role === 'employer' ? 'For Employers' : 'My Compass';
 
   return (
-    <div className="flex flex-col gap-4">
-      <SidebarMenu>
+    <div className="flex flex-col h-full">
+      <SidebarMenu className="flex-1">
         <p className="px-2 text-xs font-semibold text-muted-foreground">{title}</p>
         {links.map((link) => (
           <SidebarMenuItem key={link.href}>
@@ -100,6 +110,22 @@ export function MainNav() {
             </Link>
           </SidebarMenuItem>
         ))}
+      </SidebarMenu>
+       <SidebarMenu className="mt-auto">
+         <SidebarMenuItem key={currentProfileLink.href}>
+            <Link href={currentProfileLink.href} passHref>
+                <SidebarMenuButton
+                    isActive={pathname === currentProfileLink.href}
+                    className="w-full"
+                    asChild
+                >
+                    <span>
+                        <currentProfileLink.icon className="h-4 w-4" />
+                        {currentProfileLink.label}
+                    </span>
+                </SidebarMenuButton>
+            </Link>
+        </SidebarMenuItem>
       </SidebarMenu>
     </div>
   );
