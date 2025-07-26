@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
@@ -20,12 +21,15 @@ interface Opportunity {
   type: string;
   match: number;
   skills: string[] | string;
+  [key: string]: any;
 }
 
 export default function OpportunitiesPage() {
   const { saved, toggleSave } = useSavedOpportunities();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [filteredOpportunities, setFilteredOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
 
    useEffect(() => {
     const fetchOpportunities = async () => {
@@ -45,6 +49,7 @@ export default function OpportunitiesPage() {
         }))
 
         setOpportunities(opportunitiesWithMockData);
+        setFilteredOpportunities(opportunitiesWithMockData);
       } catch (error) {
         console.error("Error fetching opportunities:", error);
       } finally {
@@ -53,6 +58,20 @@ export default function OpportunitiesPage() {
     };
     fetchOpportunities();
   }, []);
+
+  useEffect(() => {
+    const searchQuery = searchParams.get('q')?.toLowerCase();
+    if (searchQuery) {
+        const filtered = opportunities.filter(opp => 
+            opp.title.toLowerCase().includes(searchQuery) ||
+            (opp.company && opp.company.toLowerCase().includes(searchQuery)) ||
+            (Array.isArray(opp.skills) && opp.skills.some(skill => skill.toLowerCase().includes(searchQuery)))
+        );
+        setFilteredOpportunities(filtered);
+    } else {
+        setFilteredOpportunities(opportunities);
+    }
+  }, [searchParams, opportunities]);
   
   return (
     <div className="container mx-auto">
@@ -65,17 +84,17 @@ export default function OpportunitiesPage() {
          <div className="flex justify-center items-center py-10">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-       ) : opportunities.length === 0 ? (
+       ) : filteredOpportunities.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground py-10">
-              <p>No opportunities available at the moment. Please check back later.</p>
+              <p>No opportunities found. Please check back later or try a different search.</p>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {opportunities.map((opp) => {
+            {filteredOpportunities.map((opp) => {
               const isSaved = saved.some(savedOpp => savedOpp.id === opp.id);
               return (
                 <Card key={opp.id} className="flex flex-col">

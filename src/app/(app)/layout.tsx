@@ -1,6 +1,7 @@
 import { CompassIcon } from '@/components/icons';
 import { MainNav } from '@/components/main-nav';
 import { UserNav } from '@/components/user-nav';
+import { SearchBar } from '@/components/search-bar';
 import {
   SidebarProvider,
   Sidebar,
@@ -37,7 +38,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
             <div className="flex-1">
-              {/* Can add breadcrumbs or page title here */}
+              <SearchBar />
             </div>
             <UserNav />
           </header>
