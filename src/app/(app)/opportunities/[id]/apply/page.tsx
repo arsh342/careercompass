@@ -100,8 +100,8 @@ export default function ApplyPage() {
       await addDoc(collection(db, "applications"), {
         opportunityId: id,
         userId: user.uid,
-        userName: user.displayName,
-        userEmail: user.email,
+        userName: user.displayName || '',
+        userEmail: user.email || '',
         coverLetter: values.coverLetter,
         employmentHistory: values.employmentHistory || '',
         references: values.references || '',
