@@ -13,18 +13,19 @@ import { useEffect } from "react";
 
 export default function SavedOpportunitiesPage() {
   const { saved, setSaved, toggleSave } = useSavedOpportunities();
-  const { userProfile } = useAuth();
+  const { userProfile, role } = useAuth();
   
   useEffect(() => {
+    if (role === 'employer') return;
     // Filter out any saved opportunities that are no longer active
     const activeSaved = saved.filter(opp => opp.status !== 'Archived');
     if (activeSaved.length !== saved.length) {
       setSaved(activeSaved);
     }
-  }, [saved, setSaved]);
+  }, [saved, setSaved, role]);
 
   const calculateMatch = (opportunity: any) => {
-      if (!userProfile?.skills) return 0;
+      if (!userProfile?.skills || role === 'employer') return 0;
       const userSkills = new Set((userProfile.skills || '').split(',').map(s => s.trim().toLowerCase()));
       const requiredSkills = new Set(typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim().toLowerCase()) : (opportunity.skills || []).map((s: string) => String(s).toLowerCase()));
       if (requiredSkills.size === 0) return 0;

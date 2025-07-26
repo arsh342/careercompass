@@ -29,13 +29,16 @@ interface Opportunity {
 
 export default function DashboardPage() {
   const { saved, toggleSave } = useSavedOpportunities();
-  const { userProfile, loading: authLoading } = useAuth();
+  const { userProfile, loading: authLoading, role } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
 
    useEffect(() => {
     const fetchOpportunities = async () => {
-      if (authLoading) return;
+      if (authLoading || role === 'employer') {
+          if (!authLoading) setLoading(false);
+          return;
+      };
       if (!userProfile) {
         setLoading(false);
         return;
@@ -81,7 +84,7 @@ export default function DashboardPage() {
         } else {
             // Fallback: Show the 6 most recent job postings if no matches are found
             const recentOpps = opportunitiesData
-                .sort((a, b) => b.createdAt!.toDate().getTime() - a.createdAt!.toDate().getTime())
+                .sort((a, b) => (b.createdAt?.toDate()?.getTime() || 0) - (a.createdAt?.toDate()?.getTime() || 0))
                 .slice(0, 6)
                 .map(opp => ({ ...opp, match: 0, matchedSkills: [] })); // Add default match info
             setOpportunities(recentOpps);
@@ -94,7 +97,7 @@ export default function DashboardPage() {
       }
     };
     fetchOpportunities();
-  }, [userProfile, authLoading]);
+  }, [userProfile, authLoading, role]);
   
   return (
     <div className="container mx-auto">
