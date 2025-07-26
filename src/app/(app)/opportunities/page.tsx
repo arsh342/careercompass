@@ -12,6 +12,7 @@ import { Heart, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/context/AuthContext';
 
 interface Opportunity {
   id: string;
@@ -19,13 +20,14 @@ interface Opportunity {
   employerName: string;
   location: string;
   type: string;
-  match: number;
   skills: string[] | string;
+  match?: number;
   [key: string]: any;
 }
 
 export default function OpportunitiesPage() {
   const { saved, toggleSave } = useSavedOpportunities();
+  const { userProfile } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [filteredOpportunities, setFilteredOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,16 +42,9 @@ export default function OpportunitiesPage() {
             id: doc.id,
             ...doc.data()
         } as Opportunity));
-        
-        // Mock match and skills for now
-        const opportunitiesWithMockData = opportunitiesData.map(opp => ({
-            ...opp,
-            match: Math.floor(Math.random() * (98 - 75 + 1) + 75),
-            skills: typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || ["React", "Node.js", "TypeScript", "Python", "SQL"])
-        }))
 
-        setOpportunities(opportunitiesWithMockData);
-        setFilteredOpportunities(opportunitiesWithMockData);
+        setOpportunities(opportunitiesData);
+        setFilteredOpportunities(opportunitiesData);
       } catch (error) {
         console.error("Error fetching opportunities:", error);
       } finally {
@@ -58,6 +53,16 @@ export default function OpportunitiesPage() {
     };
     fetchOpportunities();
   }, []);
+  
+  const calculateMatch = (opportunity: Opportunity) => {
+      if (!userProfile?.skills) return 0;
+      const userSkills = new Set((userProfile.skills || '').split(',').map(s => s.trim().toLowerCase()));
+      const requiredSkills = new Set(typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim().toLowerCase()) : (opportunity.skills || []).map(s => String(s).toLowerCase()));
+      if (requiredSkills.size === 0) return 0;
+      
+      const commonSkills = [...userSkills].filter(skill => requiredSkills.has(skill));
+      return Math.round((commonSkills.length / requiredSkills.size) * 100);
+  }
 
   useEffect(() => {
     const searchQuery = searchParams.get('q')?.toLowerCase();
@@ -65,7 +70,8 @@ export default function OpportunitiesPage() {
         const filtered = opportunities.filter(opp => 
             opp.title.toLowerCase().includes(searchQuery) ||
             (opp.employerName && opp.employerName.toLowerCase().includes(searchQuery)) ||
-            (Array.isArray(opp.skills) && opp.skills.some(skill => skill.toLowerCase().includes(searchQuery)))
+            (Array.isArray(opp.skills) && opp.skills.some(skill => skill.toLowerCase().includes(searchQuery))) ||
+            (typeof opp.skills === 'string' && opp.skills.toLowerCase().includes(searchQuery))
         );
         setFilteredOpportunities(filtered);
     } else {
@@ -96,6 +102,9 @@ export default function OpportunitiesPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredOpportunities.map((opp) => {
               const isSaved = saved.some(savedOpp => savedOpp.id === opp.id);
+              const skillsArray = typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []);
+              const matchPercentage = calculateMatch(opp);
+              
               return (
                 <Card key={opp.id} className="flex flex-col">
                     <CardHeader>
@@ -114,13 +123,13 @@ export default function OpportunitiesPage() {
                     <CardContent className="flex-grow">
                     <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
                         <div className="flex flex-wrap gap-2">
-                            {Array.isArray(opp.skills) && opp.skills.map(skill => (
+                            {skillsArray.map(skill => (
                                 <Badge key={skill} variant="outline">{skill}</Badge>
                             ))}
                         </div>
                     </CardContent>
                     <CardFooter className="flex justify-between items-center">
-                        <div className="text-sm font-semibold text-primary">{opp.match}% Match</div>
+                        <div className="text-sm font-semibold text-primary">{matchPercentage}% Match</div>
                          <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
                     </CardFooter>
                 </Card>
