@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
@@ -32,7 +32,11 @@ export default function DashboardPage() {
 
    useEffect(() => {
     const fetchOpportunities = async () => {
-      if (!userProfile || authLoading) return;
+      if (authLoading) return;
+      if (!userProfile) {
+        setLoading(false);
+        return;
+      }
       
       try {
         const opportunitiesSnapshot = await getDocs(collection(db, "opportunities"));
@@ -55,14 +59,15 @@ export default function DashboardPage() {
             const matchPercentage = requiredSkills.size > 0 
                 ? Math.round((commonSkills.length / requiredSkills.size) * 100)
                 : 0;
+            
+            const originalSkillsArray = typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []);
 
             return {
                 ...opp,
-                skills: typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []),
+                skills: originalSkillsArray,
                 match: matchPercentage,
                 matchedSkills: commonSkills.map(s => {
-                    // Find original casing from opportunity skills
-                    const originalSkill = (typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || [])).find(os => os.toLowerCase() === s);
+                    const originalSkill = originalSkillsArray.find(os => os.toLowerCase() === s);
                     return originalSkill || s;
                 }),
             };
