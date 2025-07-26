@@ -7,8 +7,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { addDoc, collection, doc, getDoc, increment, serverTimestamp, updateDoc } from "firebase/firestore"; 
-import { db, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db } from '@/lib/firebase';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -104,9 +103,22 @@ export default function ApplyPage() {
         const resumeFile = values.resume?.[0];
 
         if (resumeFile) {
-            const storageRef = ref(storage, `resumes/${user.uid}/${id}/${resumeFile.name}`);
-            const uploadResult = await uploadBytes(storageRef, resumeFile);
-            resumeUrl = await getDownloadURL(uploadResult.ref);
+            const formData = new FormData();
+            formData.append('file', resumeFile);
+            formData.append('userId', user.uid);
+            formData.append('opportunityId', id as string);
+            formData.append('fileName', resumeFile.name);
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('File upload failed');
+            }
+            const data = await response.json();
+            resumeUrl = data.url;
         }
 
       await addDoc(collection(db, "applications"), {

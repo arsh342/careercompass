@@ -7,8 +7,7 @@ import { z } from 'zod';
 import { useState, useTransition } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { doc, setDoc } from 'firebase/firestore';
-import { db, storage } from '@/lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db } from '@/lib/firebase';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -72,10 +71,23 @@ export default function ProfilePage() {
     try {
         let resumeUrl = userProfile?.resumeLink || '';
         const resumeFile = values.resume?.[0];
+
         if (resumeFile) {
-             const storageRef = ref(storage, `resumes/${user.uid}/${resumeFile.name}`);
-             const uploadResult = await uploadBytes(storageRef, resumeFile);
-             resumeUrl = await getDownloadURL(uploadResult.ref);
+            const formData = new FormData();
+            formData.append('file', resumeFile);
+            formData.append('userId', user.uid);
+            formData.append('fileName', resumeFile.name);
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('File upload failed');
+            }
+            const data = await response.json();
+            resumeUrl = data.url;
         }
 
         await setDoc(doc(db, "users", user.uid), {
