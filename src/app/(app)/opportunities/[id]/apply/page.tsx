@@ -56,7 +56,7 @@ export default function ApplyPage() {
   useEffect(() => {
     if (userProfile) {
         form.reset({
-            ...form.getValues(),
+            coverLetter: form.getValues('coverLetter') || '',
             employmentHistory: userProfile.employmentHistory || '',
             references: userProfile.references || '',
             portfolioLink: userProfile.portfolioLink || '',
@@ -102,7 +102,7 @@ export default function ApplyPage() {
         userId: user.uid,
         userName: user.displayName || '',
         userEmail: user.email || '',
-        coverLetter: values.coverLetter,
+        coverLetter: values.coverLetter || '',
         employmentHistory: values.employmentHistory || '',
         references: values.references || '',
         portfolioLink: values.portfolioLink || '',
