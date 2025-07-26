@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from './ui/skeleton';
+import { ThemeToggle } from './theme-toggle';
 
 export function UserNav() {
   const { user, role, loading } = useAuth();
@@ -57,64 +58,70 @@ export function UserNav() {
   
   if (!user) {
     return (
-      <Button asChild>
-        <Link href="/login">Login</Link>
-      </Button>
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
+        <Button asChild>
+          <Link href="/login">Login</Link>
+        </Button>
+      </div>
     )
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={user.photoURL || ''} alt={`@${user.displayName}`} data-ai-hint="profile avatar" />
-            <AvatarFallback>{user.displayName ? getInitials(user.displayName) : 'U'}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.displayName}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {role === 'employer' ? (
-            <>
-              <DropdownMenuItem asChild>
-                <Link href="/employer/dashboard">Dashboard</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/employer/profile">Profile</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/employer/postings">Postings</Link>
-              </DropdownMenuItem>
-            </>
-          ) : (
-             <>
-              <DropdownMenuItem asChild>
-                  <Link href="/dashboard">Dashboard</Link>
-              </DropdownMenuItem>
-               <DropdownMenuItem asChild>
-                  <Link href="/profile">Profile</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/saved">Saved</Link>
-              </DropdownMenuItem>
-             </>
-          )}
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>
-          Log out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+      <ThemeToggle />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={user.photoURL || ''} alt={`@${user.displayName}`} data-ai-hint="profile avatar" />
+              <AvatarFallback>{user.displayName ? getInitials(user.displayName) : 'U'}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.displayName}</p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {role === 'employer' ? (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/employer/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/employer/profile">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/employer/postings">Postings</Link>
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem asChild>
+                    <Link href="/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link href="/profile">Profile</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/saved">Saved</Link>
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleLogout}>
+            Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
