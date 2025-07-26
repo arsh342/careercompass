@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,6 +19,8 @@ import { Loader2, Edit } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
+  companyName: z.string().min(1, 'Company name is required.'),
+  contactNumber: z.string().optional(),
   companyOverview: z.string().min(1, 'Company overview is required.'),
 });
 
@@ -34,6 +35,8 @@ export default function EmployerProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      companyName: '',
+      contactNumber: '',
       companyOverview: '',
     },
   });
@@ -41,6 +44,8 @@ export default function EmployerProfilePage() {
   useEffect(() => {
     if (userProfile) {
         form.reset({
+            companyName: userProfile.companyName || userProfile.displayName || '',
+            contactNumber: userProfile.contactNumber || '',
             companyOverview: userProfile.companyOverview || '',
         })
     }
@@ -53,8 +58,14 @@ export default function EmployerProfilePage() {
         return;
     }
     try {
+        if(user.displayName !== values.companyName) {
+            await updateProfile(user, { displayName: values.companyName });
+        }
+
         await setDoc(doc(db, "users", user.uid), {
+            ...userProfile,
             ...values,
+            displayName: values.companyName,
         }, { merge: true });
 
         toast({
@@ -133,42 +144,7 @@ export default function EmployerProfilePage() {
         <h1 className="text-3xl font-bold tracking-tight">Company Profile</h1>
         <p className="text-muted-foreground">Manage your company's public information.</p>
       </div>
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Company Logo</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-6">
-              <div className="relative">
-                <Avatar className="h-24 w-24">
-                    <AvatarImage src={user?.photoURL || ''} alt="Company logo" />
-                    <AvatarFallback className="text-3xl">
-                        {user?.displayName ? getInitials(user.displayName) : 'C'}
-                    </AvatarFallback>
-                </Avatar>
-                 <Button 
-                    size="icon" 
-                    className="absolute bottom-0 right-0 rounded-full h-8 w-8"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    >
-                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit className="h-4 w-4" />}
-                     <span className="sr-only">Edit company logo</span>
-                 </Button>
-                 <Input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    className="hidden" 
-                    onChange={handleFileChange}
-                    accept="image/png, image/jpeg"
-                 />
-            </div>
-            <div>
-                <h2 className="text-xl font-semibold">{user?.displayName}</h2>
-                <p className="text-muted-foreground">{user?.email}</p>
-            </div>
-          </CardContent>
-        </Card>
-
+       
         <Card>
             <CardHeader>
                 <CardTitle>Company Details</CardTitle>
@@ -177,6 +153,63 @@ export default function EmployerProfilePage() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                         <div className="flex items-center gap-6">
+                            <div className="relative">
+                                <Avatar className="h-24 w-24">
+                                    <AvatarImage src={user?.photoURL || ''} alt="Company logo" />
+                                    <AvatarFallback className="text-3xl">
+                                        {user?.displayName ? getInitials(user.displayName) : 'C'}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <Button 
+                                    size="icon" 
+                                    className="absolute bottom-0 right-0 rounded-full h-8 w-8"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploading}
+                                    type="button"
+                                    >
+                                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit className="h-4 w-4" />}
+                                    <span className="sr-only">Edit company logo</span>
+                                </Button>
+                                <Input 
+                                    type="file" 
+                                    ref={fileInputRef} 
+                                    className="hidden" 
+                                    onChange={handleFileChange}
+                                    accept="image/png, image/jpeg"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <FormField
+                                control={form.control}
+                                name="companyName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Company Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Your Company LLC" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            </div>
+                        </div>
+
+                         <FormField
+                            control={form.control}
+                            name="contactNumber"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Contact Number (Optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="(123) 456-7890" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+
                         <FormField
                         control={form.control}
                         name="companyOverview"

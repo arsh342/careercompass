@@ -47,11 +47,17 @@ export default function SignupPage() {
         displayName: values.fullName,
       });
 
+      const nameParts = values.fullName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         displayName: values.fullName,
         email: values.email,
         role: values.role,
+        firstName: firstName,
+        lastName: lastName,
       });
 
       toast({
