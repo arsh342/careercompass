@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -104,10 +103,10 @@ export default function ApplyPage() {
         userName: user.displayName,
         userEmail: user.email,
         coverLetter: values.coverLetter,
-        employmentHistory: values.employmentHistory,
-        references: values.references,
-        portfolioLink: values.portfolioLink,
-        linkedinLink: values.linkedinLink,
+        employmentHistory: values.employmentHistory || '',
+        references: values.references || '',
+        portfolioLink: values.portfolioLink || '',
+        linkedinLink: values.linkedinLink || '',
         education: userProfile.education || '',
         skills: userProfile.skills || '',
         interests: userProfile.interests || '',
