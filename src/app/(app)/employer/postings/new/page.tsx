@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { findMatchingCandidates } from '@/ai/flows/find-matching-candidates';
+import { sendApplicationStatusEmail } from '@/ai/flows/send-application-status-email';
 
 const postingSchema = z.object({
   title: z.string().min(1, 'Job title is required.'),
@@ -89,27 +90,45 @@ export default function NewPostingPage() {
         description: 'Your new job posting is now live. Finding matching candidates...',
       });
       
-      // After creating the posting, find and log matching candidates.
-      // This is a placeholder for a full email notification system.
       try {
         const { candidates } = await findMatchingCandidates({ opportunityId: docRef.id });
         if (candidates.length > 0) {
-            console.log("Found matching candidates:", candidates);
             toast({
-                title: "Candidates Found",
-                description: `${candidates.length} matching candidates were found for your new role.`
+                title: "Candidates Found & Notified",
+                description: `${candidates.length} matching candidates were found and have been notified by email.`
             });
+
+            // Send email to each candidate
+            for (const candidate of candidates) {
+              const subject = `New Opportunity: ${values.title} at ${user.displayName}`;
+              const body = `
+                <p>Hi ${candidate.displayName},</p>
+                <p>A new opportunity that matches your skills has just been posted: <strong>${values.title}</strong> at <strong>${user.displayName}</strong>.</p>
+                <p>Based on your profile, your skills in [${candidate.matchingSkills.join(', ')}] make you a potential fit for this role.</p>
+                <p>You can view the full details and apply here:</p>
+                <p><a href="${window.location.origin}/opportunities/${docRef.id}">View Opportunity</a></p>
+                <p>Best,</p>
+                <p>The CareerCompass Team</p>
+              `;
+
+              await sendApplicationStatusEmail({
+                to: candidate.email,
+                subject,
+                body,
+              });
+            }
+
         } else {
              toast({
-                title: "No Candidates Found",
-                description: "No candidates matched the skills for this specific role at this time."
+                title: "No Instant Matches",
+                description: "No candidates with matching skills were found at this time. We'll keep an eye out!"
             });
         }
       } catch (matchError) {
-          console.error("Failed to find matching candidates:", matchError);
+          console.error("Failed to find or notify matching candidates:", matchError);
           toast({
-            title: "Matching Error",
-            description: "Could not find matching candidates due to an error.",
+            title: "Candidate Matching Error",
+            description: "The posting was created, but we couldn't find or notify candidates due to an error.",
             variant: "destructive"
           });
       }
