@@ -248,7 +248,7 @@ export default function AnalyticsPage() {
                                                 <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
                                             ))}
                                         </Pie>
-                                        <Legend content={<p className="text-sm mt-4 text-center">{`Total Postings: ${stats.totalPostings}`}></p>}/>
+                                    <Legend content={<p className="text-sm mt-4 text-center">{`Total Postings: ${stats.totalPostings}`}</p>} />
                                     </RechartsPieChart>
                                 </ChartContainer>
                             ) : (
