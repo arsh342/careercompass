@@ -10,9 +10,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { SendApplicationStatusEmailInput, SendApplicationStatusEmailInputSchema } from './types';
 import * as nodemailer from 'nodemailer';
-import { config } from 'dotenv';
-config();
-
 
 export async function sendApplicationStatusEmail(
   input: SendApplicationStatusEmailInput
