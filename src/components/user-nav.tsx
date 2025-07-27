@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -23,7 +22,7 @@ import { Skeleton } from './ui/skeleton';
 import { ThemeToggle } from './theme-toggle';
 
 export function UserNav() {
-  const { user, role, loading } = useAuth();
+  const { user, loading } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -88,34 +87,6 @@ export function UserNav() {
               </p>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            {role === 'employer' ? (
-              <>
-                <DropdownMenuItem asChild>
-                  <Link href="/employer/dashboard">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/employer/profile">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/employer/postings">Postings</Link>
-                </DropdownMenuItem>
-              </>
-            ) : (
-              <>
-                <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Dashboard</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/saved">Saved</Link>
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             Log out
