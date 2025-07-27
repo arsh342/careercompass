@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -25,7 +25,7 @@ interface Opportunity {
   [key: string]: any;
 }
 
-export default function OpportunitiesPage() {
+function OpportunitiesContent() {
   const { saved, toggleSave } = useSavedOpportunities();
   const { userProfile } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
@@ -138,5 +138,17 @@ export default function OpportunitiesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OpportunitiesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center py-10">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <OpportunitiesContent />
+    </Suspense>
   );
 }
