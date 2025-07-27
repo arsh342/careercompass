@@ -1,7 +1,7 @@
 
 # CareerCompass
 
-![CareerCompass Logo](docs/logo.png)
+<img src="docs/logo.png" alt="CareerCompass Logo" width="120" />
 
 **Tagline:**
 > Navigate your career journey with AI-powered job matching and analytics.
