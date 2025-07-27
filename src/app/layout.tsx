@@ -7,6 +7,9 @@ import { ThemeProvider } from '@/components/theme-provider';
 export const metadata: Metadata = {
   title: 'CareerCompass',
   description: 'Your guide to professional growth and opportunities.',
+  icons: {
+    icon: 'https://i.postimg.cc/nLrDYrHW/icon.png',
+  }
 };
 
 export default function RootLayout({
