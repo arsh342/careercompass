@@ -9,16 +9,17 @@ import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { collection, query, where, getDocs, orderBy, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { findMatchingCandidates, FindMatchingCandidatesOutput } from '@/ai/flows/find-matching-candidates';
-import { sendApplicationStatusEmail, SendApplicationStatusEmailInput } from '@/ai/flows/send-application-status-email';
+import { findAndRankCandidates, FindAndRankCandidatesOutput } from '@/ai/flows/find-and-rank-candidates';
+import { sendApplicationStatusEmail } from '@/ai/flows/send-application-status-email';
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/context/AuthContext";
 
-type PotentialCandidate = FindMatchingCandidatesOutput['candidates'][0];
+type PotentialCandidate = FindAndRankCandidatesOutput['candidates'][0];
 
 interface Applicant {
     id: string;
@@ -50,13 +51,14 @@ export default function ApplicantsPage() {
     const params = useParams();
     const { id } = params;
     const { toast } = useToast();
+    const { user } = useAuth();
     const [potentialCandidates, setPotentialCandidates] = useState<PotentialCandidate[]>([]);
     const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
     const [loading, setLoading] = useState(true);
 
      useEffect(() => {
-        if (!id) return;
+        if (!id || !user) return;
 
         const fetchPageData = async () => {
             setLoading(true);
@@ -68,11 +70,7 @@ export default function ApplicantsPage() {
                     setOpportunity(oppDocSnap.data() as Opportunity);
                 }
 
-
-                // Fetch potential candidates
-                const { candidates } = await findMatchingCandidates({ opportunityId: id as string });
-                
-                // Fetch actual applicants
+                // Fetch actual applicants first
                 const applicantsQuery = query(
                     collection(db, "applications"),
                     where("opportunityId", "==", id),
@@ -83,11 +81,15 @@ export default function ApplicantsPage() {
                     id: doc.id,
                     ...doc.data()
                 } as Applicant));
+                setApplicants(applicantsData);
+                const applicantUserIds = new Set(applicantsData.map(a => a.userId));
+
+                // Fetch potential candidates
+                const { candidates } = await findAndRankCandidates({ employerId: user.uid });
                 
                 // Filter out potential candidates who have already applied
-                const applicantUserIds = new Set(applicantsData.map(a => a.userId));
                 setPotentialCandidates(candidates.filter(c => !applicantUserIds.has(c.uid)));
-                setApplicants(applicantsData);
+                
 
             } catch (error) {
                 console.error("Error fetching page data:", error);
@@ -102,7 +104,7 @@ export default function ApplicantsPage() {
         };
 
         fetchPageData();
-    }, [id, toast]);
+    }, [id, user, toast]);
 
     const handleNotify = () => {
         // This is where you would trigger a backend function to send emails.
@@ -218,7 +220,7 @@ export default function ApplicantsPage() {
                             <div>
                                 <CardTitle>Top-Ranked Candidates</CardTitle>
                                 <CardDescription>
-                                    Users with skills matching this opportunity.
+                                    Users with skills matching your active opportunities.
                                 </CardDescription>
                             </div>
                              <Button size="sm" onClick={handleNotify} disabled={potentialCandidates.length === 0}>
@@ -244,16 +246,15 @@ export default function ApplicantsPage() {
                                     <div key={candidate.uid} className="flex items-center gap-2 p-2 rounded-md hover:bg-accent">
                                         <Link href={`/users/${candidate.uid}`} className="flex items-center gap-4 flex-1">
                                             <Avatar className="h-10 w-10">
-                                                <AvatarImage src={(candidate as any).photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
+                                                <AvatarImage src={candidate.photoURL} alt={candidate.displayName} data-ai-hint="profile avatar" />
                                                 <AvatarFallback>{getInitials(candidate.displayName)}</AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1">
-                                                <p className="text-sm font-medium leading-none">{candidate.displayName}</p>
-                                                <div className="flex flex-wrap gap-1 mt-1">
-                                                    {candidate.matchingSkills.map(skill => (
-                                                        <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
-                                                    ))}
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-sm font-medium leading-none">{candidate.displayName}</p>
+                                                    <Badge variant="outline" className="text-primary border-primary/50">{candidate.matchPercentage}%</Badge>
                                                 </div>
+                                                <p className="text-xs text-muted-foreground mt-1">{candidate.justification}</p>
                                             </div>
                                         </Link>
                                         <div className="flex gap-2">
@@ -338,3 +339,5 @@ export default function ApplicantsPage() {
         </div>
     )
 }
+
+    
