@@ -61,7 +61,7 @@ export default function ApplicantsPage() {
     const [loading, setLoading] = useState(true);
 
     const [applicantStatusFilter, setApplicantStatusFilter] = useState('All');
-    const [matchPercentageFilter, setMatchPercentageFilter] = useState([50]);
+    const [matchPercentageFilter, setMatchPercentageFilter] = useState([0]);
 
 
      useEffect(() => {
@@ -381,5 +381,7 @@ export default function ApplicantsPage() {
         </div>
     )
 }
+
+    
 
     
