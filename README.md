@@ -41,7 +41,7 @@ This project was built for [FusionHacks 2 on Devpost](https://fusionhacks2.devpo
 
 ## 🌐 Try it out
 - [GitHub Repository](https://github.com/arsh342/careercompass)
-- [Devpost Project Page](https://devpost.com/software/careercompass) *(add your actual link)*
+- [Devpost Project Page](https://devpost.com/software/careercompass)
 
 ---
 
