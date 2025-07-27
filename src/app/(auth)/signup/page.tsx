@@ -17,13 +17,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: 'Please enter your full name.' }),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-  role: z.enum(['employee', 'employer'], { required_error: 'Please select a role.' }),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -51,6 +49,9 @@ export default function SignupPage() {
         displayName: values.fullName,
       });
 
+      const emailDomain = values.email.split('@')[1];
+      const role = emailDomain === 'gmail.com' ? 'employee' : 'employer';
+
       const nameParts = values.fullName.split(' ');
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
@@ -59,9 +60,10 @@ export default function SignupPage() {
         uid: user.uid,
         displayName: values.fullName,
         email: values.email,
-        role: values.role,
+        role: role,
         firstName: firstName,
         lastName: lastName,
+        ...(role === 'employer' && { companyName: values.fullName })
       });
 
       toast({
@@ -92,9 +94,9 @@ export default function SignupPage() {
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Full Name or Company Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="John Doe or Acme Inc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,27 +140,6 @@ export default function SignupPage() {
                       </Button>
                     </div>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>I am an...</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="employee">Employee / Applicant</SelectItem>
-                      <SelectItem value="employer">Employer / Recruiter</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
