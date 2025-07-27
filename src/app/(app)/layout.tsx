@@ -1,6 +1,7 @@
 import { MainNav } from '@/components/main-nav';
 import { UserNav } from '@/components/user-nav';
 import { SearchBar } from '@/components/search-bar';
+import { Suspense } from 'react';
 import {
   SidebarProvider,
   Sidebar,
@@ -38,7 +39,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </Link>
             </div>
             <div className="flex-1">
-              <SearchBar />
+              <Suspense fallback={<div className="h-9 w-full bg-muted rounded-md animate-pulse" />}>
+                <SearchBar />
+              </Suspense>
             </div>
             <UserNav />
           </header>
