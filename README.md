@@ -41,7 +41,7 @@ This project was built for [FusionHacks 2 on Devpost](https://fusionhacks2.devpo
 
 ## 🌐 Try it out
 - [GitHub Repository](https://github.com/arsh342/careercompass)
-- [Devpost Project Page](https://devpost.com/software/careercompass)
+- [Devpost Project Page](https://devpost.com/software/careercompass-8sa5kg)
 
 ---
 
@@ -150,7 +150,5 @@ careercompass/
 ```
 
 ---
-
-**Logo:** Place your logo at `docs/logo.png` (replace with your own branding as needed).
 
 For more details, see the code in `src/ai/flows/` and the main app in `src/app/`.
