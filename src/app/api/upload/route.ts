@@ -1,9 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
 import formidable from 'formidable';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
 
 // This is required to disable the default body parser
 export const config = {
@@ -11,6 +9,12 @@ export const config = {
     bodyParser: false,
   },
 };
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const formidableParse = (req: NextRequest): Promise<{ fields: formidable.Fields; files: formidable.Files }> =>
   new Promise((resolve, reject) => {
@@ -32,17 +36,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'File and userId are required' }, { status: 400 });
     }
 
-    const fileBuffer = fs.readFileSync(file.filepath);
-
-    const storageRef = ref(storage, `profile-pictures/${userId}/${file.originalFilename}`);
-    
-    const snapshot = await uploadBytes(storageRef, fileBuffer, {
-        contentType: file.mimetype || undefined,
+    const result = await cloudinary.uploader.upload(file.filepath, {
+      folder: `profile-pictures/${userId}`,
+      public_id: file.newFilename,
     });
-    
-    const url = await getDownloadURL(snapshot.ref);
 
-    return NextResponse.json({ url });
+    return NextResponse.json({ url: result.secure_url });
 
   } catch (error) {
     console.error('Upload failed:', error);
