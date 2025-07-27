@@ -1,20 +1,23 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, getDocs, orderBy, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Loader2, SlidersHorizontal } from "lucide-react";
+import { Heart, Loader2, SlidersHorizontal, Check } from "lucide-react";
 import Link from "next/link";
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator } from '@/components/ui/command';
+
 
 interface Opportunity {
   id: string;
@@ -31,10 +34,11 @@ function OpportunitiesContent() {
   const { saved, toggleSave } = useSavedOpportunities();
   const { userProfile } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [filteredOpportunities, setFilteredOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
+  const [allSkills, setAllSkills] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
   const [locationFilter, setLocationFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
@@ -49,6 +53,15 @@ function OpportunitiesContent() {
         } as Opportunity));
 
         setOpportunities(opportunitiesData);
+        
+        // Extract all unique skills for filter
+        const skillsSet = new Set<string>();
+        opportunitiesData.forEach(opp => {
+            const skillsArray = typeof opp.skills === 'string' ? opp.skills.split(',') : (opp.skills || []);
+            skillsArray.forEach(skill => skillsSet.add(skill.trim()));
+        });
+        setAllSkills(Array.from(skillsSet).sort());
+
       } catch (error) {
         console.error("Error fetching opportunities:", error);
       } finally {
@@ -68,7 +81,7 @@ function OpportunitiesContent() {
       return Math.round((commonSkills.length / requiredSkills.size) * 100);
   }
 
-  useEffect(() => {
+  const filteredOpportunities = useMemo(() => {
     const searchQuery = searchParams.get('q')?.toLowerCase();
 
     let filtered = opportunities;
@@ -76,9 +89,7 @@ function OpportunitiesContent() {
     if (searchQuery) {
         filtered = filtered.filter(opp => 
             opp.title.toLowerCase().includes(searchQuery) ||
-            (opp.employerName && opp.employerName.toLowerCase().includes(searchQuery)) ||
-            (Array.isArray(opp.skills) && opp.skills.some(skill => skill.toLowerCase().includes(searchQuery))) ||
-            (typeof opp.skills === 'string' && opp.skills.toLowerCase().includes(searchQuery))
+            (opp.employerName && opp.employerName.toLowerCase().includes(searchQuery))
         );
     }
     
@@ -90,9 +101,16 @@ function OpportunitiesContent() {
         filtered = filtered.filter(opp => opp.type === typeFilter);
     }
     
-    setFilteredOpportunities(filtered);
+    if (selectedSkills.size > 0) {
+        filtered = filtered.filter(opp => {
+            const oppSkills = new Set(typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []));
+            return [...selectedSkills].every(s => oppSkills.has(s));
+        })
+    }
+    
+    return filtered;
 
-  }, [searchParams, opportunities, locationFilter, typeFilter]);
+  }, [searchParams, opportunities, locationFilter, typeFilter, selectedSkills]);
   
   return (
     <div className="container mx-auto">
@@ -128,8 +146,65 @@ function OpportunitiesContent() {
                         <SelectItem value="Contract">Contract</SelectItem>
                     </SelectContent>
                 </Select>
-                 <Button variant="outline" onClick={() => {setLocationFilter(''); setTypeFilter('');}}>
-                    Clear Filters
+                 <Popover>
+                    <PopoverTrigger asChild>
+                         <Button variant="outline" className="justify-start">
+                            Filter by skills...
+                            {selectedSkills.size > 0 && (
+                                <Badge variant="secondary" className="ml-auto">{selectedSkills.size} selected</Badge>
+                            )}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-0" align="start">
+                        <Command>
+                            <CommandInput placeholder="Filter skills..." />
+                            <CommandList>
+                                <CommandEmpty>No results found.</CommandEmpty>
+                                <CommandGroup>
+                                     {allSkills.map(skill => {
+                                        const isSelected = selectedSkills.has(skill);
+                                        return (
+                                            <CommandItem
+                                                key={skill}
+                                                onSelect={() => {
+                                                    setSelectedSkills(prev => {
+                                                        const newSet = new Set(prev);
+                                                        if (isSelected) {
+                                                            newSet.delete(skill);
+                                                        } else {
+                                                            newSet.add(skill);
+                                                        }
+                                                        return newSet;
+                                                    })
+                                                }}
+                                            >
+                                                <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                                                    <Check className={cn("h-4 w-4")} />
+                                                </div>
+                                                <span>{skill}</span>
+                                            </CommandItem>
+                                        )
+                                     })}
+                                </CommandGroup>
+                                 {selectedSkills.size > 0 && (
+                                    <>
+                                        <CommandSeparator />
+                                        <CommandGroup>
+                                            <CommandItem
+                                                onSelect={() => setSelectedSkills(new Set())}
+                                                className="justify-center text-center"
+                                            >
+                                                Clear filters
+                                            </CommandItem>
+                                        </CommandGroup>
+                                    </>
+                                )}
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
+                 <Button variant="outline" onClick={() => {setLocationFilter(''); setTypeFilter(''); setSelectedSkills(new Set());}}>
+                    Clear All Filters
                 </Button>
             </div>
         </CardContent>

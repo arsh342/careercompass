@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Users, UserSearch, Loader2, Send, Check, X, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, getDocs, orderBy, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { findAndRankCandidates, FindAndRankCandidatesOutput } from '@/ai/flows/find-and-rank-candidates';
@@ -18,6 +18,9 @@ import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/context/AuthContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 
 type PotentialCandidate = FindAndRankCandidatesOutput['candidates'][0];
 
@@ -56,6 +59,10 @@ export default function ApplicantsPage() {
     const [applicants, setApplicants] = useState<Applicant[]>([]);
     const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const [applicantStatusFilter, setApplicantStatusFilter] = useState('All');
+    const [matchPercentageFilter, setMatchPercentageFilter] = useState([50]);
+
 
      useEffect(() => {
         if (!id || !user) return;
@@ -105,13 +112,23 @@ export default function ApplicantsPage() {
 
         fetchPageData();
     }, [id, user, toast]);
+    
+    const filteredApplicants = useMemo(() => {
+        if (applicantStatusFilter === 'All') return applicants;
+        return applicants.filter(app => app.status === applicantStatusFilter);
+    }, [applicants, applicantStatusFilter]);
+
+    const filteredPotentialCandidates = useMemo(() => {
+        return potentialCandidates.filter(c => c.matchPercentage >= matchPercentageFilter[0]);
+    }, [potentialCandidates, matchPercentageFilter]);
+
 
     const handleNotify = () => {
         // This is where you would trigger a backend function to send emails.
         // For now, we'll just show a toast notification as a simulation.
         toast({
             title: "Notifications Simulated",
-            description: `If configured, emails would be sent to ${potentialCandidates.length} candidates.`
+            description: `If configured, emails would be sent to ${filteredPotentialCandidates.length} candidates.`
         })
     }
     
@@ -216,33 +233,45 @@ export default function ApplicantsPage() {
             <div className="grid gap-8 lg:grid-cols-2">
                  <Card>
                     <CardHeader>
-                        <div className="flex justify-between items-start">
+                        <div className="flex justify-between items-start gap-4">
                             <div>
                                 <CardTitle>Top-Ranked Candidates</CardTitle>
                                 <CardDescription>
                                     Users with skills matching your active opportunities.
                                 </CardDescription>
                             </div>
-                             <Button size="sm" onClick={handleNotify} disabled={potentialCandidates.length === 0}>
+                             <Button size="sm" onClick={handleNotify} disabled={filteredPotentialCandidates.length === 0}>
                                 <Send className="mr-2 h-4 w-4" />
                                 Notify All
                             </Button>
                         </div>
                     </CardHeader>
                     <CardContent>
+                         <div className="mb-4 space-y-2">
+                            <Label htmlFor="match-slider">Minimum Match: {matchPercentageFilter[0]}%</Label>
+                            <Slider
+                                id="match-slider"
+                                min={0}
+                                max={100}
+                                step={10}
+                                value={matchPercentageFilter}
+                                onValueChange={setMatchPercentageFilter}
+                            />
+                        </div>
+
                         {loading ? (
                              <div className="flex justify-center items-center py-20">
                                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                              </div>
-                        ) : potentialCandidates.length === 0 ? (
+                        ) : filteredPotentialCandidates.length === 0 ? (
                             <div className="text-center py-20 text-muted-foreground">
                                 <UserSearch className="h-12 w-12 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold">No new matches found</h3>
-                                <p>No top-ranked candidates match this role, or they have already applied.</p>
+                                <p>No top-ranked candidates match your criteria, or they have already applied.</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                {potentialCandidates.map((candidate) => (
+                                {filteredPotentialCandidates.map((candidate) => (
                                     <div key={candidate.uid} className="flex items-center gap-2 p-2 rounded-md hover:bg-accent">
                                         <Link href={`/users/${candidate.uid}`} className="flex items-center gap-4 flex-1">
                                             <Avatar className="h-10 w-10">
@@ -275,11 +304,24 @@ export default function ApplicantsPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
+                        <div className="mb-4">
+                            <Select value={applicantStatusFilter} onValueChange={setApplicantStatusFilter}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Filter by status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="All">All Statuses</SelectItem>
+                                    <SelectItem value="Submitted">Submitted</SelectItem>
+                                    <SelectItem value="Approved">Approved</SelectItem>
+                                    <SelectItem value="Rejected">Rejected</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                          {loading ? (
                              <div className="flex justify-center items-center py-20">
                                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                              </div>
-                        ) : applicants.length === 0 ? (
+                        ) : filteredApplicants.length === 0 ? (
                             <div className="text-center py-20 text-muted-foreground">
                                 <Users className="h-12 w-12 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold">No applicants yet</h3>
@@ -287,7 +329,7 @@ export default function ApplicantsPage() {
                             </div>
                         ) : (
                              <div className="space-y-2">
-                                {applicants.map((applicant) => (
+                                {filteredApplicants.map((applicant) => (
                                     <div key={applicant.id} className="flex items-center gap-2 p-2 rounded-md hover:bg-accent">
                                         <Link href={`/users/${applicant.userId}`} className="flex items-center gap-4 flex-1">
                                             <Avatar className="h-10 w-10">
