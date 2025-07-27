@@ -8,11 +8,13 @@ import { db } from '@/lib/firebase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/AuthContext';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Opportunity {
   id: string;
@@ -33,6 +35,9 @@ function OpportunitiesContent() {
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
+  const [locationFilter, setLocationFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+
    useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -44,7 +49,6 @@ function OpportunitiesContent() {
         } as Opportunity));
 
         setOpportunities(opportunitiesData);
-        setFilteredOpportunities(opportunitiesData);
       } catch (error) {
         console.error("Error fetching opportunities:", error);
       } finally {
@@ -66,18 +70,29 @@ function OpportunitiesContent() {
 
   useEffect(() => {
     const searchQuery = searchParams.get('q')?.toLowerCase();
+
+    let filtered = opportunities;
+
     if (searchQuery) {
-        const filtered = opportunities.filter(opp => 
+        filtered = filtered.filter(opp => 
             opp.title.toLowerCase().includes(searchQuery) ||
             (opp.employerName && opp.employerName.toLowerCase().includes(searchQuery)) ||
             (Array.isArray(opp.skills) && opp.skills.some(skill => skill.toLowerCase().includes(searchQuery))) ||
             (typeof opp.skills === 'string' && opp.skills.toLowerCase().includes(searchQuery))
         );
-        setFilteredOpportunities(filtered);
-    } else {
-        setFilteredOpportunities(opportunities);
     }
-  }, [searchParams, opportunities]);
+    
+    if (locationFilter) {
+        filtered = filtered.filter(opp => opp.location.toLowerCase().includes(locationFilter.toLowerCase()));
+    }
+
+    if (typeFilter) {
+        filtered = filtered.filter(opp => opp.type === typeFilter);
+    }
+    
+    setFilteredOpportunities(filtered);
+
+  }, [searchParams, opportunities, locationFilter, typeFilter]);
   
   return (
     <div className="container mx-auto">
@@ -85,6 +100,40 @@ function OpportunitiesContent() {
         <h1 className="text-3xl font-bold tracking-tight">Browse Opportunities</h1>
         <p className="text-muted-foreground">Find your next great opportunity.</p>
       </div>
+
+       <Card className="mb-6">
+        <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+                <SlidersHorizontal className="h-5 w-5"/>
+                Filter Opportunities
+            </CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Input 
+                    placeholder="Filter by location..."
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                />
+                 <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Filter by type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="Internship">Internship</SelectItem>
+                        <SelectItem value="Volunteer">Volunteer</SelectItem>
+                        <SelectItem value="Full-time">Full-time</SelectItem>
+                        <SelectItem value="Part-time">Part-time</SelectItem>
+                        <SelectItem value="Contract">Contract</SelectItem>
+                    </SelectContent>
+                </Select>
+                 <Button variant="outline" onClick={() => {setLocationFilter(''); setTypeFilter('');}}>
+                    Clear Filters
+                </Button>
+            </div>
+        </CardContent>
+       </Card>
 
        {loading ? (
          <div className="flex justify-center items-center py-10">
@@ -94,7 +143,7 @@ function OpportunitiesContent() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground py-10">
-              <p>No opportunities found. Please check back later or try a different search.</p>
+              <p>No opportunities found. Please check back later or try a different search or filter.</p>
             </div>
           </CardContent>
         </Card>
@@ -123,7 +172,7 @@ function OpportunitiesContent() {
                     <CardContent className="flex-grow">
                     <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
                         <div className="flex flex-wrap gap-2">
-                            {skillsArray.map((skill, index) => (
+                            {skillsArray.slice(0, 5).map((skill, index) => (
                                 <Badge key={`${skill}-${index}`} variant="outline">{skill}</Badge>
                             ))}
                         </div>
