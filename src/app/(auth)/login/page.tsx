@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -39,12 +40,23 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
+      
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
       toast({
         title: 'Login Successful',
         description: "Welcome back! You're being redirected to your dashboard.",
       });
-      router.push('/dashboard');
+
+      if (userDocSnap.exists() && userDocSnap.data().role === 'employer') {
+        router.push('/employer/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
+
     } catch (error: any) {
       toast({
         title: 'Login Failed',
@@ -57,12 +69,56 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      toast({
-        title: 'Login Successful',
-        description: "Welcome! You're being redirected to your dashboard.",
-      });
-      router.push('/dashboard');
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userDocRef = doc(db, "users", user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+        // New user logic
+        const emailDomain = user.email?.split('@')[1];
+        const role = emailDomain === 'gmail.com' ? 'employee' : 'employer';
+        
+        const nameParts = user.displayName?.split(' ') || [];
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        await setDoc(userDocRef, {
+            uid: user.uid,
+            displayName: user.displayName,
+            email: user.email,
+            role: role,
+            photoURL: user.photoURL,
+            firstName: firstName,
+            lastName: lastName,
+            ...(role === 'employer' && { companyName: user.displayName })
+        });
+        
+        toast({
+          title: 'Account Created',
+          description: "Welcome! Your account has been set up.",
+        });
+
+        if (role === 'employer') {
+          router.push('/employer/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        // Existing user logic
+        toast({
+          title: 'Login Successful',
+          description: "Welcome back! You're being redirected.",
+        });
+        const userData = userDocSnap.data();
+        if (userData.role === 'employer') {
+          router.push('/employer/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
+      }
+
     } catch (error: any) {
        toast({
         title: 'Google Sign-In Failed',
