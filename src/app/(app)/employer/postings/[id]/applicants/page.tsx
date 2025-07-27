@@ -10,7 +10,7 @@ import { useState, useEffect } from "react";
 import { collection, query, where, getDocs, orderBy, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { findMatchingCandidates, FindMatchingCandidatesOutput } from '@/ai/flows/find-matching-candidates';
-import { sendApplicationStatusEmail } from '@/ai/flows/send-application-status-email';
+import { sendApplicationStatusEmail, SendApplicationStatusEmailInput } from '@/ai/flows/send-application-status-email';
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -216,7 +216,7 @@ export default function ApplicantsPage() {
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
-                                <CardTitle>Potential Candidates</CardTitle>
+                                <CardTitle>Top-Ranked Candidates</CardTitle>
                                 <CardDescription>
                                     Users with skills matching this opportunity.
                                 </CardDescription>
@@ -236,7 +236,7 @@ export default function ApplicantsPage() {
                             <div className="text-center py-20 text-muted-foreground">
                                 <UserSearch className="h-12 w-12 mx-auto mb-4" />
                                 <h3 className="text-lg font-semibold">No new matches found</h3>
-                                <p>No potential candidates match this role, or they have already applied.</p>
+                                <p>No top-ranked candidates match this role, or they have already applied.</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
