@@ -1,4 +1,3 @@
-import { CompassIcon } from '@/components/icons';
 import { MainNav } from '@/components/main-nav';
 import { UserNav } from '@/components/user-nav';
 import { SearchBar } from '@/components/search-bar';
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { SavedOpportunitiesProvider } from '@/context/SavedOpportunitiesContext';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader className="border-b">
             <div className="flex items-center gap-2 p-2">
-              <CompassIcon className="h-8 w-8 text-primary" />
+              <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} />
               <span className="text-xl font-bold tracking-tight">CareerCompass</span>
             </div>
           </SidebarHeader>
@@ -33,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 md:hidden">
               <SidebarTrigger />
               <Link href="/dashboard" className="flex items-center gap-2 text-primary">
-                  <CompassIcon className="h-6 w-6" />
+                  <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={24} height={24} />
                   <span className="sr-only">CareerCompass</span>
               </Link>
             </div>
