@@ -19,7 +19,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateProfileSummary } from '@/ai/flows/generate-profile-summary';
 import { enhanceText } from '@/ai/flows/enhance-text';
-import { Bot, Loader2, Edit } from 'lucide-react';
+import { parseResume } from '@/ai/flows/parse-resume';
+import { Bot, Loader2, Edit, Upload } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const profileSchema = z.object({
@@ -47,6 +48,7 @@ export default function ProfilePage() {
   const [summary, setSummary] = useState('');
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -193,6 +195,36 @@ export default function ProfilePage() {
         } catch (error) {
             console.error("Enhancement failed:", error);
             toast({ title: "Error", description: "Could not enhance text at this time.", variant: "destructive" });
+        }
+    });
+  };
+  
+  const handleResumeParse = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    startTransition(async () => {
+        try {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const resumeDataUri = e.target?.result as string;
+                if (resumeDataUri) {
+                    toast({ title: "Parsing Resume...", description: "AI is extracting information from your resume. This may take a moment." });
+                    const parsedData = await parseResume({ resumeDataUri });
+                    
+                    form.setValue('education', parsedData.education);
+                    form.setValue('skills', parsedData.skills);
+                    form.setValue('interests', parsedData.interests);
+                    form.setValue('careerGoals', parsedData.careerGoals);
+                    form.setValue('employmentHistory', parsedData.employmentHistory);
+
+                    toast({ title: "Resume Parsed", description: "Your profile has been updated with information from your resume." });
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Resume parsing failed:", error);
+            toast({ title: "Error", description: "Could not parse the resume at this time.", variant: "destructive" });
         }
     });
   };
@@ -517,7 +549,27 @@ export default function ProfilePage() {
                 </CardContent>
             </Card>
         </div>
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 space-y-8">
+             <Card>
+                <CardHeader>
+                    <CardTitle>AI Resume Parser</CardTitle>
+                    <CardDescription>Upload your resume to automatically fill out your profile.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button type="button" className="w-full" onClick={() => resumeInputRef.current?.click()} disabled={isPending}>
+                       {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Upload className="mr-2 h-4 w-4" />}
+                        Upload Resume
+                    </Button>
+                    <Input 
+                        type="file"
+                        ref={resumeInputRef}
+                        className="hidden"
+                        onChange={handleResumeParse}
+                        accept=".pdf,.doc,.docx,.txt"
+                    />
+                </CardContent>
+            </Card>
+
              <Card className="sticky top-20">
                 <CardHeader>
                     <CardTitle>AI Profile Summary</CardTitle>
