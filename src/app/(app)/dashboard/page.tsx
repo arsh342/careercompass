@@ -9,7 +9,7 @@ import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Opportunity {
@@ -32,6 +32,12 @@ export default function DashboardPage() {
   const { userProfile, loading: authLoading, role } = useAuth();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const isProfileComplete = userProfile && 
+    userProfile.education && 
+    userProfile.skills && 
+    userProfile.interests && 
+    userProfile.careerGoals;
 
    useEffect(() => {
     const fetchOpportunities = async () => {
@@ -105,6 +111,23 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold tracking-tight">Your Dashboard</h1>
         <p className="text-muted-foreground">Personalized recommendations and recent opportunities.</p>
       </div>
+
+       {!isProfileComplete && role === 'employee' && !authLoading && (
+        <Card className="mb-6 bg-secondary/50 border-primary/20">
+          <CardHeader>
+            <CardTitle>Complete Your Profile</CardTitle>
+            <CardDescription>Fill out your profile for more personalized results and better opportunity matches.</CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button asChild>
+              <Link href="/profile">
+                <Edit className="mr-2 h-4 w-4" />
+                Complete Profile
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      )}
 
       {loading || authLoading ? (
         <div className="flex justify-center items-center py-10">
