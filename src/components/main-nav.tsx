@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   User,
   FileText,
+  BarChartHorizontal,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -59,6 +60,11 @@ const employerLinks = [
       href: '/employer/postings',
       label: 'Postings',
       icon: FileText,
+    },
+     {
+      href: '/employer/analytics',
+      label: 'Analytics',
+      icon: BarChartHorizontal,
     },
     {
       href: '/employer/profile',
