@@ -315,7 +315,7 @@ export default function EmployerDashboardPage() {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle>AI-Ranked Candidates</CardTitle>
+                            <CardTitle>Top-Ranked Candidates</CardTitle>
                             <CardDescription>Top candidates based on your active postings.</CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -355,4 +355,5 @@ export default function EmployerDashboardPage() {
         )}
     </div>
   );
-}
+
+    
