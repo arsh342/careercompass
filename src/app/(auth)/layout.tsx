@@ -11,7 +11,7 @@ export default function AuthLayout({
       <div className="w-full max-w-sm">
         <div className="mb-6 flex justify-center">
           <Link href="/" className="flex items-center gap-2 text-primary">
-            <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} />
+            <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} className="dark:bg-white dark:p-1 dark:rounded-md" />
             <span className="text-2xl font-bold tracking-tight">CareerCompass</span>
           </Link>
         </div>
