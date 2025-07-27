@@ -10,7 +10,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where, documentId } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const FindAndRankCandidatesInputSchema = z.object({
@@ -77,17 +77,23 @@ const findAndRankCandidatesFlow = ai.defineFlow(
   },
   async ({ employerId }) => {
     
-    // 1. Fetch employer's active postings to get required skills
+    // 1. Fetch employer's active postings to get required skills and opportunity IDs
     const postingsQuery = query(
         collection(db, "opportunities"),
-        where("employerId", "==", employerId),
-        where("status", "==", "Active")
+        where("employerId", "==", employerId)
     );
     const postingsSnapshot = await getDocs(postingsQuery);
+    
+    if (postingsSnapshot.empty) {
+      return { candidates: [] };
+    }
+
     const requiredSkills = new Set<string>();
-    postingsSnapshot.docs.forEach(doc => {
-        const skillsArray = (doc.data().skills || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean);
+    const opportunityIds = postingsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        const skillsArray = (data.skills || '').split(',').map((s: string) => s.trim().toLowerCase()).filter(Boolean);
         skillsArray.forEach((skill: string) => requiredSkills.add(skill));
+        return doc.id;
     });
 
     if (requiredSkills.size === 0) {
@@ -95,7 +101,21 @@ const findAndRankCandidatesFlow = ai.defineFlow(
     }
     const requiredSkillsString = Array.from(requiredSkills).join(', ');
 
-    // 2. Fetch all employees
+    // 2. Fetch applications for these opportunities to find users who have been actioned on
+    const actionedUserIds = new Set<string>();
+    if (opportunityIds.length > 0) {
+        const applicationsQuery = query(
+            collection(db, 'applications'),
+            where('opportunityId', 'in', opportunityIds),
+            where('status', 'in', ['Approved', 'Rejected'])
+        );
+        const applicationsSnapshot = await getDocs(applicationsQuery);
+        applicationsSnapshot.forEach(doc => {
+            actionedUserIds.add(doc.data().userId);
+        });
+    }
+
+    // 3. Fetch all employees
     const usersQuery = query(collection(db, 'users'), where('role', '==', 'employee'));
     const usersSnapshot = await getDocs(usersQuery);
 
@@ -112,10 +132,14 @@ const findAndRankCandidatesFlow = ai.defineFlow(
       }
     });
 
-    // 3. Use AI to rank candidates
+    // 4. Filter out employees who have already been approved or rejected
+    const eligibleEmployees = allEmployees.filter(emp => !actionedUserIds.has(emp.uid));
+
+
+    // 5. Use AI to rank candidates
     const { output } = await rankCandidatesPrompt({
         requiredSkills: requiredSkillsString,
-        candidates: allEmployees,
+        candidates: eligibleEmployees,
     });
 
     return output!;
