@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader className="border-b">
             <div className="flex items-center gap-2 p-2">
-              <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} />
+              <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} className="dark:bg-white dark:p-1 dark:rounded-md" />
               <span className="text-xl font-bold tracking-tight">CareerCompass</span>
             </div>
           </SidebarHeader>
@@ -33,7 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 md:hidden">
               <SidebarTrigger />
               <Link href="/dashboard" className="flex items-center gap-2 text-primary">
-                  <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={24} height={24} />
+                  <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={24} height={24} className="dark:bg-white dark:p-1 dark:rounded-md" />
                   <span className="sr-only">CareerCompass</span>
               </Link>
             </div>
