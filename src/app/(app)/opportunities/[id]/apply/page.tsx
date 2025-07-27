@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { addDoc, collection, doc, getDoc, increment, serverTimestamp, updateDoc } from "firebase/firestore"; 
 import { db } from '@/lib/firebase';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, Bot } from 'lucide-react';
+import { enhanceText } from '@/ai/flows/enhance-text';
 
 const applicationSchema = z.object({
   coverLetter: z.string().min(10, 'Please provide a brief cover letter.'),
@@ -40,6 +41,7 @@ export default function ApplyPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const [opportunity, setOpportunity] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
   const { id } = params;
 
   const form = useForm<ApplicationFormValues>({
@@ -103,6 +105,7 @@ export default function ApplyPage() {
         userId: user.uid,
         userName: user.displayName || '',
         userEmail: user.email || '',
+        photoURL: user.photoURL || '',
         coverLetter: values.coverLetter || '',
         employmentHistory: values.employmentHistory || userProfile.employmentHistory || '',
         references: values.references || userProfile.references || '',
@@ -137,6 +140,23 @@ export default function ApplyPage() {
     }
   };
   
+  const handleEnhanceText = (fieldName: keyof ApplicationFormValues, context: string) => {
+    startTransition(async () => {
+        const currentValue = form.getValues(fieldName);
+        if (typeof currentValue !== 'string' || !currentValue.trim()) {
+            toast({ title: "Cannot Enhance", description: "Field must not be empty.", variant: "destructive" });
+            return;
+        }
+        try {
+            const { enhancedText } = await enhanceText({ text: currentValue, context });
+            form.setValue(fieldName, enhancedText);
+            toast({ title: "Content Enhanced", description: "The content has been improved by AI." });
+        } catch (error) {
+            console.error("Enhancement failed:", error);
+            toast({ title: "Error", description: "Could not enhance text at this time.", variant: "destructive" });
+        }
+    });
+  };
 
   if (loading || authLoading) {
     return (
@@ -183,7 +203,19 @@ export default function ApplyPage() {
                         <FormItem>
                           <FormLabel>Cover Letter</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Tell us why you're a great fit for this role..." {...field} rows={8} />
+                            <div className="relative">
+                                <Textarea placeholder="Tell us why you're a great fit for this role..." {...field} rows={8} />
+                                <Button 
+                                    type="button" 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => handleEnhanceText('coverLetter', 'Cover Letter')}
+                                    disabled={isPending}
+                                    className="absolute bottom-2 right-2">
+                                    <Bot className="mr-2 h-4 w-4" />
+                                    {isPending ? 'Enhancing...': 'Enhance'}
+                                 </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

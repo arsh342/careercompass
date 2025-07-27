@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateProfileSummary } from '@/ai/flows/generate-profile-summary';
+import { enhanceText } from '@/ai/flows/enhance-text';
 import { Bot, Loader2, Edit } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -178,6 +179,24 @@ export default function ProfilePage() {
     }
   };
 
+  const handleEnhanceText = (fieldName: keyof ProfileFormValues, context: string) => {
+    startTransition(async () => {
+        const currentValue = form.getValues(fieldName);
+        if (typeof currentValue !== 'string' || !currentValue.trim()) {
+            toast({ title: "Cannot Enhance", description: "Field must not be empty.", variant: "destructive" });
+            return;
+        }
+        try {
+            const { enhancedText } = await enhanceText({ text: currentValue, context });
+            form.setValue(fieldName, enhancedText);
+            toast({ title: "Content Enhanced", description: "The content has been improved by AI." });
+        } catch (error) {
+            console.error("Enhancement failed:", error);
+            toast({ title: "Error", description: "Could not enhance text at this time.", variant: "destructive" });
+        }
+    });
+  };
+
 
   if (authLoading) {
     return (
@@ -330,7 +349,19 @@ export default function ProfilePage() {
                                 <FormItem>
                                 <FormLabel>Education</FormLabel>
                                 <FormControl>
+                                   <div className="relative">
                                     <Textarea placeholder="e.g., B.S. in Computer Science..." {...field} />
+                                    <Button 
+                                        type="button" 
+                                        size="sm" 
+                                        variant="ghost"
+                                        onClick={() => handleEnhanceText('education', 'Education History')}
+                                        disabled={isPending}
+                                        className="absolute bottom-2 right-2">
+                                        <Bot className="mr-2 h-4 w-4" />
+                                        {isPending ? 'Enhancing...': 'Enhance'}
+                                    </Button>
+                                   </div>
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -343,7 +374,19 @@ export default function ProfilePage() {
                                 <FormItem>
                                 <FormLabel>Skills</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder="e.g., React, Python, Project Management..." {...field} />
+                                    <div className="relative">
+                                        <Textarea placeholder="e.g., React, Python, Project Management..." {...field} />
+                                        <Button 
+                                            type="button" 
+                                            size="sm" 
+                                            variant="ghost"
+                                            onClick={() => handleEnhanceText('skills', 'Skills List')}
+                                            disabled={isPending}
+                                            className="absolute bottom-2 right-2">
+                                            <Bot className="mr-2 h-4 w-4" />
+                                            {isPending ? 'Enhancing...': 'Enhance'}
+                                        </Button>
+                                    </div>
                                 </FormControl>
                                  <FormDescription>Comma-separated skills.</FormDescription>
                                 <FormMessage />
@@ -357,7 +400,19 @@ export default function ProfilePage() {
                                 <FormItem>
                                 <FormLabel>Interests</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder="e.g., UI/UX Design, Open Source, Volunteering..." {...field} />
+                                    <div className="relative">
+                                        <Textarea placeholder="e.g., UI/UX Design, Open Source, Volunteering..." {...field} />
+                                        <Button 
+                                            type="button" 
+                                            size="sm" 
+                                            variant="ghost"
+                                            onClick={() => handleEnhanceText('interests', 'Personal Interests')}
+                                            disabled={isPending}
+                                            className="absolute bottom-2 right-2">
+                                            <Bot className="mr-2 h-4 w-4" />
+                                            {isPending ? 'Enhancing...': 'Enhance'}
+                                        </Button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -370,7 +425,19 @@ export default function ProfilePage() {
                                 <FormItem>
                                 <FormLabel>Career Goals</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder="e.g., Secure a full-time role in software engineering..." {...field} />
+                                    <div className="relative">
+                                        <Textarea placeholder="e.g., Secure a full-time role in software engineering..." {...field} />
+                                        <Button 
+                                            type="button" 
+                                            size="sm" 
+                                            variant="ghost"
+                                            onClick={() => handleEnhanceText('careerGoals', 'Career Goals')}
+                                            disabled={isPending}
+                                            className="absolute bottom-2 right-2">
+                                            <Bot className="mr-2 h-4 w-4" />
+                                            {isPending ? 'Enhancing...': 'Enhance'}
+                                        </Button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                                 </FormItem>
@@ -383,7 +450,19 @@ export default function ProfilePage() {
                                 <FormItem>
                                 <FormLabel>Employment History</FormLabel>
                                 <FormControl>
-                                    <Textarea placeholder="List your previous roles, companies, and key achievements." {...field} rows={6}/>
+                                    <div className="relative">
+                                        <Textarea placeholder="List your previous roles, companies, and key achievements." {...field} rows={6}/>
+                                         <Button 
+                                            type="button" 
+                                            size="sm" 
+                                            variant="ghost"
+                                            onClick={() => handleEnhanceText('employmentHistory', 'Employment History')}
+                                            disabled={isPending}
+                                            className="absolute bottom-2 right-2">
+                                            <Bot className="mr-2 h-4 w-4" />
+                                            {isPending ? 'Enhancing...': 'Enhance'}
+                                        </Button>
+                                    </div>
                                 </FormControl>
                                 <FormDescription>Use bullet points for clarity.</FormDescription>
                                 <FormMessage />

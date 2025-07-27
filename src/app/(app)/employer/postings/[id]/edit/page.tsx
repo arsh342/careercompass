@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"; 
 import { db, auth } from '@/lib/firebase';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Bot } from 'lucide-react';
+import { enhanceText } from '@/ai/flows/enhance-text';
 
 const postingSchema = z.object({
   title: z.string().min(1, 'Job title is required.'),
@@ -44,6 +45,7 @@ export default function EditPostingPage() {
   const params = useParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
   const { id } = params;
 
   const form = useForm<PostingFormValues>({
@@ -104,6 +106,24 @@ export default function EditPostingPage() {
       });
     }
   };
+  
+  const handleEnhanceText = (fieldName: keyof PostingFormValues, context: string) => {
+    startTransition(async () => {
+        const currentValue = form.getValues(fieldName);
+        if (typeof currentValue !== 'string' || !currentValue.trim()) {
+            toast({ title: "Cannot Enhance", description: "Field must not be empty.", variant: "destructive" });
+            return;
+        }
+        try {
+            const { enhancedText } = await enhanceText({ text: currentValue, context });
+            form.setValue(fieldName, enhancedText);
+            toast({ title: "Content Enhanced", description: "The content has been improved by AI." });
+        } catch (error) {
+            console.error("Enhancement failed:", error);
+            toast({ title: "Error", description: "Could not enhance text at this time.", variant: "destructive" });
+        }
+    });
+  };
 
   if (loading) {
     return (
@@ -144,7 +164,19 @@ export default function EditPostingPage() {
                         <FormItem>
                           <FormLabel>Company Overview</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Briefly describe your company, its mission, values, and culture." {...field} rows={4}/>
+                            <div className="relative">
+                                <Textarea placeholder="Briefly describe your company, its mission, values, and culture." {...field} rows={4}/>
+                                 <Button 
+                                    type="button" 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => handleEnhanceText('companyOverview', 'Company Overview')}
+                                    disabled={isPending}
+                                    className="absolute bottom-2 right-2">
+                                    <Bot className="mr-2 h-4 w-4" />
+                                    {isPending ? 'Enhancing...': 'Enhance'}
+                                 </Button>
+                            </div>
                           </FormControl>
                            <FormDescription>A brief introduction to your company.</FormDescription>
                           <FormMessage />
@@ -159,7 +191,19 @@ export default function EditPostingPage() {
                           <FormItem>
                           <FormLabel>Job Description</FormLabel>
                           <FormControl>
-                              <Textarea placeholder="A concise overview of the role’s main purpose, including key responsibilities, tasks, and objectives." {...field} rows={6} />
+                              <div className="relative">
+                                <Textarea placeholder="A concise overview of the role’s main purpose, including key responsibilities, tasks, and objectives." {...field} rows={6} />
+                                <Button 
+                                    type="button" 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => handleEnhanceText('description', 'Job Description')}
+                                    disabled={isPending}
+                                    className="absolute bottom-2 right-2">
+                                    <Bot className="mr-2 h-4 w-4" />
+                                     {isPending ? 'Enhancing...': 'Enhance'}
+                                 </Button>
+                              </div>
                           </FormControl>
                           <FormMessage />
                           </FormItem>
@@ -214,7 +258,19 @@ export default function EditPostingPage() {
                         <FormItem>
                           <FormLabel>Roles and Responsibilities</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="List the primary duties and expectations for the position..." {...field} rows={6} />
+                             <div className="relative">
+                                <Textarea placeholder="List the primary duties and expectations for the position..." {...field} rows={6} />
+                                <Button 
+                                    type="button" 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => handleEnhanceText('rolesAndResponsibilities', 'Roles and Responsibilities')}
+                                    disabled={isPending}
+                                    className="absolute bottom-2 right-2">
+                                    <Bot className="mr-2 h-4 w-4" />
+                                     {isPending ? 'Enhancing...': 'Enhance'}
+                                 </Button>
+                            </div>
                           </FormControl>
                            <FormDescription>Use bullet points for clarity.</FormDescription>
                           <FormMessage />
