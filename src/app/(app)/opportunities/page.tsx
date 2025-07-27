@@ -73,8 +73,12 @@ function OpportunitiesContent() {
   
   const calculateMatch = (opportunity: Opportunity) => {
       if (!userProfile?.skills) return 0;
-      const userSkills = new Set((userProfile.skills || '').split(',').map(s => s.trim().toLowerCase()));
-      const requiredSkills = new Set(typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim().toLowerCase()) : (opportunity.skills || []).map(s => String(s).toLowerCase()));
+      const userSkills: Set<string> = new Set((userProfile.skills || '').split(',').map((s: string) => s.trim().toLowerCase()));
+      const requiredSkills: Set<string> = new Set(
+        typeof opportunity.skills === 'string'
+          ? opportunity.skills.split(',').map((s: string) => s.trim().toLowerCase())
+          : (opportunity.skills || []).map((s: unknown) => String(s).toLowerCase() as string)
+      );
       if (requiredSkills.size === 0) return 0;
       
       const commonSkills = [...userSkills].filter(skill => requiredSkills.has(skill));
@@ -135,10 +139,9 @@ function OpportunitiesContent() {
                 />
                  <Select value={typeFilter} onValueChange={setTypeFilter}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Filter by type..." />
+                        <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Types</SelectItem>
                         <SelectItem value="Internship">Internship</SelectItem>
                         <SelectItem value="Volunteer">Volunteer</SelectItem>
                         <SelectItem value="Full-time">Full-time</SelectItem>

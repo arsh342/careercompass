@@ -80,7 +80,6 @@ export function MainNav() {
   if (loading) {
       return (
           <div className="flex flex-col gap-4 p-2">
-              <Skeleton className="h-4 w-24 mb-2" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
@@ -91,12 +90,10 @@ export function MainNav() {
   }
 
   const links = role === 'employer' ? employerLinks : employeeLinks;
-  const title = role === 'employer' ? 'For Employers' : 'My Compass';
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-1">
       <SidebarMenu className="flex-1">
-        <p className="px-2 text-xs font-semibold text-muted-foreground">{title}</p>
         {links.map((link) => (
           <SidebarMenuItem key={link.href}>
             <Link href={link.href} passHref>
@@ -105,8 +102,8 @@ export function MainNav() {
                 className="w-full"
                 asChild
               >
-                <span>
-                  <link.icon className="h-4 w-4" />
+                <span className="text-[16px] font-bold flex items-center gap-2">
+                  <link.icon className="h-8 w-8" />
                   {link.label}
                 </span>
               </SidebarMenuButton>

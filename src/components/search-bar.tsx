@@ -46,7 +46,7 @@ export function SearchBar() {
       <Input
         type="search"
         placeholder="Search jobs..."
-        className="w-full rounded-lg bg-background pl-8"
+        className="w-full rounded-xl border-2 border-input bg-background pl-8"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
