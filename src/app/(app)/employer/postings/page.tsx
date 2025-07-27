@@ -129,9 +129,8 @@ export default function EmployerPostingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Your Postings</CardTitle>
           <div className="flex justify-between items-center">
-             <CardDescription>A list of all job opportunities you have posted.</CardDescription>
+             <CardTitle>Your Postings</CardTitle>
              <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Filter by status" />
@@ -143,6 +142,7 @@ export default function EmployerPostingsPage() {
                 </SelectContent>
             </Select>
           </div>
+           <CardDescription>A list of all job opportunities you have posted.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -240,3 +240,5 @@ export default function EmployerPostingsPage() {
     </div>
   );
 }
+
+    

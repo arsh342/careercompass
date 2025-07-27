@@ -15,10 +15,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye, UserSearch, ArchiveRestore, Archive } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Loader2, Briefcase, Users, CheckCircle, Trash2, Edit, Eye, UserSearch, ArchiveRestore, Archive, BarChart } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
+import { Bar, BarChart as RechartsBarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts"
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart"
 
 interface Posting {
     id: string;
@@ -41,7 +48,14 @@ export default function EmployerDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [candidates, setCandidates] = useState<RankedCandidate[]>([]);
     const [loadingCandidates, setLoadingCandidates] = useState(true);
+    const [chartData, setChartData] = useState<any[]>([]);
 
+    const chartConfig = {
+      applicants: {
+        label: "Applicants",
+        color: "hsl(var(--primary))",
+      },
+    } satisfies ChartConfig
 
     const fetchDashboardData = async () => {
         if (user) {
@@ -69,8 +83,17 @@ export default function EmployerDashboardPage() {
                         ...data
                     } as Posting;
                 });
+                
+                const sortedPostings = postingsData.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime());
+                setPostings(sortedPostings);
 
-                setPostings(postingsData.sort((a, b) => b.createdAt.toDate().getTime() - a.createdAt.toDate().getTime()));
+                const chartPostings = sortedPostings.slice(0, 5).map(p => ({
+                    title: p.title.length > 15 ? `${p.title.substring(0, 15)}...` : p.title,
+                    applicants: p.applicants
+                })).reverse();
+                setChartData(chartPostings);
+
+
                 setStats({
                     totalPostings: postingsSnapshot.size,
                     totalApplicants,
@@ -211,11 +234,11 @@ export default function EmployerDashboardPage() {
                         </CardContent>
                     </Card>
                 </div>
-                 <div className="grid gap-6 md:grid-cols-2">
-                    <Card>
+                 <div className="grid gap-6 md:grid-cols-5">
+                    <Card className="md:col-span-3">
                         <CardHeader>
-                            <CardTitle>Your Postings</CardTitle>
-                            <CardDescription>A list of all job opportunities you have posted.</CardDescription>
+                            <CardTitle>Recent Postings</CardTitle>
+                            <CardDescription>Your 5 most recently created job opportunities.</CardDescription>
                         </CardHeader>
                         <CardContent>
                         {postings.length === 0 ? (
@@ -313,7 +336,7 @@ export default function EmployerDashboardPage() {
                         )}
                         </CardContent>
                     </Card>
-                    <Card>
+                    <Card className="md:col-span-2">
                         <CardHeader>
                             <CardTitle>Top-Ranked Candidates</CardTitle>
                             <CardDescription>Top candidates based on your active postings.</CardDescription>
@@ -351,10 +374,53 @@ export default function EmployerDashboardPage() {
                         </CardContent>
                     </Card>
                  </div>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Applicants per Posting</CardTitle>
+                        <CardDescription>
+                            A look at how many applicants your 5 most recent job postings have received.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {chartData.length > 0 ? (
+                        <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+                            <RechartsBarChart accessibilityLayer data={chartData}>
+                                <XAxis
+                                    dataKey="title"
+                                    stroke="#888888"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    stroke="#888888"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `${value}`}
+                                />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent indicator="dot" />}
+                                />
+                                <Bar dataKey="applicants" fill="var(--color-applicants)" radius={4} />
+                            </RechartsBarChart>
+                        </ChartContainer>
+                        ) : (
+                             <div className="text-center py-20 text-muted-foreground">
+                                <BarChart className="h-12 w-12 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold">No data to display</h3>
+                                <p>Post a job and receive applicants to see analytics.</p>
+                             </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         )}
     </div>
   );
 }
+
+    
 
     
