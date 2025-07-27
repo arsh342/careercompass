@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { sendWelcomeEmail } from '@/ai/flows/send-welcome-email';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -94,6 +95,8 @@ export default function LoginPage() {
             lastName: lastName,
             ...(role === 'employer' && { companyName: user.displayName })
         });
+
+        await sendWelcomeEmail({ to: user.email!, name: user.displayName! });
         
         toast({
           title: 'Account Created',
