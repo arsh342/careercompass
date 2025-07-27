@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from "next/link";
 import { collection, query, where, getDocs, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -16,6 +16,7 @@ import { PlusCircle, MoreHorizontal, Loader2, Edit, Trash2, Users, Archive, Arch
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 interface Posting {
@@ -33,6 +34,7 @@ export default function EmployerPostingsPage() {
     const { toast } = useToast();
     const [postings, setPostings] = useState<Posting[]>([]);
     const [loading, setLoading] = useState(true);
+    const [statusFilter, setStatusFilter] = useState('All');
 
     const fetchPostings = async () => {
         if (user) {
@@ -65,6 +67,11 @@ export default function EmployerPostingsPage() {
             fetchPostings();
         }
     }, [user, authLoading]);
+    
+    const filteredPostings = useMemo(() => {
+        if (statusFilter === 'All') return postings;
+        return postings.filter(p => p.status === statusFilter);
+    }, [postings, statusFilter]);
 
     const handleUpdateStatus = async (postingId: string, status: 'Archived' | 'Active') => {
         try {
@@ -123,16 +130,28 @@ export default function EmployerPostingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Your Postings</CardTitle>
-          <CardDescription>A list of all job opportunities you have posted.</CardDescription>
+          <div className="flex justify-between items-center">
+             <CardDescription>A list of all job opportunities you have posted.</CardDescription>
+             <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="All">All Statuses</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Archived">Archived</SelectItem>
+                </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
              <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
              </div>
-          ) : postings.length === 0 ? (
+          ) : filteredPostings.length === 0 ? (
              <div className="text-center py-10 text-muted-foreground">
-                <p>You haven't posted any jobs yet.</p>
+                <p>No postings match the current filter.</p>
                  <Button variant="link" asChild className="mt-2">
                     <Link href="/employer/postings/new">
                         Post your first job
@@ -153,7 +172,7 @@ export default function EmployerPostingsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {postings.map((posting) => (
+                {filteredPostings.map((posting) => (
                   <TableRow key={posting.id}>
                     <TableCell className="font-medium">{posting.title}</TableCell>
                     <TableCell>
