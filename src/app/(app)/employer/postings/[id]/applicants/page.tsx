@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Users, UserSearch, Loader2, Send, Check, X } from "lucide-react";
+import { ArrowLeft, Users, UserSearch, Loader2, Send, Check, X, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 type PotentialCandidate = FindMatchingCandidatesOutput['candidates'][0];
 
@@ -28,6 +30,13 @@ interface Applicant {
         toDate: () => Date;
     };
     status: string;
+    coverLetter: string;
+    employmentHistory: string;
+    references: string;
+    portfolioLink: string;
+    linkedinLink: string;
+    education: string;
+    skills: string;
     [key: string]: any;
 }
 
@@ -153,6 +162,45 @@ export default function ApplicantsPage() {
     
     const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('') || '';
 
+    const renderApplicationDetail = (applicant: Applicant) => (
+        <div className="space-y-4">
+            <div>
+                <h4 className="font-semibold text-sm mb-1">Cover Letter</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.coverLetter}</p>
+            </div>
+            <Separator />
+            <div>
+                <h4 className="font-semibold text-sm mb-1">Skills</h4>
+                <div className="flex flex-wrap gap-1">
+                    {(applicant.skills || '').split(',').map((skill, i) => skill && <Badge key={i} variant="secondary">{skill.trim()}</Badge>)}
+                </div>
+            </div>
+             <Separator />
+            <div>
+                <h4 className="font-semibold text-sm mb-1">Employment History</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.employmentHistory || 'Not provided'}</p>
+            </div>
+             <Separator />
+            <div>
+                <h4 className="font-semibold text-sm mb-1">References</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.references || 'Not provided'}</p>
+            </div>
+            {(applicant.portfolioLink || applicant.linkedinLink) && <Separator />}
+            {applicant.portfolioLink && (
+                <div>
+                    <h4 className="font-semibold text-sm mb-1">Portfolio</h4>
+                    <Link href={applicant.portfolioLink} target="_blank" className="text-sm text-primary hover:underline break-all">{applicant.portfolioLink}</Link>
+                </div>
+            )}
+             {applicant.linkedinLink && (
+                <div>
+                    <h4 className="font-semibold text-sm mb-1">LinkedIn Profile</h4>
+                    <Link href={applicant.linkedinLink} target="_blank" className="text-sm text-primary hover:underline break-all">{applicant.linkedinLink}</Link>
+                </div>
+            )}
+        </div>
+    )
+
     return (
         <div className="container mx-auto">
              <div className="mb-6">
@@ -256,6 +304,23 @@ export default function ApplicantsPage() {
                                             </div>
                                         </Link>
                                          <div className="flex gap-2">
+                                             <Dialog>
+                                                <DialogTrigger asChild>
+                                                    <Button size="icon" variant="outline" className="h-8 w-8">
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent className="sm:max-w-[600px]">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Application Details</DialogTitle>
+                                                        <DialogDescription>
+                                                           Submitted by {applicant.userName} for the {opportunity?.title} position.
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    {renderApplicationDetail(applicant)}
+                                                </DialogContent>
+                                            </Dialog>
+
                                             <Button size="icon" variant="outline" className="h-8 w-8 text-green-600 hover:text-green-600 border-green-200 hover:bg-green-50" onClick={() => handleUpdateStatus(applicant, 'Approved')}>
                                                 <Check className="h-4 w-4" />
                                             </Button>
