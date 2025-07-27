@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -38,6 +38,35 @@ export async function findAndRankCandidates(
 ): Promise<FindAndRankCandidatesOutput> {
   return findAndRankCandidatesFlow(input);
 }
+
+const rankCandidatesPrompt = ai.definePrompt({
+    name: 'rankCandidatesPrompt',
+    input: { schema: z.any() },
+    output: { schema: FindAndRankCandidatesOutputSchema },
+    prompt: `You are an expert HR recruiter. Your task is to analyze a list of potential candidates and rank them based on their suitability for an employer's needs.
+
+    The employer requires the following skills:
+    {{requiredSkills}}
+
+    Here is the list of candidates:
+    {{#each candidates}}
+    - Candidate UID: {{uid}}
+      - Name: {{displayName}}
+      - Email: {{email}}
+      - Photo URL: {{photoURL}}
+      - Skills: {{skills}}
+      - Experience: {{experience}}
+      - Career Goals: {{careerGoals}}
+    {{/each}}
+
+    Please evaluate each candidate and provide a ranked list. For each candidate, include:
+    - uid, displayName, email, photoURL, skills
+    - matchPercentage: A score from 0 to 100. Calculate this based on the alignment of the candidate's skills, experience, and career goals with the required skills. Direct skill matches are important, but also consider related experience.
+    - justification: A brief, one-sentence explanation for your ranking.
+
+    Only include candidates who have at least one matching skill. Return the list sorted from the highest matchPercentage to the lowest.
+    `,
+});
 
 
 const findAndRankCandidatesFlow = ai.defineFlow(
@@ -84,36 +113,7 @@ const findAndRankCandidatesFlow = ai.defineFlow(
     });
 
     // 3. Use AI to rank candidates
-    const prompt = ai.definePrompt({
-        name: 'rankCandidatesPrompt',
-        input: { schema: z.any() },
-        output: { schema: FindAndRankCandidatesOutputSchema },
-        prompt: `You are an expert HR recruiter. Your task is to analyze a list of potential candidates and rank them based on their suitability for an employer's needs.
-
-        The employer requires the following skills:
-        {{requiredSkills}}
-
-        Here is the list of candidates:
-        {{#each candidates}}
-        - Candidate UID: {{uid}}
-          - Name: {{displayName}}
-          - Email: {{email}}
-          - Photo URL: {{photoURL}}
-          - Skills: {{skills}}
-          - Experience: {{experience}}
-          - Career Goals: {{careerGoals}}
-        {{/each}}
-
-        Please evaluate each candidate and provide a ranked list. For each candidate, include:
-        - uid, displayName, email, photoURL, skills
-        - matchPercentage: A score from 0 to 100. Calculate this based on the alignment of the candidate's skills, experience, and career goals with the required skills. Direct skill matches are important, but also consider related experience.
-        - justification: A brief, one-sentence explanation for your ranking.
-
-        Only include candidates who have at least one matching skill. Return the list sorted from the highest matchPercentage to the lowest.
-        `,
-    });
-
-    const { output } = await prompt({
+    const { output } = await rankCandidatesPrompt({
         requiredSkills: requiredSkillsString,
         candidates: allEmployees,
     });
