@@ -42,6 +42,11 @@ const employeeLinks = [
     label: 'Saved',
     icon: Heart,
   },
+  {
+    href: '/profile',
+    label: 'Profile',
+    icon: User,
+  },
 ];
 
 const employerLinks = [
@@ -55,20 +60,12 @@ const employerLinks = [
       label: 'Postings',
       icon: FileText,
     },
+    {
+      href: '/employer/profile',
+      label: 'Profile',
+      icon: User,
+    }
 ]
-
-const profileLink = {
-    href: '/profile',
-    label: 'Profile',
-    icon: User,
-};
-
-const employerProfileLink = {
-    href: '/employer/profile',
-    label: 'Profile',
-    icon: User,
-}
-
 
 export function MainNav() {
   const pathname = usePathname();
@@ -82,12 +79,12 @@ export function MainNav() {
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
           </div>
       )
   }
 
   const links = role === 'employer' ? employerLinks : employeeLinks;
-  const currentProfileLink = role === 'employer' ? employerProfileLink : profileLink;
   const title = role === 'employer' ? 'For Employers' : 'My Compass';
 
   return (
@@ -110,22 +107,6 @@ export function MainNav() {
             </Link>
           </SidebarMenuItem>
         ))}
-      </SidebarMenu>
-       <SidebarMenu className="mt-auto">
-         <SidebarMenuItem key={currentProfileLink.href}>
-            <Link href={currentProfileLink.href} passHref>
-                <SidebarMenuButton
-                    isActive={pathname === currentProfileLink.href}
-                    className="w-full"
-                    asChild
-                >
-                    <span>
-                        <currentProfileLink.icon className="h-4 w-4" />
-                        {currentProfileLink.label}
-                    </span>
-                </SidebarMenuButton>
-            </Link>
-        </SidebarMenuItem>
       </SidebarMenu>
     </div>
   );
