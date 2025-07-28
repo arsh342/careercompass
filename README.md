@@ -150,5 +150,3 @@ careercompass/
 ```
 
 ---
-
-For more details, see the code in `src/ai/flows/` and the main app in `src/app/`.
