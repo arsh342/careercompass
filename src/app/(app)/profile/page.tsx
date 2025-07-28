@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { generateProfileSummary } from '@/ai/flows/generate-profile-summary';
 import { enhanceText } from '@/ai/flows/enhance-text';
 import { parseResume } from '@/ai/flows/parse-resume';
+import { ComprehensiveATSScorer } from '@/lib/comprehensiveAtsScorer';
 import { Bot, Loader2, Edit, Upload } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -42,6 +43,106 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export default function ProfilePage() {
+  // ATS Score Checker State
+  const [atsResumeText, setAtsResumeText] = useState('');
+  const [atsResumeFile, setAtsResumeFile] = useState<File|null>(null);
+  const [atsSuggestions, setAtsSuggestions] = useState<string>('');
+  const [atsJobDesc, setAtsJobDesc] = useState('');
+  const [atsScore, setAtsScore] = useState<number|null>(null);
+  const [atsLoading, setAtsLoading] = useState(false);
+  const [atsConfidence, setAtsConfidence] = useState<'High'|'Medium'|'Low'|null>(null);
+  const [atsCategoryScores, setAtsCategoryScores] = useState<any>(null);
+  const [atsMatched, setAtsMatched] = useState<any>(null);
+  const [atsMissing, setAtsMissing] = useState<any>(null);
+
+
+
+  // ATS Score calculation with AI resume parsing and advanced scoring
+  const handleAtsScore = async () => {
+    setAtsLoading(true);
+    setAtsSuggestions('');
+    setAtsConfidence(null);
+    setAtsCategoryScores(null);
+    setAtsMatched(null);
+    setAtsMissing(null);
+    let resumeText = atsResumeText;
+    // If file uploaded, parse it
+    if (atsResumeFile) {
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const fileText = e.target?.result as string;
+          let parsedText = fileText;
+          try {
+            // Use AI resume parser if available
+            const parsed = await parseResume({ resumeDataUri: fileText });
+            parsedText = [parsed.education, parsed.skills, parsed.interests, parsed.careerGoals, parsed.employmentHistory]
+              .filter(Boolean)
+              .join(' ');
+          } catch {}
+          // Debug: log parsedText and atsJobDesc
+          // @ts-ignore
+          if (typeof window !== 'undefined') {
+            // eslint-disable-next-line no-console
+            console.log('[ATS DEBUG] Resume text:', parsedText);
+            // eslint-disable-next-line no-console
+            console.log('[ATS DEBUG] Job description:', atsJobDesc);
+          }
+          if (!parsedText.trim() || !atsJobDesc.trim()) {
+            setAtsLoading(false);
+            setAtsScore(null);
+            setAtsSuggestions('Please provide both a resume and a job description.');
+            return;
+          }
+          scoreAndSuggest(parsedText);
+        };
+        reader.readAsText(atsResumeFile);
+        return;
+      } catch (err) {
+        setAtsLoading(false);
+        setAtsSuggestions('Could not read resume file.');
+        return;
+      }
+    } else {
+      // Debug: log resumeText and atsJobDesc
+      // @ts-ignore
+      if (typeof window !== 'undefined') {
+        // eslint-disable-next-line no-console
+        console.log('[ATS DEBUG] Resume text:', resumeText);
+        // eslint-disable-next-line no-console
+        console.log('[ATS DEBUG] Job description:', atsJobDesc);
+      }
+      if (!resumeText.trim() || !atsJobDesc.trim()) {
+        setAtsLoading(false);
+        setAtsScore(null);
+        setAtsSuggestions('Please provide both a resume and a job description.');
+        return;
+      }
+      scoreAndSuggest(resumeText);
+    }
+  };
+
+  function scoreAndSuggest(resumeText: string) {
+    if (!resumeText.trim() || !atsJobDesc.trim()) {
+      setAtsScore(null);
+      setAtsSuggestions('');
+      setAtsConfidence(null);
+      setAtsCategoryScores(null);
+      setAtsMatched(null);
+      setAtsMissing(null);
+      setAtsLoading(false);
+      return;
+    }
+    const scorer = new ComprehensiveATSScorer();
+    const result = scorer.calculateComprehensiveScore(resumeText, atsJobDesc);
+    setAtsScore(result.overallScore);
+    setAtsConfidence(result.confidenceLevel);
+    setAtsCategoryScores(result.categoryScores);
+    setAtsMatched(result.matched);
+    setAtsMissing(result.missing);
+    setAtsSuggestions(result.suggestions.join('\n'));
+    setAtsLoading(false);
+  }
   const { toast } = useToast();
   const { user, userProfile, loading: authLoading } = useAuth();
   const [isPending, startTransition] = useTransition();
@@ -71,9 +172,16 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (userProfile) {
-        form.reset({
-            ...userProfile
-        })
+      const {
+        firstName, lastName, middleName, contactNumber, supportEmail,
+        education, skills, interests, careerGoals, employmentHistory,
+        references, portfolioLink, linkedinLink
+      } = userProfile;
+      form.reset({
+        firstName, lastName, middleName, contactNumber, supportEmail,
+        education, skills, interests, careerGoals, employmentHistory,
+        references, portfolioLink, linkedinLink
+      });
     }
   }, [userProfile, form]);
   
@@ -364,7 +472,10 @@ export default function ProfilePage() {
                     </form>
                 </Form>
               </CardContent>
+
             </Card>
+
+            
 
             <Card>
                 <CardHeader>
@@ -568,6 +679,87 @@ export default function ProfilePage() {
                         accept=".pdf,.doc,.docx,.txt"
                     />
                 </CardContent>
+            </Card>
+            {/* ATS Score Checker Section */}
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>ATS Score Checker</CardTitle>
+                <CardDescription>
+                  Check how well your resume matches a job description. Upload your resume and paste a job description to get an ATS (Applicant Tracking System) score.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-4">
+                  <Input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={e => {
+                      const file = e.target.files?.[0] || null;
+                      setAtsResumeFile(file);
+                      setAtsResumeText('');
+                    }}
+                  />
+                  <Textarea
+                    placeholder="Paste job description here..."
+                    rows={5}
+                    value={atsJobDesc}
+                    onChange={e => setAtsJobDesc(e.target.value)}
+                  />
+                  <Button onClick={handleAtsScore} disabled={atsLoading || (!atsResumeText && !atsResumeFile) || !atsJobDesc}>
+                    {atsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Check ATS Score
+                  </Button>
+                  {atsScore !== null && (
+                    <div className="text-center mt-2">
+                      <span className="font-semibold">ATS Score: </span>
+                      <span className="text-primary text-lg">{atsScore}%</span>
+                      {atsConfidence && (
+                        <span className="ml-2 text-xs text-muted-foreground">({atsConfidence} match)</span>
+                      )}
+                    </div>
+                  )}
+                  {atsCategoryScores && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      <b>Category Breakdown:</b>
+                      <ul className="ml-2">
+                        {Object.entries(atsCategoryScores).map(([cat, val]) => (
+                          <li key={cat}>{cat}: {Math.round(val as number)}%</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {atsMatched && (
+                    <div className="mt-2 text-xs text-green-700">
+                      <b>Matched:</b>
+                      <ul className="ml-2">
+                        {Object.entries(atsMatched).map(([cat, arr]) =>
+                          Array.isArray(arr) && arr.length > 0 ? (
+                            <li key={cat}>{cat}: {arr.slice(0, 8).join(', ')}{arr.length > 8 ? '...' : ''}</li>
+                          ) : null
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                  {atsMissing && (
+                    <div className="mt-2 text-xs text-red-700">
+                      <b>Missing:</b>
+                      <ul className="ml-2">
+                        {Object.entries(atsMissing).map(([cat, arr]) =>
+                          Array.isArray(arr) && arr.length > 0 ? (
+                            <li key={cat}>{cat}: {arr.slice(0, 8).join(', ')}{arr.length > 8 ? '...' : ''}</li>
+                          ) : null
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                  {atsSuggestions && (
+                    <div className="text-left text-sm text-muted-foreground mt-2 whitespace-pre-line">
+                      <div><b>Suggestions:</b></div>
+                      <div dangerouslySetInnerHTML={{ __html: atsSuggestions.replace(/\n/g, '<br/>') }} />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
             </Card>
 
              <Card className="sticky top-20">
