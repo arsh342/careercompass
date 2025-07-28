@@ -1,4 +1,3 @@
-
 # CareerCompass
 
 <img src="docs/logo.png" alt="CareerCompass Logo" width="120" />
@@ -55,6 +54,7 @@ This project was built for [FusionHacks 2 on Devpost](https://fusionhacks2.devpo
 - **Employer Dashboard:** Dashboard for employers to create job postings and manage applications.
 - **Employee Dashboard:** Dashboard for employees to manage profile and track recommendations.
 - **Firebase Authentication:** Firebase Authentication with Google Sign-In and Forgot Password functionality.
+- **Comprehensive ATS Score Checker:** Advanced, case-insensitive, and robust ATS scoring for resumes, including education, skills, and preferred skills matching.
 
 ## 🤖 AI-Powered Features
 - **AI-Powered Candidate Ranking:**
