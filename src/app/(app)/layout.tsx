@@ -20,10 +20,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <Sidebar>
           <SidebarHeader className="border-b">
-            <div className="flex items-center gap-2 p-2">
-              <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} className="dark:bg-white dark:p-1 dark:rounded-md" />
+            <Link href="/dashboard" className="flex items-center gap-2 p-2 group">
+              <Image src="https://i.postimg.cc/nLrDYrHW/icon.png" alt="CareerCompass logo" width={32} height={32} className="dark:bg-white dark:p-1 dark:rounded-md group-hover:opacity-80 transition" />
               <span className="text-xl font-bold tracking-tight">CareerCompass</span>
-            </div>
+            </Link>
           </SidebarHeader>
           <SidebarContent>
             <MainNav />
