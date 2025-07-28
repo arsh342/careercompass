@@ -10,6 +10,7 @@ import { useState, useEffect, useMemo } from "react";
 import { collection, query, where, getDocs, orderBy, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { findAndRankCandidates, FindAndRankCandidatesOutput } from '@/ai/flows/find-and-rank-candidates';
+import { ComprehensiveATSScorer } from '@/lib/comprehensiveAtsScorer';
 import { sendApplicationStatusEmail } from '@/ai/flows/send-application-status-email';
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -47,6 +48,11 @@ interface Applicant {
 interface Opportunity {
     title: string;
     employerName: string;
+    description?: string;
+    rolesAndResponsibilities?: string;
+    skills?: string;
+    education?: string;
+    experience?: string;
 }
 
 
@@ -181,44 +187,119 @@ export default function ApplicantsPage() {
     
     const getInitials = (name: string) => name?.split(' ').map(n => n[0]).join('') || '';
 
-    const renderApplicationDetail = (applicant: Applicant) => (
-        <div className="space-y-4">
-            <div>
-                <h4 className="font-semibold text-sm mb-1">Cover Letter</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.coverLetter}</p>
-            </div>
-            <Separator />
-            <div>
-                <h4 className="font-semibold text-sm mb-1">Skills</h4>
-                <div className="flex flex-wrap gap-1">
-                    {(applicant.skills || '').split(',').map((skill, i) => skill && <Badge key={i} variant="secondary">{skill.trim()}</Badge>)}
-                </div>
-            </div>
-             <Separator />
-            <div>
-                <h4 className="font-semibold text-sm mb-1">Employment History</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.employmentHistory || 'Not provided'}</p>
-            </div>
-             <Separator />
-            <div>
-                <h4 className="font-semibold text-sm mb-1">References</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.references || 'Not provided'}</p>
-            </div>
-            {(applicant.portfolioLink || applicant.linkedinLink) && <Separator />}
-            {applicant.portfolioLink && (
+    // ATS Score Checker for this applicant
+    const renderApplicationDetail = (applicant: Applicant) => {
+        // Compose resume text from applicant fields
+        const resumeText = [
+            applicant.education,
+            applicant.skills,
+            applicant.employmentHistory,
+            applicant.coverLetter,
+            applicant.references
+        ].filter(Boolean).join(' ');
+        // Compose job description from opportunity fields
+        const jobDesc = [
+            opportunity?.title,
+            opportunity?.description,
+            opportunity?.rolesAndResponsibilities,
+            opportunity?.skills,
+            opportunity?.education,
+            opportunity?.experience
+        ].filter(Boolean).join(' ');
+
+        let atsResult = null;
+        if (resumeText && jobDesc) {
+            try {
+                const scorer = new ComprehensiveATSScorer();
+                atsResult = scorer.calculateComprehensiveScore(resumeText, jobDesc);
+            } catch (e) {
+                // ignore
+            }
+        }
+
+        return (
+            <div className="space-y-4">
                 <div>
-                    <h4 className="font-semibold text-sm mb-1">Portfolio</h4>
-                    <Link href={applicant.portfolioLink} target="_blank" className="text-sm text-primary hover:underline break-all">{applicant.portfolioLink}</Link>
+                    <h4 className="font-semibold text-sm mb-1">Cover Letter</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.coverLetter}</p>
                 </div>
-            )}
-             {applicant.linkedinLink && (
+                <Separator />
                 <div>
-                    <h4 className="font-semibold text-sm mb-1">LinkedIn Profile</h4>
-                    <Link href={applicant.linkedinLink} target="_blank" className="text-sm text-primary hover:underline break-all">{applicant.linkedinLink}</Link>
+                    <h4 className="font-semibold text-sm mb-1">Skills</h4>
+                    <div className="flex flex-wrap gap-1">
+                        {(applicant.skills || '').split(',').map((skill, i) => skill && <Badge key={i} variant="secondary">{skill.trim()}</Badge>)}
+                    </div>
                 </div>
-            )}
-        </div>
-    )
+                <Separator />
+                <div>
+                    <h4 className="font-semibold text-sm mb-1">Employment History</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.employmentHistory || 'Not provided'}</p>
+                </div>
+                <Separator />
+                <div>
+                    <h4 className="font-semibold text-sm mb-1">References</h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">{applicant.references || 'Not provided'}</p>
+                </div>
+                {(applicant.portfolioLink || applicant.linkedinLink) && <Separator />}
+                {applicant.portfolioLink && (
+                    <div>
+                        <h4 className="font-semibold text-sm mb-1">Portfolio</h4>
+                        <Link href={applicant.portfolioLink} target="_blank" className="text-sm text-primary hover:underline break-all">{applicant.portfolioLink}</Link>
+                    </div>
+                )}
+                {applicant.linkedinLink && (
+                    <div>
+                        <h4 className="font-semibold text-sm mb-1">LinkedIn Profile</h4>
+                        <Link href={applicant.linkedinLink} target="_blank" className="text-sm text-primary hover:underline break-all">{applicant.linkedinLink}</Link>
+                    </div>
+                )}
+                <Separator />
+                {/* ATS Score Checker Section */}
+                <div>
+                    <h4 className="font-semibold text-sm mb-1">ATS Score Checker</h4>
+                    {(!resumeText || !jobDesc) ? (
+                        <div className="text-xs text-muted-foreground">Not enough data to compute ATS score.</div>
+                    ) : atsResult ? (
+                        <div className="text-xs">
+                            <div className="mb-1"><b>ATS Score:</b> <span className="text-primary font-semibold">{atsResult.overallScore}%</span> <span className="ml-2 text-muted-foreground">({atsResult.confidenceLevel} match)</span></div>
+                            <div className="mb-1"><b>Category Breakdown:</b>
+                                <ul className="ml-2">
+                                    {Object.entries(atsResult.categoryScores).map(([cat, val]) => (
+                                        <li key={cat}>{cat}: {Math.round(val as number)}%</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div className="mb-1 text-green-700"><b>Matched:</b>
+                                <ul className="ml-2">
+                                    {Object.entries(atsResult.matched).map(([cat, arr]) =>
+                                        Array.isArray(arr) && arr.length > 0 ? (
+                                            <li key={cat}>{cat}: {arr.slice(0, 8).join(', ')}{arr.length > 8 ? '...' : ''}</li>
+                                        ) : null
+                                    )}
+                                </ul>
+                            </div>
+                            <div className="mb-1 text-red-700"><b>Missing:</b>
+                                <ul className="ml-2">
+                                    {Object.entries(atsResult.missing).map(([cat, arr]) =>
+                                        Array.isArray(arr) && arr.length > 0 ? (
+                                            <li key={cat}>{cat}: {arr.slice(0, 8).join(', ')}{arr.length > 8 ? '...' : ''}</li>
+                                        ) : null
+                                    )}
+                                </ul>
+                            </div>
+                            <div className="mb-1 text-muted-foreground"><b>Suggestions:</b>
+                                <ul className="ml-2">
+                                    {atsResult.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                                </ul>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-xs text-muted-foreground">Could not compute ATS score.</div>
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto">
