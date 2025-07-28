@@ -103,7 +103,7 @@ export class ComprehensiveATSScorer {
   }
 
   private normalizeWord(word: string): string {
-    // Handle common technical variations
+    // Handle common technical and education variations
     const techMappings: { [key: string]: string } = {
       'javascript': 'js',
       'typescript': 'ts',
@@ -113,12 +113,26 @@ export class ComprehensiveATSScorer {
       'angularjs': 'angular',
       'postgresql': 'postgres',
       'mongodb': 'mongo',
+      'mongo': 'mongo',
       'kubernetes': 'k8s',
       'continuous integration': 'ci',
-      'continuous deployment': 'cd'
+      'continuous deployment': 'cd',
+      // Education degree/branch normalization
+      'bachelor': 'be', 'bachelors': 'be', 'b.e': 'be', 'be': 'be', 'beng': 'be', 'btech': 'btech', 'b.tech': 'btech',
+      'bsc': 'bsc', 'bs': 'bsc', 'msc': 'msc', 'ms': 'msc', 'm.e': 'me', 'me': 'me', 'meng': 'me', 'mtech': 'mtech', 'm.tech': 'mtech',
+      'phd': 'phd', 'ph.d': 'phd', 'mba': 'mba', 'bba': 'bba', 'bca': 'bca', 'mca': 'mca', 'bcom': 'bcom', 'b.com': 'bcom',
+      'mcom': 'mcom', 'm.com': 'mcom', 'bpharm': 'bpharm', 'b.pharm': 'bpharm', 'mpharm': 'mpharm', 'm.pharm': 'mpharm',
+      'mbbs': 'mbbs', 'md': 'md', 'llb': 'llb', 'llm': 'llm', 'ba': 'ba', 'ma': 'ma', 'diploma': 'diploma', 'certificate': 'certificate',
+      // Engineering/Science/Other Streams
+      'computer': 'cse', 'science': 'cse', 'cse': 'cse', 'ece': 'ece', 'eee': 'eee', 'it': 'it', 'information': 'it', 'technology': 'it',
+      'civil': 'civil', 'mechanical': 'mech', 'mech': 'mech', 'electrical': 'electrical', 'electronics': 'ece', 'chemical': 'chemical',
+      'biomedical': 'biomedical', 'biotech': 'biotech', 'biotechnology': 'biotech', 'aerospace': 'aerospace', 'automobile': 'automobile',
+      'production': 'production', 'structural': 'civil', 'environmental': 'environmental', 'agriculture': 'agri', 'agri': 'agri',
+      'commerce': 'commerce', 'business': 'business', 'arts': 'arts', 'law': 'law', 'medicine': 'medicine',
     };
-    
-    return techMappings[word] || word;
+    // Normalize dots and dashes for degree abbreviations
+    const cleaned = word.replace(/\./g, '').replace(/-/g, '').toLowerCase();
+    return techMappings[cleaned] || cleaned;
   }
 
   // Semantic similarity using Jaccard similarity
@@ -135,12 +149,12 @@ export class ComprehensiveATSScorer {
 
     // Common skill patterns
     const techSkills = tokens.filter(token => 
-      /^(java|python|javascript|react|angular|vue|node|aws|azure|docker|kubernetes|sql|mongodb|redis|git|ci\/cd|devops|machine learning|ai|blockchain)/.test(token)
+      /^(java|python|javascript|react|angular|vue|node|aws|azure|docker|kubernetes|sql|mongo|mongodb|redis|git|ci\/cd|devops|machine learning|ai|blockchain)/.test(token)
     );
 
-    // Extract education keywords
+    // Extract education keywords (expanded to include abbreviations and variations)
     const educationKeywords = tokens.filter(token =>
-      /^(bachelor|master|phd|degree|university|college|engineering|computer science|mba)/.test(token)
+      /^(bachelor|master|phd|ph\.d|bs|bsc|ba|ms|msc|ma|mba|beng|be|b\.e|meng|me|m\.e|m\.eng|b\.eng|mtech|btech|b\.tech|m\.tech|associate|as|aa|university|college|engineering|computer|science|cse|ece|eee|it|arts|commerce|business|law|medicine|md|jd|llb|llm|diploma|certificate|degree)/.test(token)
     );
 
     // Extract certification keywords  
@@ -165,6 +179,7 @@ export class ComprehensiveATSScorer {
     const tokens = this.tokenize(jobDescription);
     const text = jobDescription.toLowerCase();
 
+
     // Identify required vs preferred skills based on context
     const requiredIndicators = ['required', 'must have', 'essential', 'mandatory', 'minimum'];
     const preferredIndicators = ['preferred', 'nice to have', 'plus', 'bonus', 'desired'];
@@ -172,13 +187,27 @@ export class ComprehensiveATSScorer {
     const requiredSkills: string[] = [];
     const preferredSkills: string[] = [];
 
-    // Simple heuristic: if skill appears after required indicators, it's required
+    // Section-based preferred skill extraction
+    const jobDescLower = jobDescription.toLowerCase();
+    let preferredSectionSkills: string[] = [];
+    // Try to extract skills under a 'Preferred' section
+    const preferredSectionMatch = jobDescLower.match(/preferred[\s\S]*?(qualifications|skills|requirements)?[:\-\n]+([\s\S]*?)(\n\n|$)/);
+    if (preferredSectionMatch && preferredSectionMatch[2]) {
+      // Tokenize the section and extract skills
+      const sectionTokens = this.tokenize(preferredSectionMatch[2]);
+      sectionTokens.forEach(token => {
+        if (/^(java|python|javascript|react|angular|vue|node|aws|azure|docker|kubernetes|sql|mongodb|redis|git|ci\/cd|devops|machine learning|ai|blockchain)/.test(token)) {
+          preferredSectionSkills.push(token);
+        }
+      });
+    }
+
     tokens.forEach((token, index) => {
       const context = tokens.slice(Math.max(0, index - 5), index + 5).join(' ');
       const isRequired = requiredIndicators.some(indicator => context.includes(indicator));
       const isPreferred = preferredIndicators.some(indicator => context.includes(indicator));
 
-      if (/^(java|python|javascript|react|angular|vue|node|aws|azure|docker|kubernetes|sql|mongodb|redis|git|ci\/cd|devops|machine learning|ai|blockchain)/.test(token)) {
+      if (/^(java|python|javascript|react|angular|vue|node|aws|azure|docker|kubernetes|sql|mongo|mongodb|redis|git|ci\/cd|devops|machine learning|ai|blockchain)/.test(token)) {
         if (isRequired) {
           requiredSkills.push(token);
         } else if (isPreferred) {
@@ -190,11 +219,19 @@ export class ComprehensiveATSScorer {
       }
     });
 
+    // Add section-based preferred skills (avoid duplicates)
+    preferredSectionSkills.forEach(skill => {
+      if (!preferredSkills.includes(skill)) preferredSkills.push(skill);
+      // Remove from requiredSkills if present
+      const idx = requiredSkills.indexOf(skill);
+      if (idx !== -1) requiredSkills.splice(idx, 1);
+    });
+
     return {
       requiredSkills,
       preferredSkills,
       experience: tokens.filter(token => /^(experience|years|worked)/.test(token)),
-      education: tokens.filter(token => /^(bachelor|master|phd|degree)/.test(token)),
+    education: tokens.filter(token => /^(bachelor|master|phd|ph\.d|bs|bsc|ba|ms|msc|ma|mba|beng|be|b\.e|meng|me|m\.e|m\.eng|b\.eng|mtech|btech|b\.tech|m\.tech|associate|as|aa|university|college|engineering|computer|science|cse|ece|eee|it|arts|commerce|business|law|medicine|md|jd|llb|llm|diploma|certificate|degree)/.test(token)),
       certifications: tokens.filter(token => /^(aws|azure|google|certified|certification)/.test(token)),
       responsibilities: tokens.filter(token => /^(responsible|manage|develop|implement|design)/.test(token)),
       mustHaveKeywords: requiredSkills,
@@ -229,24 +266,34 @@ export class ComprehensiveATSScorer {
       keywordDensity: 0
     };
 
-    // Required Skills Score (most critical)
-    if (jobReqs.requiredSkills.length > 0) {
-      const matchedRequired = jobReqs.requiredSkills.filter(skill => 
-        resumeData.skills.some(resumeSkill => 
-          resumeSkill.includes(skill) || skill.includes(resumeSkill)
-        )
-      );
-      scores.requiredSkills = (matchedRequired.length / jobReqs.requiredSkills.length) * 100;
+    // Combine all job skills (required + preferred) for matching
+    const allJobSkills = [...jobReqs.requiredSkills, ...jobReqs.preferredSkills];
+    // Required Skills Score (case-insensitive, robust, match against all job skills)
+    if (allJobSkills.length > 0) {
+      const norm = (s: string) => s.toLowerCase().replace(/\./g, '').replace(/-/g, '');
+      const resumeSkillsNorm = resumeData.skills.map(norm);
+      const matchedRequired = allJobSkills.filter(skill => {
+        const skillNorm = norm(skill);
+        return resumeSkillsNorm.some(resumeSkill => resumeSkill.includes(skillNorm) || skillNorm.includes(resumeSkill));
+      });
+      scores.requiredSkills = (matchedRequired.length / allJobSkills.length) * 100;
     }
 
-    // Preferred Skills Score
-    if (jobReqs.preferredSkills.length > 0) {
-      const matchedPreferred = jobReqs.preferredSkills.filter(skill => 
-        resumeData.skills.some(resumeSkill => 
-          resumeSkill.includes(skill) || skill.includes(resumeSkill)
-        )
-      );
-      scores.preferredSkills = (matchedPreferred.length / jobReqs.preferredSkills.length) * 100;
+    // Preferred Skills Score (check all job skills against all resume skill-like fields)
+    if (allJobSkills.length > 0) {
+      const norm = (s: string) => s.toLowerCase().replace(/\./g, '').replace(/-/g, '');
+      const allResumeSkillLike = [
+        ...resumeData.skills,
+        ...resumeData.experience,
+        ...resumeData.certifications,
+        ...resumeData.keywords
+      ];
+      const resumeSkillsNorm = allResumeSkillLike.map(norm);
+      const matchedPreferred = allJobSkills.filter(skill => {
+        const skillNorm = norm(skill);
+        return resumeSkillsNorm.some(resumeSkill => resumeSkill.includes(skillNorm) || skillNorm.includes(resumeSkill));
+      });
+      scores.preferredSkills = (matchedPreferred.length / allJobSkills.length) * 100;
     }
 
     // Experience Score
@@ -254,9 +301,14 @@ export class ComprehensiveATSScorer {
     const jobExpSet = new Set(jobReqs.experience);
     scores.experience = this.calculateSimilarity(resumeExpSet, jobExpSet) * 100;
 
-    // Education Score
-    const resumeEduSet = new Set(resumeData.education);
-    const jobEduSet = new Set(jobReqs.education);
+    // Education Score (only degree/stream tokens, ignore institution/location)
+    const degreeTokens = [
+      'be','btech','bsc','bs','ba','bca','bba','bcom','bpharm','mbbs','me','mtech','msc','ms','ma','mba','mca','mcom','mpharm','md','phd','llb','llm','diploma','certificate',
+      'cse','ece','eee','it','civil','mech','mechanical','electrical','electronics','chemical','biomedical','biotech','aerospace','automobile','production','structural','environmental','agri','commerce','business','arts','law','medicine','science','technology','computer','information'
+    ];
+    const filterDegreeTokens = (arr: string[]) => arr.filter(token => degreeTokens.includes(token));
+    const resumeEduSet = new Set(filterDegreeTokens(resumeData.education));
+    const jobEduSet = new Set(filterDegreeTokens(jobReqs.education));
     scores.education = this.calculateSimilarity(resumeEduSet, jobEduSet) * 100;
 
     // Certifications Score
