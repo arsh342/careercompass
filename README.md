@@ -1,152 +1,164 @@
-# CareerCompass
+# 🧽 CareerCompass
 
-<img src="docs/logo.png" alt="CareerCompass Logo" width="120" />
+> *Navigate your career journey with AI-powered job matching and analytics.*
 
-**Tagline:**
-> Navigate your career journey with AI-powered job matching and analytics.
-
----
-
-## Overview
-CareerCompass is a modern, AI-driven job and talent matching platform built for **FusionHacks 2**. It helps employers find the best candidates for their job postings and empowers job seekers to discover opportunities that fit their skills and goals. The platform leverages advanced matching, ranking, and analytics to streamline the hiring process for both sides.
-
-## 🚀 FusionHacks 2 Submission
-
-### Inspiration
-CareerCompass was inspired by the challenges faced by both job seekers and employers in finding the right fit. We wanted to create a platform that leverages AI to make the hiring process more efficient, transparent, and fair for everyone. Our goal was to reduce manual screening, surface the best candidates, and help job seekers discover opportunities that truly match their skills and aspirations.
-
-### About the Project
-This project was built for [FusionHacks 2 on Devpost](https://fusionhacks2.devpost.com/). We set out to solve the problem of inefficient job matching and candidate screening by combining modern web technologies with AI-driven flows. Along the way, we learned a lot about integrating AI with real-world data, handling edge cases in candidate ranking, and building a scalable, user-friendly platform.
-
-**What we learned:**
-- How to design and implement AI-powered flows for ranking and matching.
-- Best practices for structuring a Next.js + Firebase project.
-- Handling real-time data and user roles securely.
-- The importance of clear UI/UX for both employers and job seekers.
-
-**Challenges we faced:**
-- Ensuring fair and unbiased candidate ranking.
-- Handling edge cases where no candidates or postings exist.
-- Integrating multiple APIs and cloud services smoothly.
-- Building a robust, scalable backend for real-time data.
-
-## 🛠️ Built With
-- **Languages:** TypeScript, JavaScript
-- **Frameworks:** Next.js 15, React
-- **Styling:** Tailwind CSS
-- **Cloud/Backend:** Firebase Firestore, Next.js API routes
-- **AI/ML:** Genkit, Gemini API
-- **Other:** Cloudinary, Brevo, Lucide Icons
-
-## 🌐 Try it out
-- [GitHub Repository](https://github.com/arsh342/careercompass)
-- [Devpost Project Page](https://devpost.com/software/careercompass-8sa5kg)
+<p align="center">
+  <img src="docs/logo.png" alt="CareerCompass Logo" width="150" />
+</p>
 
 ---
 
-## ✨ Core Features
+## 🔗 Links
 
-- **User Profiling:** User profile creation and management to store education, skills, interests, and career goals.
-- **Opportunity Aggregation:** Aggregation of internship and volunteer postings from various sources or allows organizations to post directly.
-- **AI Matching Engine:** AI-powered tool for matching user profiles and listings based on skills, interests, and preferences.
-- **Personalized Recommendations:** Personalized recommendations ranked with explanations and relevance indicators.
-- **Application Management:** Ability to save, bookmark, and apply for opportunities.
-- **Employer Dashboard:** Dashboard for employers to create job postings and manage applications.
-- **Employee Dashboard:** Dashboard for employees to manage profile and track recommendations.
-- **Firebase Authentication:** Firebase Authentication with Google Sign-In and Forgot Password functionality.
-- **Comprehensive ATS Score Checker:** Advanced, case-insensitive, and robust ATS scoring for resumes, including education, skills, and preferred skills matching.
+* 🌐 [Live Demo](https://careercompassai.vercel.app/)
+* 🛆 [GitHub Repository](https://github.com/arsh342/careercompass)
+* 🧠 [Devpost Submission](https://devpost.com/software/careercompass-8sa5kg)
+* 📧 [Email](mailto:arsth134@gmail.com)
+* 💼 [LinkedIn](https://www.linkedin.com/in/arshsingh342/)
 
-## 🤖 AI-Powered Features
-- **AI-Powered Candidate Ranking:**
-  - `findAndRankCandidates`: Finds and ranks employees for an employer's active job postings, using AI to score and justify matches based on skills, experience, and goals.
-  - `findMatchingCandidates`: Finds employees whose skills match a specific opportunity, returning a list of suitable candidates.
-- **Employer Dashboard:**
-  - View top-ranked candidates for your postings.
-  - Analytics on postings and applicants.
-- **Employee Experience:**
-  - Discover and apply to jobs that match your skills.
-  - Track applications, save opportunities, and manage your profile.
-- **Admin/Automation:**
-  - Automated emails for application status and onboarding.
-  - Secure authentication and role-based navigation.
+---
 
-## 🔄 Flow Explanation
-### 1. `findAndRankCandidates`
-- **Purpose:** For an employer, find all employees who have not already been actioned (approved/rejected) for their active postings, and rank them using AI.
-- **How it works:**
-  1. Fetch all active postings for the employer and extract required skills.
-  2. Get all employees from the database.
-  3. Filter out employees who have already been actioned for these postings.
-  4. Use an AI prompt to rank the remaining employees by match percentage and provide a justification.
-  5. Return the top candidates to the dashboard.
+## 🧠 What is CareerCompass?
 
-### 2. `findMatchingCandidates`
-- **Purpose:** For a specific job opportunity, find all employees whose skills match the required skills for that opportunity.
-- **How it works:**
-  1. Fetch the opportunity and extract required skills.
-  2. Get all employees from the database.
-  3. Compare employee skills to required skills and return those with at least one match.
+CareerCompass is a modern, AI-driven job and talent matching platform built for **FusionHacks 2**. It bridges the gap between employers and job seekers using intelligent ranking, real-time analytics, and advanced matching flows powered by large language models.
 
-## 💡 What Problem Does It Solve?
-- **For Employers:**
-  - Saves time by surfacing the best-fit candidates automatically.
-  - Reduces bias and manual effort in screening.
-  - Provides actionable analytics on postings and applicants.
-- **For Job Seekers:**
-  - Surfaces relevant opportunities based on real skills and goals.
-  - Makes the application process transparent and efficient.
+Whether you're a **job seeker** exploring relevant roles or an **employer** seeking top-tier candidates, CareerCompass streamlines the process with transparency, personalization, and actionable insights.
 
-## 🎨 Style Guidelines
+---
 
-- **Primary color:** Deep blue (#3F51B5) to evoke trust and professionalism.
-- **Background color:** Light gray (#F0F2F5) to ensure readability and a clean interface.
-- **Accent color:** Vibrant orange (#FF9800) for call-to-action buttons and highlighting important elements.
-- **Body and headline font:** 'Inter' (sans-serif) for a modern, neutral, and readable interface.
-- **Code font:** 'Source Code Pro' for displaying code snippets.
-- Use consistent and professional icons to represent different categories, skills, and functionalities. Follow Material UI guidelines.
-- Adhere to Material UI grid system for responsive layouts.
-- Subtle transitions and animations to provide feedback and guide users through the application process, following Material UI guidelines.
+## ✨ Key Features
 
-## 📁 Project Structure
+### 🚀 For Job Seekers (Employees)
+
+* Create rich user profiles with **skills**, **goals**, and **portfolio links**.
+* AI-powered **job recommendations** tailored to your profile.
+* Track applications, bookmark listings, and update your employability status.
+* View relevance scores and match explanations powered by AI.
+
+### 🧑‍💼 For Employers
+
+* Post internships, jobs, and volunteer roles.
+* Use the **AI Candidate Ranking Engine** to find top talent instantly.
+* Access an **analytics dashboard** with insights on applications.
+* View candidates' profiles, LinkedIn, and portfolio in one place.
+
+### 🧠 AI-Powered Capabilities
+
+* **Candidate Ranking**: Uses AI to find best-fit candidates for each job posting.
+* **Resume Parsing & ATS Scoring**: Extracts structured info from resumes and scores them intelligently.
+* **Skill Matching**: Matches opportunities and employees using Genkit + Gemini AI APIs.
+
+---
+
+## 🔄 AI Flows Breakdown
+
+### 🔍 `findAndRankCandidates`
+
+Finds and ranks employees for an employer’s active job postings.
+
+1. Collect all active job postings and required skills.
+2. Filter out already-reviewed applicants.
+3. Prompt AI to score and rank candidates based on profile-to-job alignment.
+4. Return top results with justifications.
+
+### 🎯 `findMatchingCandidates`
+
+Finds all employees who match a specific opportunity’s skill requirements.
+
+1. Extract required skills from a specific job.
+2. Filter employee profiles that match at least one skill.
+3. Return a short list of candidates ready for action.
+
+---
+
+## 🏗️ Tech Stack
+
+| Category     | Tech Used                              |
+| ------------ | -------------------------------------- |
+| **Frontend** | Next.js 15, React, Tailwind CSS        |
+| **Backend**  | Next.js API Routes, Firebase Firestore |
+| **Auth**     | Firebase Auth with Google Sign-In      |
+| **AI/ML**    | Genkit, Gemini API                     |
+| **Cloud**    | Firebase Hosting, Cloudinary (media)   |
+| **Email**    | Brevo (Transactional Emails)           |
+| **Icons**    | Lucide Icons                           |
+
+---
+
+## 📊 Analytics & Dashboards
+
+* Employer dashboard displays:
+
+  * Top candidates per job posting.
+  * Job application trends via **Recharts**.
+  * Role-aware navigation based on auth state.
+
+---
+
+## 🎨 UI/UX Highlights
+
+* Styled components with consistent form, modal, and dialog designs.
+* Responsive layout with Tailwind CSS + Material UI grid.
+* Role-aware navigation and dashboards for employers/employees.
+* Animated transitions for feedback and user interaction.
+
+### 🖌️ Design System
+
+| Element           | Style                              |
+| ----------------- | ---------------------------------- |
+| **Primary Color** | Deep Blue `#3F51B5`                |
+| **Accent Color**  | Orange `#FF9800`                   |
+| **Background**    | Light Gray `#F0F2F5`               |
+| **Fonts**         | Inter (UI), Source Code Pro (Code) |
+| **Icons**         | Material UI, Lucide                |
+
+---
+
+## 🛠️ Project Structure
 
 ```
 careercompass/
-├── apphosting.yaml
-├── components.json
-├── firestore.rules
-├── next-env.d.ts
-├── next.config.ts
-├── package.json
-├── postcss.config.mjs
-├── README.md
-├── tailwind.config.ts
-├── tsconfig.json
-├── docs/
-│   └── blueprint.md
 ├── src/
-│   ├── ai/
-│   │   ├── dev.ts
-│   │   ├── genkit.ts
-│   │   └── flows/
-│   │       ├── analyze-opportunity-description.ts
-│   │       ├── enhance-text.ts
-│   │       ├── find-and-rank-candidates.ts
-│   │       ├── find-matching-candidates.ts
-│   │       ├── generate-profile-summary.ts
-│   │       ├── parse-resume.ts
-│   │       ├── send-application-status-email.ts
-│   │       ├── send-welcome-email.ts
-│   │       └── types.ts
-│   ├── app/
-│   │   ├── (app)/ ... (main app pages and routes)
-│   │   ├── (auth)/ ... (authentication pages)
-│   │   └── api/ ... (API routes)
-│   ├── components/
-│   │   └── ui/ ... (UI components)
-│   ├── context/
-│   ├── hooks/
-│   └── lib/
-└── ...
+│   ├── ai/                        # AI-powered logic and prompt flows
+│   ├── app/                       # Application routes and pages
+│   ├── components/               # Reusable UI components
+│   ├── context/                  # Auth, Theme, and Global State
+│   ├── hooks/                    # Custom React hooks
+│   └── lib/                      # Utilities and constants
+├── docs/                         # Hackathon documentation
+├── tailwind.config.ts           # Tailwind CSS config
+├── firestore.rules              # Firebase security rules
+├── .env.local                   # Environment secrets (excluded from repo)
+├── next.config.ts               # Next.js configuration
+└── README.md                    # You're here!
 ```
 
 ---
+
+## 🧪 Recent Improvements
+
+* ✅ AI flows improved with clearer justifications and scoring logic.
+* ✅ Navigation is now role-based and dynamically routed.
+* ✅ Email notifications now trigger **only on relevant actions**.
+* ✅ LinkedIn and Portfolio links now visible on candidate cards.
+* ✅ Firebase secrets moved to `.env.local` for security.
+* ✅ Cleaned up dead/debug code and unused API triggers.
+
+---
+
+## ⚖️ License
+
+This project is licensed under the **MIT License**.
+See the [LICENSE](./LICENSE) file for details.
+
+---
+
+## 🤝 Contributors
+
+* 👨‍💻 Arsh Singh – [LinkedIn](https://www.linkedin.com/in/arshsingh342/) | [Email](mailto:arsth134@gmail.com)
+
+---
+
+## 📣 Submission
+
+This project was created for **[FusionHacks 2](https://fusionhacks2.devpost.com/)** and is proudly open-sourced for future development and collaboration.
