@@ -161,4 +161,4 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## 📣 Submission
 
-This project was created for **[FusionHacks 2](https://fusionhacks2.devpost.com/)** and is proudly open-sourced for future development and collaboration.
+This project was created for **[FusionHacks 2](https://fusionhacks-2.devpost.com/?ref_feature=challenge&ref_medium=discover&_gl=1*wkk4ge*_gcl_au*MTIyMjA5NTg5MC4xNzUzMTc4MDIy*_ga*MTMzMDYxMjk3NS4xNzUzMTc4MDIy*_ga_0YHJK3Y10M*czE3NTM4NzI4NjIkbzE5JGcxJHQxNzUzODcyOTMzJGo0OSRsMCRoMA..)** and is proudly open-sourced for future development and collaboration.
