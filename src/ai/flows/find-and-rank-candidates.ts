@@ -195,20 +195,7 @@ const findAndRankCandidatesFlow = ai.defineFlow(
     const uniqueEmployees = Array.from(uniqueEmployeesMap.values());
 
     // Debug output: log all employees being considered and required skills
-    console.log(
-      "[findAndRankCandidates] Employees considered (eligible + applied):",
-      uniqueEmployees.length,
-      uniqueEmployees.map((e) => e.uid)
-    );
-    console.log(
-      "[findAndRankCandidates] Required skills:",
-      requiredSkillsString
-    );
-
     if (uniqueEmployees.length === 0) {
-      console.warn(
-        "[findAndRankCandidates] No employees found. Returning empty candidate list."
-      );
       return { candidates: [] };
     }
 
@@ -230,7 +217,6 @@ const findAndRankCandidatesFlow = ai.defineFlow(
     // Fallback: If AI output is missing or empty, return top 5 employees with default values
     let candidatesWithStatus;
     if (!output || !output.candidates || output.candidates.length === 0) {
-      console.warn("[findAndRankCandidates] AI returned no candidates.");
       candidatesWithStatus = uniqueEmployees.slice(0, 5).map((emp) => {
         let applicationStatus: "applied" | "invited" | "not_applied";
         if (appliedUserIds.has(emp.uid)) {
