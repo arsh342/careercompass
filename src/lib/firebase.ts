@@ -7,14 +7,14 @@ import { getStorage } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Your web app's Firebase configuration (now using environment variables for security)
 const firebaseConfig = {
-  apiKey: "REMOVED_KEY",
-  authDomain: "REMOVED_DOMAIN",
-  projectId: "REMOVED_PROJECT_ID",
-  storageBucket: "REMOVED_PROJECT_ID.appspot.com",
-  messagingSenderId: "REMOVED_SENDER_ID",
-  appId: "1:REMOVED_SENDER_ID:web:819f697f6f53f7bb5bc807"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
 };
 
 // Initialize Firebase
