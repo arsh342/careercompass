@@ -1,4 +1,4 @@
-# 🧽 CareerCompass
+# 🧭 CareerCompass
 
 > *Navigate your career journey with AI-powered job matching and analytics.*
 
