@@ -611,7 +611,10 @@ export default function ApplicantsPage() {
                         {/* Show which job this candidate is matched for */}
                         {opportunity?.title && (
                           <span className="inline-block text-xs bg-muted px-2 py-0.5 rounded mb-1 mt-1 text-muted-foreground">
-                            Matched for: <span className="font-medium text-primary">{opportunity.title}</span>
+                            Matched for:{" "}
+                            <span className="font-medium text-primary">
+                              {opportunity.title}
+                            </span>
                           </span>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
