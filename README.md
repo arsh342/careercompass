@@ -17,6 +17,18 @@
   <a href="mailto:arsth134@gmail.com">📧 Contact</a>
 </p>
 
+## 📹 Demo Video
+
+<p align="center">
+  <a href="https://youtu.be/Pj2JjIGT_zs">
+    <img src="https://img.youtube.com/vi/Pj2JjIGT_zs/maxresdefault.jpg" alt="CareerCompass Demo Video" width="600" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/Pj2JjIGT_zs">▶️ Watch the Demo Video</a>
+</p>
+
 ---
 
 ## � Project Highlights
@@ -685,7 +697,6 @@ For developers wanting to set up their own instance:
 - ✅ **Real-time Updates**: Live application status and notification system
 - ✅ **Advanced Filtering**: Multi-criteria search with saved preferences
 - ✅ **Accessibility**: WCAG 2.1 AA compliance with screen reader support
-
 
 ## ⚖️ License
 
