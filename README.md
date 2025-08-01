@@ -20,13 +20,7 @@
 ## 📹 Demo Video
 
 <p align="center">
-  <a href="https://youtu.be/Pj2JjIGT_zs">
-    <img src="https://img.youtube.com/vi/Pj2JjIGT_zs/maxresdefault.jpg" alt="CareerCompass Demo Video" width="600" />
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://youtu.be/Pj2JjIGT_zs">▶️ Watch the Demo Video</a>
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/Pj2JjIGT_zs" title="CareerCompass Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </p>
 
 ---
