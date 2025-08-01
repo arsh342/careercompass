@@ -43,4 +43,5 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
-PROJECT_INFO.txt
+PROJECT_INFO.md
+PERFORMANCE_OPTIMIZATION_REPORT.md
