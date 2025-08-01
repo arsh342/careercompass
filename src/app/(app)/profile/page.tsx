@@ -399,7 +399,7 @@ export default function ProfilePage() {
               .filter(Boolean)
               .join(" ");
           } catch {}
-          
+
           if (!parsedText.trim() || !atsJobDesc.trim()) {
             setAtsLoading(false);
             setAtsScore(null);
