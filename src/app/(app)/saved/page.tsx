@@ -33,12 +33,18 @@ export default function SavedOpportunitiesPage() {
   const calculateMatch = (opportunity: any) => {
     if (!userProfile?.skills || role === "employer") return 0;
     const userSkills = new Set(
-      (userProfile.skills || "").split(",").map((s) => s.trim().toLowerCase())
+      (userProfile.skills || "")
+        .split(",")
+        .map((s: string) => s.trim().toLowerCase())
     );
     const requiredSkills = new Set(
       typeof opportunity.skills === "string"
-        ? opportunity.skills.split(",").map((s) => s.trim().toLowerCase())
-        : (opportunity.skills || []).map((s: string) => String(s).toLowerCase())
+        ? opportunity.skills
+            .split(",")
+            .map((s: string) => s.trim().toLowerCase())
+        : (opportunity.skills || []).map((s: unknown) =>
+            String(s).toLowerCase()
+          )
     );
     if (requiredSkills.size === 0) return 0;
 
@@ -204,11 +210,13 @@ export default function SavedOpportunitiesPage() {
                         Required skills:
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {skillsArray.slice(0, 5).map((skill, index) => (
-                          <Badge key={`${skill}-${index}`} variant="outline">
-                            {skill}
-                          </Badge>
-                        ))}
+                        {skillsArray
+                          .slice(0, 5)
+                          .map((skill: string, index: number) => (
+                            <Badge key={`${skill}-${index}`} variant="outline">
+                              {skill}
+                            </Badge>
+                          ))}
                         {skillsArray.length > 5 && (
                           <Badge variant="secondary" className="text-xs">
                             +{skillsArray.length - 5} more

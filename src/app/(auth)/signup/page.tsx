@@ -1,28 +1,42 @@
+"use client";
 
-'use client';
+import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
+import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from "firebase/firestore"; 
-import { auth, db } from '@/lib/firebase';
-import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import { sendWelcomeEmail } from '@/ai/flows/send-welcome-email';
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { sendWelcomeEmailDirect } from "@/lib/email-utils";
 
 const signupSchema = z.object({
-  fullName: z.string().min(2, { message: 'Please enter your full name.' }),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+  fullName: z.string().min(2, { message: "Please enter your full name." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters." }),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -35,27 +49,31 @@ export default function SignupPage() {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      fullName: '',
-      email: '',
-      password: '',
+      fullName: "",
+      email: "",
+      password: "",
     },
   });
 
   const onSubmit = async (values: SignupFormValues) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
       const user = userCredential.user;
-      
+
       await updateProfile(user, {
         displayName: values.fullName,
       });
 
-      const emailDomain = values.email.split('@')[1];
-      const role = emailDomain === 'gmail.com' ? 'employee' : 'employer';
+      const emailDomain = values.email.split("@")[1];
+      const role = emailDomain === "gmail.com" ? "employee" : "employer";
 
-      const nameParts = values.fullName.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
+      const nameParts = values.fullName.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
 
       await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
@@ -64,21 +82,28 @@ export default function SignupPage() {
         role: role,
         firstName: firstName,
         lastName: lastName,
-        ...(role === 'employer' && { companyName: values.fullName })
+        ...(role === "employer" && { companyName: values.fullName }),
       });
 
-      await sendWelcomeEmail({ to: values.email, name: values.fullName });
+      // Send welcome email
+      const emailSent = await sendWelcomeEmailDirect(
+        values.email,
+        values.fullName
+      );
+
+      // Note: Welcome campaigns and automation will be triggered on first login
 
       toast({
-        title: 'Account Created',
-        description: 'Your account has been successfully created. Please log in.',
+        title: "Account Created",
+        description:
+          "Your account has been successfully created. Please log in.",
       });
-      router.push('/login');
+      router.push("/login");
     } catch (error: any) {
       toast({
-        title: 'Signup Failed',
+        title: "Signup Failed",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
@@ -87,7 +112,9 @@ export default function SignupPage() {
     <Card>
       <CardHeader>
         <CardTitle>Create an Account</CardTitle>
-        <CardDescription>Join CareerCompass to find your next opportunity.</CardDescription>
+        <CardDescription>
+          Join CareerCompass to find your next opportunity.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -126,20 +153,26 @@ export default function SignupPage() {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <div className="relative">
-                       <Input
-                        type={showPassword ? 'text' : 'password'}
+                      <Input
+                        type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         {...field}
                       />
-                       <Button
+                      <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                         <span className="sr-only">{showPassword ? 'Hide password' : 'Show password'}</span>
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                        <span className="sr-only">
+                          {showPassword ? "Hide password" : "Show password"}
+                        </span>
                       </Button>
                     </div>
                   </FormControl>
@@ -147,15 +180,21 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90"
+            >
               Create Account
             </Button>
           </form>
         </Form>
         <div className="mt-6 text-center text-sm">
-          Already have an account?{' '}
-           <Link href="/login" className="font-medium text-primary hover:underline">
-             Sign in
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="font-medium text-primary hover:underline"
+          >
+            Sign in
           </Link>
         </div>
       </CardContent>

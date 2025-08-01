@@ -10,12 +10,12 @@ import { useAuth } from "@/context/AuthContext";
 export function SearchBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { role } = useAuth();
+  const { role, loading } = useAuth();
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    if (role === "employer") return;
+    if (loading || role === "employer") return;
 
     const currentPath = window.location.pathname;
     const targetPath = debouncedSearchTerm
@@ -32,15 +32,15 @@ export function SearchBar() {
     } else if (currentPath === "/opportunities" && searchParams.has("q")) {
       router.push("/opportunities");
     }
-  }, [debouncedSearchTerm, router, searchParams, role]);
+  }, [debouncedSearchTerm, router, searchParams, role, loading]);
 
   useEffect(() => {
-    if (role === "employer") return;
+    if (loading || role === "employer") return;
     setSearchTerm(searchParams.get("q") || "");
-  }, [searchParams, role]);
+  }, [searchParams, role, loading]);
 
-  if (role === "employer") {
-    return null; // Don't render search bar or run its logic for employers
+  if (loading || role === "employer") {
+    return null; // Don't render search bar during loading or for employers
   }
 
   return (
