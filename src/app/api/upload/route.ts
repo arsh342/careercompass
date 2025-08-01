@@ -1,14 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import formidable from 'formidable';
 import { v2 as cloudinary } from 'cloudinary';
-
-// This is required to disable the default body parser
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -16,32 +8,40 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const formidableParse = (req: NextRequest): Promise<{ fields: formidable.Fields; files: formidable.Files }> =>
-  new Promise((resolve, reject) => {
-    const form = formidable({});
-    form.parse(req as any, (err, fields, files) => {
-      if (err) return reject(err);
-      resolve({ fields, files });
-    });
-  });
-
 export async function POST(req: NextRequest) {
   try {
-    const { fields, files } = await formidableParse(req);
+    const formData = await req.formData();
 
-    const file = files.file?.[0];
-    const userId = fields.userId?.[0];
+    const file = formData.get('file') as File;
+    const userId = formData.get('userId') as string;
 
     if (!file || !userId) {
       return NextResponse.json({ error: 'File and userId are required' }, { status: 400 });
     }
 
-    const result = await cloudinary.uploader.upload(file.filepath, {
-      folder: `profile-pictures/${userId}`,
-      public_id: file.newFilename,
+    // Convert File to Buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Upload to Cloudinary
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          folder: `profile-pictures/${userId}`,
+          public_id: `${userId}-${Date.now()}`,
+          resource_type: 'auto',
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      ).end(buffer);
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    return NextResponse.json({ url: (result as any).secure_url });
 
   } catch (error) {
     console.error('Upload failed:', error);
