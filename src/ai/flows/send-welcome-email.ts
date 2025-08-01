@@ -69,7 +69,11 @@ const sendWelcomeEmailFlow = ai.defineFlow(
       return;
     }
 
-    if (!process.env.BREVO_SMTP_HOST || !process.env.BREVO_SMTP_USER || !process.env.BREVO_SMTP_PASS) {
+    if (
+      !process.env.BREVO_SMTP_HOST ||
+      !process.env.BREVO_SMTP_USER ||
+      !process.env.BREVO_SMTP_PASS
+    ) {
       console.error("Missing Brevo SMTP credentials in .env file");
       throw new Error("Email service is not configured.");
     }
