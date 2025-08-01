@@ -38,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { findMatchingCandidates } from "@/ai/flows/find-matching-candidates";
-import { sendApplicationStatusEmail } from "@/ai/flows/send-application-status-email";
+import { sendApplicationStatusEmailDirect } from "@/lib/email-utils";
 import { enhanceText } from "@/ai/flows/enhance-text";
 import { Bot } from "lucide-react";
 import { SkillsInput } from "@/components/skills-input";
@@ -158,11 +158,11 @@ export default function NewPostingPage() {
                 <p>The CareerCompass Team</p>
               `;
 
-            await sendApplicationStatusEmail({
-              to: candidate.email,
+            const emailSent = await sendApplicationStatusEmailDirect(
+              candidate.email,
               subject,
-              body,
-            });
+              body
+            );
           }
         } else {
           toast({

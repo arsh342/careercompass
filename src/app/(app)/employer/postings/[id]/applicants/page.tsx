@@ -38,7 +38,7 @@ import {
   FindAndRankCandidatesOutput,
 } from "@/ai/flows/find-and-rank-candidates";
 import { ComprehensiveATSScorer } from "@/lib/comprehensiveAtsScorer";
-import { sendApplicationStatusEmail } from "@/ai/flows/send-application-status-email";
+import { sendApplicationStatusEmailDirect } from "@/lib/email-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -211,17 +211,17 @@ export default function ApplicantsPage() {
 
     // 1. Send real invite email
     try {
-      await sendApplicationStatusEmail({
-        to: candidate.email,
-        subject: `Invitation to apply for ${opportunity.title}`,
-        body: `
+      const emailSent = await sendApplicationStatusEmailDirect(
+        candidate.email,
+        `Invitation to apply for ${opportunity.title}`,
+        `
                     <p>Hello ${candidate.displayName},</p>
                     <p>You are invited to apply for the <strong>${opportunity.title}</strong> position at <strong>${opportunity.employerName}</strong>.</p>
                     <p>Your skills and experience make you a great fit for this role. Click below to view and apply:</p>
                     <p><a href="${window.location.origin}/opportunities/${id}">View Opportunity</a></p>
                     <p>Best regards,<br/>${opportunity.employerName} Team</p>
-                `,
-      });
+                `
+      );
     } catch (e) {
       toast({
         title: "Error",
@@ -300,11 +300,11 @@ export default function ApplicantsPage() {
                     <p>The ${opportunity.employerName} Team</p>
                 `;
 
-        await sendApplicationStatusEmail({
-          to: applicant.userEmail,
-          subject: subject,
-          body: body,
-        });
+        const emailSent = await sendApplicationStatusEmailDirect(
+          applicant.userEmail,
+          subject,
+          body
+        );
       }
     } catch (error) {
       console.error("Error updating status:", error);

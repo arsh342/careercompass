@@ -1,6 +1,7 @@
 import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
-import { SearchBar } from "@/components/search-bar";
+import { ConditionalSearchBar } from "@/components/conditional-search-bar";
+import { HeaderQuickActions } from "@/components/header-quick-actions";
 import { Suspense } from "react";
 import {
   SidebarProvider,
@@ -35,14 +36,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <ClientSidebarHeader />
             </div>
             <div className="flex-1">
-              <Suspense
-                fallback={
-                  <div className="h-9 w-full bg-muted rounded-md animate-pulse" />
-                }
-              >
-                <SearchBar />
-              </Suspense>
+              <ConditionalSearchBar />
             </div>
+            <HeaderQuickActions />
             <UserNav />
           </header>
           <main className="flex-1 p-4 md:p-6">{children}</main>

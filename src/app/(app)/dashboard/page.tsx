@@ -78,24 +78,28 @@ export default function DashboardPage() {
             } as Opportunity)
         );
 
-        const userSkills = new Set(
+        const userSkills: Set<string> = new Set(
           (userProfile.skills || "")
             .split(",")
-            .map((s) => s.trim().toLowerCase())
+            .map((s: string) => s.trim().toLowerCase())
         );
 
-        let recommendedOpportunities = [];
+        let recommendedOpportunities: any[] = [];
 
         if (userSkills.size > 0) {
           recommendedOpportunities = opportunitiesData
             .map((opp) => {
-              const requiredSkills = new Set(
+              const requiredSkills: Set<string> = new Set(
                 typeof opp.skills === "string"
-                  ? opp.skills.split(",").map((s) => s.trim().toLowerCase())
-                  : (opp.skills || []).map((s) => String(s).toLowerCase())
+                  ? opp.skills
+                      .split(",")
+                      .map((s: string) => s.trim().toLowerCase())
+                  : (opp.skills || []).map((s: unknown) =>
+                      String(s).toLowerCase()
+                    )
               );
-              const commonSkills = [...userSkills].filter((skill) =>
-                requiredSkills.has(skill)
+              const commonSkills = Array.from(userSkills).filter(
+                (skill: string) => requiredSkills.has(skill)
               );
               const matchPercentage =
                 requiredSkills.size > 0
