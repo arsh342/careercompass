@@ -46,16 +46,6 @@
 
 ---
 
-## �🔗 Quick Links
-
-- 🌐 **[Live Demo](https://careercompassai.vercel.app/)** - Experience the platform in action
-- 🛆 **[GitHub Repository](https://github.com/arsh342/careercompass)** - Full source code and documentation
-- 🧠 **[Devpost Submission](https://devpost.com/software/careercompass-8sa5kg)** - Competition entry details
-- 📧 **[Email](mailto:arsth134@gmail.com)** - Direct contact with the development team
-- 💼 **[LinkedIn](https://www.linkedin.com/in/arshsingh342/)** - Professional profile and updates
-
----
-
 ## 🧠 What is CareerCompass?
 
 CareerCompass is a modern, AI-driven job and talent matching platform that revolutionizes how employers and job seekers connect. Built with cutting-edge technology and powered by advanced AI algorithms, it creates intelligent matches between opportunities and candidates while providing deep analytics and insights.
@@ -276,7 +266,6 @@ Become the leading AI-powered career platform that transforms how people discove
 
 | Technology           | Purpose                                   |
 | -------------------- | ----------------------------------------- |
-| **Google Genkit**    | AI development framework                  |
 | **Gemini Pro**       | Advanced language model for complex tasks |
 | **Gemini Flash**     | Fast language model for quick operations  |
 | **Google AI Studio** | Model management and monitoring           |
@@ -289,16 +278,6 @@ Become the leading AI-powered career platform that transforms how people discove
 | **GitHub**              | Version control and collaboration    |
 | **ESLint**              | Code linting and quality assurance   |
 | **TypeScript Compiler** | Type checking and build optimization |
-
-### Performance Optimizations
-
-| Optimization           | Impact                         |
-| ---------------------- | ------------------------------ |
-| **Bundle Splitting**   | Reduced initial load times     |
-| **Tree Shaking**       | Eliminated unused code         |
-| **Image Optimization** | Faster loading with Cloudinary |
-| **Console Removal**    | Cleaner production builds      |
-| **Dependency Cleanup** | Smaller bundle size            |
 
 ### External Services
 
@@ -359,50 +338,6 @@ Become the leading AI-powered career platform that transforms how people discove
 - **Trend Analysis**: Historical data with predictive insights
 - **Comparative Metrics**: Benchmark performance against industry standards
 - **Custom Reports**: Exportable reports for stakeholder presentations
-
----
-
-## ⚡ Performance Optimizations
-
-### Recent Performance Improvements
-
-CareerCompass has undergone comprehensive performance optimization to ensure the best possible user experience:
-
-#### Code Quality & Bundle Size
-
-- **Dependency Cleanup**: Removed unused packages (formidable, @types/formidable)
-- **Dead Code Elimination**: Removed 8+ unused API directories and test files
-- **Import Optimization**: Strategic tree-shaking for Lucide React and Radix UI icons
-- **Console Log Removal**: Automatic removal of debug statements in production builds
-- **TypeScript Compliance**: Fixed all type errors for improved build performance
-
-#### Build & Runtime Optimizations
-
-- **Next.js Compiler**: Enhanced with automatic console removal and package optimization
-- **Bundle Splitting**: Optimized code splitting for faster initial load times
-- **Image Optimization**: Cloudinary integration for responsive image delivery
-- **Cache Management**: Cleaned build artifacts for faster subsequent builds
-
-#### Architecture Improvements
-
-- **API Route Optimization**: Streamlined to only essential endpoints
-- **File Upload Enhancement**: Migrated from formidable to native Next.js FormData for better performance
-- **Email System**: Optimized Brevo integration with reduced latency
-- **Database Queries**: Optimized Firestore queries for faster data retrieval
-
-#### Performance Metrics
-
-- **Bundle Size**: Reduced by ~15% through dependency cleanup
-- **Build Time**: Improved by ~30% with cache optimizations
-- **First Load Time**: Enhanced through strategic code splitting
-- **Type Safety**: 100% TypeScript coverage with strict mode compliance
-
-### Monitoring & Analytics
-
-- **Core Web Vitals**: Optimized for 95+ Lighthouse scores
-- **Error Tracking**: Comprehensive logging with Vercel Analytics
-- **Performance Monitoring**: Real-time metrics for continuous optimization
-- **User Experience**: Smooth interactions with sub-second response times
 
 ---
 
@@ -635,44 +570,13 @@ Utility functions, third-party service configurations, and business logic that d
    npm install
    ```
 
-3. **Request Environment File**
-
-   Contact the development team for the `.env.local` file containing:
-
-   - Firebase configuration
-   - Google AI API keys
-   - Brevo email service credentials
-   - Cloudinary image storage keys
-
    **Note**: All credentials are for demonstration purposes only.
 
-4. **Start Development Server**
+3. **Start Development Server**
 
    ```bash
    npm run dev
    ```
-
-   Access the application at: http://localhost:9002
-
-5. **Optional: AI Features**
-
-   ```bash
-   npm run genkit:dev
-   ```
-
-   Starts the AI development server for enhanced features.
-
-### Demo Credentials
-
-#### Employee Account (Job Seeker)
-
-- **Email**: testUser@gmail.com
-- **Password**: test@User1
-
-#### Employer Account (Recruiter)
-
-- **Email**: employer@company.com
-- **Password**: employer@Test1
 
 **Important**: For Gmail addresses as employers, use email/password login instead of Google OAuth.
 
@@ -733,57 +637,6 @@ For developers wanting to set up their own instance:
    - Get cloud name, API key, and secret
    - Configure upload presets
 
-### Build Commands
-
-```bash
-# Development server
-npm run dev
-
-# AI development server
-npm run genkit:dev
-
-# Type checking
-npm run typecheck
-
-# Production build
-npm run build
-
-# Start production server
-npm run start
-
-# Linting
-npm run lint
-```
-
-### Deployment
-
-#### Vercel (Recommended)
-
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy with automatic CI/CD
-
-#### Firebase Hosting
-
-1. Install Firebase CLI: `npm install -g firebase-tools`
-2. Login: `firebase login`
-3. Build: `npm run build`
-4. Deploy: `firebase deploy`
-
-### Development Workflow
-
-#### Available Scripts
-
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run start        # Start production server
-npm run lint         # Run ESLint
-npm run typecheck    # TypeScript type checking
-npm run genkit:dev   # Start AI development server
-npm run genkit:watch # Start AI server with hot reload
-```
-
 #### Database Setup
 
 1. **Firestore Collections**:
@@ -804,11 +657,9 @@ npm run genkit:watch # Start AI server with hot reload
 - **Authentication**: Google OAuth setup
 - **Firestore**: Database rules and indexes
 - **Storage**: File upload configurations
-- **Hosting**: Deployment settings
 
 ### AI Configuration
 
-- **Genkit Setup**: Model selection and prompt engineering
 - **API Keys**: Secure key management
 - **Rate Limiting**: Request throttling and quotas
 
@@ -819,75 +670,22 @@ npm run genkit:watch # Start AI server with hot reload
 
 ---
 
-## 🧪 Recent Improvements & Features
-
-### Latest Enhancements (2025)
+### User Experience
 
 - ✅ **Enhanced Job Cards**: Rich job descriptions with compensation, experience, and education details
 - ✅ **Advanced Search**: Skill-based and location-based search with highlighting
 - ✅ **Pagination System**: Efficient browsing with 15 items per page and keyboard navigation
 - ✅ **Mobile Responsiveness**: Improved mobile experience across all components
 - ✅ **Theme Integration**: Seamless dark/light mode with cycling theme toggle
-
-### AI & Intelligence Improvements
-
 - ✅ **Smarter Matching**: Enhanced AI algorithms for better candidate-job matching
 - ✅ **Resume Enhancement**: AI-powered content improvement suggestions
 - ✅ **Profile Analytics**: Detailed insights into profile performance and visibility
 - ✅ **Predictive Recommendations**: Machine learning-based job suggestions
-
-### User Experience Enhancements
-
 - ✅ **Streamlined Navigation**: Role-aware navigation with intuitive user flows
 - ✅ **Real-time Updates**: Live application status and notification system
 - ✅ **Advanced Filtering**: Multi-criteria search with saved preferences
 - ✅ **Accessibility**: WCAG 2.1 AA compliance with screen reader support
 
-### Developer Experience
-
-- ✅ **Type Safety**: Comprehensive TypeScript integration
-- ✅ **Code Quality**: ESLint and Prettier configuration
-- ✅ **Performance**: Optimized bundle size and loading times
-- ✅ **Security**: Enhanced authentication and data protection
-
-### Security & Privacy
-
-- ✅ **Data Encryption**: End-to-end encryption for sensitive data
-- ✅ **GDPR Compliance**: Privacy controls and data export capabilities
-- ✅ **Secure Authentication**: Multi-factor authentication options
-- ✅ **Rate Limiting**: API protection against abuse
-
-## 🔮 Roadmap & Future Features
-
-### Q1 2025 (Completed)
-
-- [x] Enhanced job card design with detailed information
-- [x] Advanced search and filtering capabilities
-- [x] Responsive design improvements
-- [x] AI-powered content enhancement
-
-### Q2 2025 (Planned)
-
-- [ ] **Video Interviews**: Integrated video calling for remote interviews
-- [ ] **Skills Assessment**: Interactive skill testing and certification
-- [ ] **Company Reviews**: Employee feedback and company rating system
-- [ ] **Salary Insights**: Market salary data and negotiation tools
-
-### Q3 2025 (Planned)
-
-- [ ] **Mobile App**: Native iOS and Android applications
-- [ ] **API Platform**: Public API for third-party integrations
-- [ ] **Advanced Analytics**: Machine learning insights and predictions
-- [ ] **Multi-language Support**: Internationalization and localization
-
-### Q4 2025 (Vision)
-
-- [ ] **Blockchain Integration**: Verified credentials and achievements
-- [ ] **AR/VR Features**: Virtual office tours and immersive experiences
-- [ ] **Global Expansion**: Multi-country support with local regulations
-- [ ] **Enterprise Solutions**: White-label platform for large organizations
-
----
 
 ## ⚖️ License
 
