@@ -247,7 +247,6 @@ export async function scheduleWeeklyJobAlerts(): Promise<void> {
       });
 
       const sendData = await sendResponse.json();
-      console.log("Weekly job digest campaign result:", sendData);
     }
   } catch (error) {
     console.error("Error scheduling weekly job alerts:", error);

@@ -69,31 +69,15 @@ const sendWelcomeEmailFlow = ai.defineFlow(
       return;
     }
 
-    console.log("=== WELCOME EMAIL DEBUG INFO ===");
-    console.log("BREVO_SMTP_HOST:", process.env.BREVO_SMTP_HOST);
-    console.log("BREVO_SMTP_PORT:", process.env.BREVO_SMTP_PORT);
-    console.log("BREVO_SMTP_USER:", process.env.BREVO_SMTP_USER);
-    console.log(
-      "BREVO_SMTP_PASSWORD exists:",
-      !!process.env.BREVO_SMTP_PASSWORD
-    );
-    console.log("Sending welcome email to:", to);
-    console.log("================================");
-
-    if (
-      !process.env.BREVO_SMTP_HOST ||
-      !process.env.BREVO_SMTP_PORT ||
-      !process.env.BREVO_SMTP_USER ||
-      !process.env.BREVO_SMTP_PASSWORD
-    ) {
+    if (!process.env.BREVO_SMTP_HOST || !process.env.BREVO_SMTP_USER || !process.env.BREVO_SMTP_PASS) {
       console.error("Missing Brevo SMTP credentials in .env file");
       throw new Error("Email service is not configured.");
     }
 
     const transporter = nodemailer.createTransport({
       host: process.env.BREVO_SMTP_HOST,
-      port: parseInt(process.env.BREVO_SMTP_PORT, 10),
-      secure: parseInt(process.env.BREVO_SMTP_PORT, 10) === 465, // true for 465, false for other ports
+      port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
+      secure: parseInt(process.env.BREVO_SMTP_PORT || "587", 10) === 465, // true for 465, false for other ports
       auth: {
         user: process.env.BREVO_SMTP_USER,
         pass: process.env.BREVO_SMTP_PASSWORD,
@@ -110,15 +94,12 @@ const sendWelcomeEmailFlow = ai.defineFlow(
     `;
 
     try {
-      console.log("Attempting to send welcome email...");
       const result = await transporter.sendMail({
         from: `"CareerCompass" <no-reply@careercompass.com>`,
         to: to,
         subject: subject,
         html: body,
       });
-      console.log(`Welcome email sent successfully to ${to}`);
-      console.log("Welcome email result:", result);
     } catch (error) {
       console.error("Error sending welcome email:", error);
       console.error(
