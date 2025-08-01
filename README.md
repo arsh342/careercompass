@@ -20,10 +20,13 @@
 ## 📹 Demo Video
 
 <p align="center">
-  <video width="560" height="315" controls>
-    <source src="docs/demo.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <a href="docs/demo.mp4">
+    <img src="https://img.shields.io/badge/▶️_Watch_Demo-Click_Here-blue?style=for-the-badge&logo=video" alt="Watch Demo Video" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="docs/demo.mp4">🎥 Click to download and watch the demo video</a>
 </p>
 
 ---
