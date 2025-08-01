@@ -54,11 +54,6 @@
 - 📧 **[Email](mailto:arsth134@gmail.com)** - Direct contact with the development team
 - 💼 **[LinkedIn](https://www.linkedin.com/in/arshsingh342/)** - Professional profile and updates
 
-### Demo Credentials for Judges
-
-- **Employee**: testUser@gmail.com / test@User1
-- **Employer**: employer@company.com / employer@Test1
-
 ---
 
 ## 🧠 What is CareerCompass?
