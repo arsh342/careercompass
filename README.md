@@ -20,13 +20,13 @@
 ## 📹 Demo Video
 
 <p align="center">
-  <a href="docs/demo.mp4">
-    <img src="https://img.shields.io/badge/▶️_Watch_Demo-Click_Here-blue?style=for-the-badge&logo=video" alt="Watch Demo Video" />
+  <a href="https://youtu.be/Pj2JjIGT_zs">
+    <img src="https://img.youtube.com/vi/Pj2JjIGT_zs/maxresdefault.jpg" alt="CareerCompass Demo Video" width="600" />
   </a>
 </p>
 
 <p align="center">
-  <a href="docs/demo.mp4">🎥 Click to download and watch the demo video</a>
+  <a href="https://youtu.be/Pj2JjIGT_zs">▶️ Watch the Demo Video</a>
 </p>
 
 ---
