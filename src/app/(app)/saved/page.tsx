@@ -1,7 +1,13 @@
+"use client";
 
-'use client';
-
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, Heart } from "lucide-react";
@@ -14,32 +20,43 @@ import { useEffect } from "react";
 export default function SavedOpportunitiesPage() {
   const { saved, setSaved, toggleSave } = useSavedOpportunities();
   const { userProfile, role } = useAuth();
-  
+
   useEffect(() => {
-    if (role === 'employer') return;
+    if (role === "employer") return;
     // Filter out any saved opportunities that are no longer active
-    const activeSaved = saved.filter(opp => opp.status !== 'Archived');
+    const activeSaved = saved.filter((opp) => opp.status !== "Archived");
     if (activeSaved.length !== saved.length) {
       setSaved(activeSaved);
     }
   }, [saved, setSaved, role]);
 
   const calculateMatch = (opportunity: any) => {
-      if (!userProfile?.skills || role === 'employer') return 0;
-      const userSkills = new Set((userProfile.skills || '').split(',').map(s => s.trim().toLowerCase()));
-      const requiredSkills = new Set(typeof opportunity.skills === 'string' ? opportunity.skills.split(',').map(s => s.trim().toLowerCase()) : (opportunity.skills || []).map((s: string) => String(s).toLowerCase()));
-      if (requiredSkills.size === 0) return 0;
-      
-      const commonSkills = [...userSkills].filter(skill => requiredSkills.has(skill));
-      return Math.round((commonSkills.length / requiredSkills.size) * 100);
-  }
+    if (!userProfile?.skills || role === "employer") return 0;
+    const userSkills = new Set(
+      (userProfile.skills || "").split(",").map((s) => s.trim().toLowerCase())
+    );
+    const requiredSkills = new Set(
+      typeof opportunity.skills === "string"
+        ? opportunity.skills.split(",").map((s) => s.trim().toLowerCase())
+        : (opportunity.skills || []).map((s: string) => String(s).toLowerCase())
+    );
+    if (requiredSkills.size === 0) return 0;
 
+    const commonSkills = [...userSkills].filter((skill) =>
+      requiredSkills.has(skill)
+    );
+    return Math.round((commonSkills.length / requiredSkills.size) * 100);
+  };
 
   return (
     <div className="container mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Saved Opportunities</h1>
-        <p className="text-muted-foreground">Your saved jobs and opportunities for future reference.</p>
+        <h1 className="text-3xl font-bold tracking-tight">
+          Saved Opportunities
+        </h1>
+        <p className="text-muted-foreground">
+          Your saved jobs and opportunities for future reference.
+        </p>
       </div>
 
       {saved.length === 0 ? (
@@ -48,44 +65,169 @@ export default function SavedOpportunitiesPage() {
             <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-20">
               <Briefcase className="h-12 w-12 mb-4" />
               <h2 className="text-xl font-semibold">No Saved Opportunities</h2>
-              <p>You haven't saved any opportunities yet. Start browsing to find ones you love!</p>
+              <p>
+                You haven't saved any opportunities yet. Start browsing to find
+                ones you love!
+              </p>
             </div>
           </CardContent>
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {saved.map((opp) => {
-            const skillsArray = typeof opp.skills === 'string' ? opp.skills.split(',').map(s => s.trim()) : (opp.skills || []);
+            const skillsArray =
+              typeof opp.skills === "string"
+                ? opp.skills.split(",").map((s) => s.trim())
+                : opp.skills || [];
             const matchPercentage = calculateMatch(opp);
             return (
-                <Card key={opp.id} className="flex flex-col">
+              <Card key={opp.id} className="flex flex-col">
                 <CardHeader>
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <Badge variant={opp.type === 'Internship' ? 'default' : 'secondary'} className="mb-2">{opp.type}</Badge>
-                            <CardTitle className="text-lg">{opp.title}</CardTitle>
-                            <CardDescription>{opp.employerName} - {opp.location}</CardDescription>
-                        </div>
-                        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => toggleSave(opp)}>
-                            <Heart className={cn("w-5 h-5", "fill-primary text-primary")} />
-                            <span className="sr-only">Unsave opportunity</span>
-                        </Button>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <Badge
+                        variant={
+                          opp.type === "Internship" ? "default" : "secondary"
+                        }
+                        className="mb-2"
+                      >
+                        {opp.type}
+                      </Badge>
+                      <CardTitle className="text-lg">{opp.title}</CardTitle>
+                      <CardDescription>
+                        {opp.employerName} - {opp.location}
+                      </CardDescription>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => toggleSave(opp)}
+                    >
+                      <Heart
+                        className={cn("w-5 h-5", "fill-primary text-primary")}
+                      />
+                      <span className="sr-only">Unsave opportunity</span>
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground mb-4">Top skills:</p>
-                    <div className="flex flex-wrap gap-2">
-                        {skillsArray.map((skill, index) => (
-                            <Badge key={`${skill}-${index}`} variant="outline">{skill}</Badge>
-                        ))}
+                  {/* Job Description Overview */}
+                  {opp.description && (
+                    <div className="mb-4">
+                      <p className="text-sm text-muted-foreground line-clamp-3">
+                        {opp.description.length > 150
+                          ? `${opp.description.substring(0, 150)}...`
+                          : opp.description}
+                      </p>
                     </div>
+                  )}
+
+                  {/* Attractive Info Cards */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {/* Compensation & Benefits */}
+                    {opp.compensationAndBenefits && (
+                      <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                          <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                            Compensation
+                          </span>
+                        </div>
+                        <p className="text-xs text-green-600 dark:text-green-400 line-clamp-2">
+                          {opp.compensationAndBenefits.length > 60
+                            ? `${opp.compensationAndBenefits.substring(
+                                0,
+                                60
+                              )}...`
+                            : opp.compensationAndBenefits}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Experience Level */}
+                    {opp.experience && (
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                            Experience
+                          </span>
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-400 line-clamp-2">
+                          {opp.experience.length > 60
+                            ? `${opp.experience.substring(0, 60)}...`
+                            : opp.experience}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Working Hours */}
+                    {opp.workingHours && (
+                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                          <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
+                            Schedule
+                          </span>
+                        </div>
+                        <p className="text-xs text-purple-600 dark:text-purple-400 line-clamp-2">
+                          {opp.workingHours.length > 60
+                            ? `${opp.workingHours.substring(0, 60)}...`
+                            : opp.workingHours}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Education Requirements */}
+                    {opp.education && (
+                      <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                          <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
+                            Education
+                          </span>
+                        </div>
+                        <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-2">
+                          {opp.education.length > 60
+                            ? `${opp.education.substring(0, 60)}...`
+                            : opp.education}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Skills Section */}
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Required skills:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {skillsArray.slice(0, 5).map((skill, index) => (
+                          <Badge key={`${skill}-${index}`} variant="outline">
+                            {skill}
+                          </Badge>
+                        ))}
+                        {skillsArray.length > 5 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{skillsArray.length - 5} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter className="flex justify-between items-center">
-                    <div className="text-sm font-semibold text-primary">{matchPercentage > 0 && `${matchPercentage}% Match`}</div>
-                        <Button asChild><Link href={`/opportunities/${opp.id}`}>View Details</Link></Button>
+                  <div className="text-sm font-semibold text-primary">
+                    {matchPercentage > 0 && `${matchPercentage}% Match`}
+                  </div>
+                  <Button asChild>
+                    <Link href={`/opportunities/${opp.id}`}>View Details</Link>
+                  </Button>
                 </CardFooter>
-                </Card>
-            )
+              </Card>
+            );
           })}
         </div>
       )}
