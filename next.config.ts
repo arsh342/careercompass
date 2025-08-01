@@ -8,6 +8,14 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
   images: {
     remotePatterns: [
       {
@@ -30,7 +38,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  experimental: {},
   allowedDevOrigins: [
     'https://6000-firebase-studio-1753536684062.cluster-fkltigo73ncaixtmokrzxhwsfc.cloudworkstations.dev',
   ],

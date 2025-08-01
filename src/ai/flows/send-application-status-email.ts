@@ -68,32 +68,15 @@ const sendApplicationStatusEmailFlow = ai.defineFlow(
       return;
     }
 
-    console.log("=== EMAIL DEBUG INFO ===");
-    console.log("BREVO_SMTP_HOST:", process.env.BREVO_SMTP_HOST);
-    console.log("BREVO_SMTP_PORT:", process.env.BREVO_SMTP_PORT);
-    console.log("BREVO_SMTP_USER:", process.env.BREVO_SMTP_USER);
-    console.log(
-      "BREVO_SMTP_PASSWORD exists:",
-      !!process.env.BREVO_SMTP_PASSWORD
-    );
-    console.log("Sending email to:", to);
-    console.log("Email subject:", subject);
-    console.log("=======================");
-
-    if (
-      !process.env.BREVO_SMTP_HOST ||
-      !process.env.BREVO_SMTP_PORT ||
-      !process.env.BREVO_SMTP_USER ||
-      !process.env.BREVO_SMTP_PASSWORD
-    ) {
+    if (!process.env.BREVO_SMTP_HOST || !process.env.BREVO_SMTP_USER || !process.env.BREVO_SMTP_PASS) {
       console.error("Missing Brevo SMTP credentials in .env file");
       throw new Error("Email service is not configured.");
     }
 
     const transporter = nodemailer.createTransport({
       host: process.env.BREVO_SMTP_HOST,
-      port: parseInt(process.env.BREVO_SMTP_PORT, 10),
-      secure: parseInt(process.env.BREVO_SMTP_PORT, 10) === 465, // true for 465, false for other ports
+      port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
+      secure: parseInt(process.env.BREVO_SMTP_PORT || "587", 10) === 465, // true for 465, false for other ports
       auth: {
         user: process.env.BREVO_SMTP_USER,
         pass: process.env.BREVO_SMTP_PASSWORD,
@@ -101,15 +84,12 @@ const sendApplicationStatusEmailFlow = ai.defineFlow(
     });
 
     try {
-      console.log("Attempting to send email...");
       const result = await transporter.sendMail({
         from: `"CareerCompass" <no-reply@careercompass.com>`,
         to: to,
         subject: subject,
         html: body,
       });
-      console.log(`Email sent successfully to ${to} with subject: ${subject}`);
-      console.log("Email result:", result);
     } catch (error) {
       console.error("Error sending email:", error);
       console.error("Error details:", JSON.stringify(error, null, 2));

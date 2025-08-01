@@ -27,8 +27,6 @@ export async function sendEmailDirect(
 ): Promise<{ success: boolean; messageId?: string }> {
   const { to, subject, body } = input;
 
-  console.log(`Sending email to: ${to} with subject: ${subject}`);
-
   // Rate Limiting Logic
   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
   const countRef = doc(db, "daily_email_counts", today);
@@ -88,7 +86,6 @@ export async function sendEmailDirect(
       subject: subject,
       html: body,
     });
-    console.log(`Email sent successfully to ${to}`);
     return { success: true, messageId: result.messageId };
   } catch (error) {
     console.error("Error sending email:", error);

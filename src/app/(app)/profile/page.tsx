@@ -399,14 +399,7 @@ export default function ProfilePage() {
               .filter(Boolean)
               .join(" ");
           } catch {}
-          // Debug: log parsedText and atsJobDesc
-          // @ts-ignore
-          if (typeof window !== "undefined") {
-            // eslint-disable-next-line no-console
-            console.log("[ATS DEBUG] Resume text:", parsedText);
-            // eslint-disable-next-line no-console
-            console.log("[ATS DEBUG] Job description:", atsJobDesc);
-          }
+          
           if (!parsedText.trim() || !atsJobDesc.trim()) {
             setAtsLoading(false);
             setAtsScore(null);
@@ -425,14 +418,6 @@ export default function ProfilePage() {
         return;
       }
     } else {
-      // Debug: log resumeText and atsJobDesc
-      // @ts-ignore
-      if (typeof window !== "undefined") {
-        // eslint-disable-next-line no-console
-        console.log("[ATS DEBUG] Resume text:", resumeText);
-        // eslint-disable-next-line no-console
-        console.log("[ATS DEBUG] Job description:", atsJobDesc);
-      }
       if (!resumeText.trim() || !atsJobDesc.trim()) {
         setAtsLoading(false);
         setAtsScore(null);
