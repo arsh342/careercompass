@@ -1,20 +1,20 @@
 # 🧭 CareerCompass
 
-> *Navigate your career journey with AI-powered job matching and analytics.*
+> _Navigate your career journey with AI-powered job matching and analytics._
 
 <p align="center">
-  <img src="docs/logo.png" alt="CareerCompass Logo" width="150" />
+  <img src="docs/logo.png" alt="CareerCompass Logo" width="150" style="background-color: white; padding: 20px; border-radius: 10px;" />
 </p>
 
 ---
 
 ## 🔗 Links
 
-* 🌐 [Live Demo](https://careercompassai.vercel.app/)
-* 🛆 [GitHub Repository](https://github.com/arsh342/careercompass)
-* 🧠 [Devpost Submission](https://devpost.com/software/careercompass-8sa5kg)
-* 📧 [Email](mailto:arsth134@gmail.com)
-* 💼 [LinkedIn](https://www.linkedin.com/in/arshsingh342/)
+- 🌐 [Live Demo](https://careercompassai.vercel.app/)
+- 🛆 [GitHub Repository](https://github.com/arsh342/careercompass)
+- 🧠 [Devpost Submission](https://devpost.com/software/careercompass-8sa5kg)
+- 📧 [Email](mailto:arsth134@gmail.com)
+- 💼 [LinkedIn](https://www.linkedin.com/in/arshsingh342/)
 
 ---
 
@@ -30,23 +30,23 @@ Whether you're a **job seeker** exploring relevant roles or an **employer** seek
 
 ### 🚀 For Job Seekers (Employees)
 
-* Create rich user profiles with **skills**, **goals**, and **portfolio links**.
-* AI-powered **job recommendations** tailored to your profile.
-* Track applications, bookmark listings, and update your employability status.
-* View relevance scores and match explanations powered by AI.
+- Create rich user profiles with **skills**, **goals**, and **portfolio links**.
+- AI-powered **job recommendations** tailored to your profile.
+- Track applications, bookmark listings, and update your employability status.
+- View relevance scores and match explanations powered by AI.
 
 ### 🧑‍💼 For Employers
 
-* Post internships, jobs, and volunteer roles.
-* Use the **AI Candidate Ranking Engine** to find top talent instantly.
-* Access an **analytics dashboard** with insights on applications.
-* View candidates' profiles, LinkedIn, and portfolio in one place.
+- Post internships, jobs, and volunteer roles.
+- Use the **AI Candidate Ranking Engine** to find top talent instantly.
+- Access an **analytics dashboard** with insights on applications.
+- View candidates' profiles, LinkedIn, and portfolio in one place.
 
 ### 🧠 AI-Powered Capabilities
 
-* **Candidate Ranking**: Uses AI to find best-fit candidates for each job posting.
-* **Resume Parsing & ATS Scoring**: Extracts structured info from resumes and scores them intelligently.
-* **Skill Matching**: Matches opportunities and employees using Genkit + Gemini AI APIs.
+- **Candidate Ranking**: Uses AI to find best-fit candidates for each job posting.
+- **Resume Parsing & ATS Scoring**: Extracts structured info from resumes and scores them intelligently.
+- **Skill Matching**: Matches opportunities and employees using Genkit + Gemini AI APIs.
 
 ---
 
@@ -87,20 +87,20 @@ Finds all employees who match a specific opportunity’s skill requirements.
 
 ## 📊 Analytics & Dashboards
 
-* Employer dashboard displays:
+- Employer dashboard displays:
 
-  * Top candidates per job posting.
-  * Job application trends via **Recharts**.
-  * Role-aware navigation based on auth state.
+  - Top candidates per job posting.
+  - Job application trends via **Recharts**.
+  - Role-aware navigation based on auth state.
 
 ---
 
 ## 🎨 UI/UX Highlights
 
-* Styled components with consistent form, modal, and dialog designs.
-* Responsive layout with Tailwind CSS + Material UI grid.
-* Role-aware navigation and dashboards for employers/employees.
-* Animated transitions for feedback and user interaction.
+- Styled components with consistent form, modal, and dialog designs.
+- Responsive layout with Tailwind CSS + Material UI grid.
+- Role-aware navigation and dashboards for employers/employees.
+- Animated transitions for feedback and user interaction.
 
 ### 🖌️ Design System
 
@@ -137,12 +137,12 @@ careercompass/
 
 ## 🧪 Recent Improvements
 
-* ✅ AI flows improved with clearer justifications and scoring logic.
-* ✅ Navigation is now role-based and dynamically routed.
-* ✅ Email notifications now trigger **only on relevant actions**.
-* ✅ LinkedIn and Portfolio links now visible on candidate cards.
-* ✅ Firebase secrets moved to `.env.local` for security.
-* ✅ Cleaned up dead/debug code and unused API triggers.
+- ✅ AI flows improved with clearer justifications and scoring logic.
+- ✅ Navigation is now role-based and dynamically routed.
+- ✅ Email notifications now trigger **only on relevant actions**.
+- ✅ LinkedIn and Portfolio links now visible on candidate cards.
+- ✅ Firebase secrets moved to `.env.local` for security.
+- ✅ Cleaned up dead/debug code and unused API triggers.
 
 ---
 
@@ -155,7 +155,7 @@ See the [LICENSE](./LICENSE) file for details.
 
 ## 🤝 Contributors
 
-* 👨‍💻 Arsh Singh – [LinkedIn](https://www.linkedin.com/in/arshsingh342/) | [Email](mailto:arsth134@gmail.com)
+- 👨‍💻 Arsh Singh – [LinkedIn](https://www.linkedin.com/in/arshsingh342/) | [Email](mailto:arsth134@gmail.com)
 
 ---
 
