@@ -32,7 +32,77 @@ To democratize access to career opportunities by leveraging artificial intellige
 
 Become the leading AI-powered career platform that transforms how people discover, apply for, and secure their dream jobs while helping employers build exceptional teams.
 
----## 🔄 AI Flows & Architecture
+---
+
+## ✨ Key Features
+
+### 🚀 For Job Seekers (Employees)
+
+#### Profile Management
+- **Rich User Profiles**: Create comprehensive profiles with education, employment history, skills, interests, and career goals
+- **Portfolio Integration**: Link your GitHub, personal website, and LinkedIn profiles
+- **Skills Assessment**: AI-powered skill matching and gap analysis
+- **Profile Visibility**: Control who can see your profile and contact information
+
+#### Job Discovery & Matching
+- **AI-Powered Recommendations**: Receive personalized job suggestions based on your profile and preferences
+- **Smart Search**: Advanced search with filters for location, job type, skills, and company
+- **Match Scoring**: See percentage matches with detailed explanations for each opportunity
+- **Skill-Based Search**: Find jobs that match your specific skill sets
+
+#### Application Management
+- **One-Click Applications**: Apply to multiple positions with pre-filled information
+- **Application Tracking**: Monitor the status of all your applications in one dashboard
+- **Bookmark System**: Save interesting opportunities for later review
+- **Application Analytics**: Track your application success rates and patterns
+
+#### Career Development
+- **ATS Score Analysis**: Get feedback on how your resume performs against Applicant Tracking Systems
+- **Resume Enhancement**: AI-powered suggestions to improve your resume content
+- **Career Path Insights**: Understand skill requirements for your target roles
+
+### 🧑‍💼 For Employers
+
+#### Talent Acquisition
+- **Smart Job Posting**: Create detailed job postings with AI assistance for better descriptions
+- **Candidate Discovery**: Find qualified candidates even before they apply
+- **AI Candidate Ranking**: Automatically rank applicants based on job requirements
+- **Bulk Candidate Outreach**: Invite multiple qualified candidates to apply
+
+#### Analytics & Insights
+- **Recruitment Dashboard**: Comprehensive analytics on job performance and candidate quality
+- **Application Trends**: Track application volumes, sources, and conversion rates
+- **Candidate Analytics**: Analyze candidate skills, experience levels, and fit scores
+- **Hiring Metrics**: Monitor time-to-hire, cost-per-hire, and success rates
+
+#### Candidate Management
+- **Application Review**: Streamlined interface for reviewing and managing applications
+- **Candidate Profiles**: Access detailed candidate information, portfolios, and social profiles
+- **Communication Tools**: Built-in messaging and status update systems
+- **Collaboration Features**: Team-based candidate evaluation and feedback
+
+### 🧠 AI-Powered Capabilities
+
+#### Matching Algorithm
+- **Semantic Skill Matching**: Goes beyond keyword matching to understand skill relationships
+- **Experience Level Assessment**: Automatically categorizes candidates by experience level
+- **Cultural Fit Analysis**: Considers company values and candidate preferences
+- **Performance Prediction**: Estimates candidate success probability for specific roles
+
+#### Content Enhancement
+- **Job Description Optimization**: AI suggests improvements to attract better candidates
+- **Resume Parsing**: Extracts and structures information from uploaded resumes
+- **Cover Letter Enhancement**: Helps candidates craft compelling cover letters
+- **Interview Question Generation**: Suggests relevant interview questions based on job requirements
+
+#### Communication Automation
+- **Smart Notifications**: Relevant updates and recommendations via email and in-app
+- **Application Status Updates**: Automated candidate communication throughout the hiring process
+- **Personalized Recommendations**: Tailored job suggestions based on user behavior and preferences
+
+---
+
+## 🔄 AI Flows & Architecture
 
 ### Core AI Flows
 
@@ -113,123 +183,7 @@ Become the leading AI-powered career platform that transforms how people discove
 - **Prompt Engineering**: Structured prompts with context and examples
 - **Response Parsing**: Robust JSON parsing with fallback mechanisms
 - **Error Handling**: Graceful degradation when AI services are unavailable
-- **Performance Optimization**: Request batching and response cachingg src="docs/logo.png" alt="CareerCompass Logo" width="150" style="background-color: white; padding: 20px; border-radius: 10px;" />
-</p>
-
----
-
-## 🔗 Links
-
-- 🌐 [Live Demo](https://careercompassai.vercel.app/)
-- 🛆 [GitHub Repository](https://github.com/arsh342/careercompass)
-- 🧠 [Devpost Submission](https://devpost.com/software/careercompass-8sa5kg)
-- 📧 [Email](mailto:arsth134@gmail.com)
-- 💼 [LinkedIn](https://www.linkedin.com/in/arshsingh342/)
-
----
-
-## 🧠 What is CareerCompass?
-
-CareerCompass is a modern, AI-driven job and talent matching platform that revolutionizes how employers and job seekers connect. Built with cutting-edge technology and powered by advanced AI algorithms, it creates intelligent matches between opportunities and candidates while providing deep analytics and insights.
-
-The platform serves as a comprehensive ecosystem where job seekers can discover personalized opportunities, track their applications, and receive AI-powered recommendations, while employers can efficiently find top talent, manage postings, and analyze recruitment metrics.
-
-### 🎯 Mission Statement
-
-To democratize access to career opportunities by leveraging artificial intelligence to create meaningful connections between talent and employers, fostering growth for individuals and organizations alike.
-
-### 🌟 Vision
-
-Become the leading AI-powered career platform that transforms how people discover, apply for, and secure their dream jobs while helping employers build exceptional teams.
-
----
-
-## ✨ Key Features
-
-### 🚀 For Job Seekers (Employees)
-
-#### Profile Management
-- **Rich User Profiles**: Create comprehensive profiles with education, employment history, skills, interests, and career goals
-- **Portfolio Integration**: Link your GitHub, personal website, and LinkedIn profiles
-- **Skills Assessment**: AI-powered skill matching and gap analysis
-- **Profile Visibility**: Control who can see your profile and contact information
-
-#### Job Discovery & Matching
-- **AI-Powered Recommendations**: Receive personalized job suggestions based on your profile and preferences
-- **Smart Search**: Advanced search with filters for location, job type, skills, and company
-- **Match Scoring**: See percentage matches with detailed explanations for each opportunity
-- **Skill-Based Search**: Find jobs that match your specific skill sets
-
-#### Application Management
-- **One-Click Applications**: Apply to multiple positions with pre-filled information
-- **Application Tracking**: Monitor the status of all your applications in one dashboard
-- **Bookmark System**: Save interesting opportunities for later review
-- **Application Analytics**: Track your application success rates and patterns
-
-#### Career Development
-- **ATS Score Analysis**: Get feedback on how your resume performs against Applicant Tracking Systems
-- **Resume Enhancement**: AI-powered suggestions to improve your resume content
-- **Career Path Insights**: Understand skill requirements for your target roles
-
-### 🧑‍💼 For Employers
-
-#### Talent Acquisition
-- **Smart Job Posting**: Create detailed job postings with AI assistance for better descriptions
-- **Candidate Discovery**: Find qualified candidates even before they apply
-- **AI Candidate Ranking**: Automatically rank applicants based on job requirements
-- **Bulk Candidate Outreach**: Invite multiple qualified candidates to apply
-
-#### Analytics & Insights
-- **Recruitment Dashboard**: Comprehensive analytics on job performance and candidate quality
-- **Application Trends**: Track application volumes, sources, and conversion rates
-- **Candidate Analytics**: Analyze candidate skills, experience levels, and fit scores
-- **Hiring Metrics**: Monitor time-to-hire, cost-per-hire, and success rates
-
-#### Candidate Management
-- **Application Review**: Streamlined interface for reviewing and managing applications
-- **Candidate Profiles**: Access detailed candidate information, portfolios, and social profiles
-- **Communication Tools**: Built-in messaging and status update systems
-- **Collaboration Features**: Team-based candidate evaluation and feedback
-
-### 🧠 AI-Powered Capabilities
-
-#### Matching Algorithm
-- **Semantic Skill Matching**: Goes beyond keyword matching to understand skill relationships
-- **Experience Level Assessment**: Automatically categorizes candidates by experience level
-- **Cultural Fit Analysis**: Considers company values and candidate preferences
-- **Performance Prediction**: Estimates candidate success probability for specific roles
-
-#### Content Enhancement
-- **Job Description Optimization**: AI suggests improvements to attract better candidates
-- **Resume Parsing**: Extracts and structures information from uploaded resumes
-- **Cover Letter Enhancement**: Helps candidates craft compelling cover letters
-- **Interview Question Generation**: Suggests relevant interview questions based on job requirements
-
-#### Communication Automation
-- **Smart Notifications**: Relevant updates and recommendations via email and in-app
-- **Application Status Updates**: Automated candidate communication throughout the hiring process
-- **Personalized Recommendations**: Tailored job suggestions based on user behavior and preferences
-
----
-
-## 🔄 AI Flows Breakdown
-
-### 🔍 `findAndRankCandidates`
-
-Finds and ranks employees for an employer’s active job postings.
-
-1. Collect all active job postings and required skills.
-2. Filter out already-reviewed applicants.
-3. Prompt AI to score and rank candidates based on profile-to-job alignment.
-4. Return top results with justifications.
-
-### 🎯 `findMatchingCandidates`
-
-Finds all employees who match a specific opportunity’s skill requirements.
-
-1. Extract required skills from a specific job.
-2. Filter employee profiles that match at least one skill.
-3. Return a short list of candidates ready for action.
+- **Performance Optimization**: Request batching and response caching
 
 ---
 
