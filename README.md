@@ -22,6 +22,7 @@
 ## � Project Highlights
 
 ### 🏆 Competition Features
+
 - **AI-Powered Matching**: Advanced semantic analysis for intelligent job-candidate pairing
 - **Comprehensive Analytics**: Real-time dashboards with actionable insights for both users and employers
 - **Automated Workflows**: Complete email automation system handling 300+ daily notifications
@@ -29,6 +30,7 @@
 - **Enterprise Ready**: Scalable architecture supporting thousands of concurrent users
 
 ### 💡 Innovation Points
+
 - **Dual-sided Platform**: Seamlessly serves both job seekers and employers with role-based experiences
 - **AI Content Enhancement**: Genkit-powered resume and job description improvements
 - **ATS Scoring System**: Helps candidates optimize resumes for Applicant Tracking Systems
@@ -36,6 +38,7 @@
 - **Smart Recommendations**: Machine learning algorithms providing personalized career guidance
 
 ### 🎯 Problem Solving
+
 - **Job Market Inefficiency**: Eliminates manual screening with AI-powered candidate ranking
 - **Application Black Hole**: Provides transparent application tracking and automated status updates
 - **Skills Gap Analysis**: Identifies and suggests improvements for career advancement
@@ -52,6 +55,7 @@
 - 💼 **[LinkedIn](https://www.linkedin.com/in/arshsingh342/)** - Professional profile and updates
 
 ### Demo Credentials for Judges
+
 - **Employee**: testUser@gmail.com / test@User1
 - **Employer**: employer@company.com / employer@Test1
 
@@ -253,15 +257,15 @@ Become the leading AI-powered career platform that transforms how people discove
 
 ### Frontend Technologies
 
-| Technology          | Version | Purpose                                     |
-| ------------------- | ------- | ------------------------------------------- |
+| Technology          | Version | Purpose                                      |
+| ------------------- | ------- | -------------------------------------------- |
 | **Next.js**         | 15.3.3  | React framework with App Router & API routes |
-| **React**           | 18.x    | UI library for component-based architecture |
-| **TypeScript**      | 5.x     | Type safety and developer experience        |
-| **Tailwind CSS**    | 3.4.1   | Utility-first CSS framework                 |
-| **Lucide React**    | Latest  | Optimized icon library with tree-shaking   |
-| **React Hook Form** | 7.x     | Form handling with validation               |
-| **Zod**             | 3.x     | Schema validation and type inference        |
+| **React**           | 18.x    | UI library for component-based architecture  |
+| **TypeScript**      | 5.x     | Type safety and developer experience         |
+| **Tailwind CSS**    | 3.4.1   | Utility-first CSS framework                  |
+| **Lucide React**    | Latest  | Optimized icon library with tree-shaking     |
+| **React Hook Form** | 7.x     | Form handling with validation                |
+| **Zod**             | 3.x     | Schema validation and type inference         |
 
 ### Backend & Database
 
@@ -271,7 +275,7 @@ Become the leading AI-powered career platform that transforms how people discove
 | **Firebase Auth**      | Authentication with Google OAuth           |
 | **Cloudinary**         | Image storage and optimization             |
 | **Next.js API Routes** | Serverless API endpoints                   |
-| **Brevo SMTP**         | Email delivery and automation             |
+| **Brevo SMTP**         | Email delivery and automation              |
 
 ### AI & Machine Learning
 
@@ -284,39 +288,39 @@ Become the leading AI-powered career platform that transforms how people discove
 
 ### Development & Deployment
 
-| Technology   | Purpose                            |
-| ------------ | ---------------------------------- |
-| **Vercel**   | Deployment and hosting platform    |
-| **GitHub**   | Version control and collaboration  |
-| **ESLint**   | Code linting and quality assurance |
+| Technology              | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| **Vercel**              | Deployment and hosting platform      |
+| **GitHub**              | Version control and collaboration    |
+| **ESLint**              | Code linting and quality assurance   |
 | **TypeScript Compiler** | Type checking and build optimization |
 
 ### Performance Optimizations
 
-| Optimization         | Impact                           |
-| -------------------- | -------------------------------- |
-| **Bundle Splitting** | Reduced initial load times       |
-| **Tree Shaking**     | Eliminated unused code           |
+| Optimization           | Impact                         |
+| ---------------------- | ------------------------------ |
+| **Bundle Splitting**   | Reduced initial load times     |
+| **Tree Shaking**       | Eliminated unused code         |
 | **Image Optimization** | Faster loading with Cloudinary |
-| **Console Removal**  | Cleaner production builds        |
-| **Dependency Cleanup** | Smaller bundle size             |
+| **Console Removal**    | Cleaner production builds      |
+| **Dependency Cleanup** | Smaller bundle size            |
 
 ### External Services
 
-| Service              | Purpose                      |
-| -------------------- | ---------------------------- |
+| Service              | Purpose                        |
+| -------------------- | ------------------------------ |
 | **Brevo API**        | Email campaigns and automation |
-| **Cloudinary**       | Image optimization and CDN   |
-| **Google Analytics** | Usage analytics and insights |
+| **Cloudinary**       | Image optimization and CDN     |
+| **Google Analytics** | Usage analytics and insights   |
 
 ### UI Components
 
-| Library       | Purpose                          |
-| ------------- | -------------------------------- |
-| **Radix UI**  | Accessible component primitives  |
-| **Recharts**  | Data visualization and charts    |
-| **Date-fns**  | Date manipulation and formatting |
-| **CMDK**      | Command palette interface       |
+| Library      | Purpose                          |
+| ------------ | -------------------------------- |
+| **Radix UI** | Accessible component primitives  |
+| **Recharts** | Data visualization and charts    |
+| **Date-fns** | Date manipulation and formatting |
+| **CMDK**     | Command palette interface        |
 
 ---
 
@@ -370,6 +374,7 @@ Become the leading AI-powered career platform that transforms how people discove
 CareerCompass has undergone comprehensive performance optimization to ensure the best possible user experience:
 
 #### Code Quality & Bundle Size
+
 - **Dependency Cleanup**: Removed unused packages (formidable, @types/formidable)
 - **Dead Code Elimination**: Removed 8+ unused API directories and test files
 - **Import Optimization**: Strategic tree-shaking for Lucide React and Radix UI icons
@@ -377,24 +382,28 @@ CareerCompass has undergone comprehensive performance optimization to ensure the
 - **TypeScript Compliance**: Fixed all type errors for improved build performance
 
 #### Build & Runtime Optimizations
+
 - **Next.js Compiler**: Enhanced with automatic console removal and package optimization
 - **Bundle Splitting**: Optimized code splitting for faster initial load times
 - **Image Optimization**: Cloudinary integration for responsive image delivery
 - **Cache Management**: Cleaned build artifacts for faster subsequent builds
 
 #### Architecture Improvements
+
 - **API Route Optimization**: Streamlined to only essential endpoints
 - **File Upload Enhancement**: Migrated from formidable to native Next.js FormData for better performance
 - **Email System**: Optimized Brevo integration with reduced latency
 - **Database Queries**: Optimized Firestore queries for faster data retrieval
 
 #### Performance Metrics
+
 - **Bundle Size**: Reduced by ~15% through dependency cleanup
-- **Build Time**: Improved by ~30% with cache optimizations  
+- **Build Time**: Improved by ~30% with cache optimizations
 - **First Load Time**: Enhanced through strategic code splitting
 - **Type Safety**: 100% TypeScript coverage with strict mode compliance
 
 ### Monitoring & Analytics
+
 - **Core Web Vitals**: Optimized for 95+ Lighthouse scores
 - **Error Tracking**: Comprehensive logging with Vercel Analytics
 - **Performance Monitoring**: Real-time metrics for continuous optimization
@@ -632,13 +641,14 @@ Utility functions, third-party service configurations, and business logic that d
    ```
 
 3. **Request Environment File**
-   
+
    Contact the development team for the `.env.local` file containing:
+
    - Firebase configuration
    - Google AI API keys
    - Brevo email service credentials
    - Cloudinary image storage keys
-   
+
    **Note**: All credentials are for demonstration purposes only.
 
 4. **Start Development Server**
@@ -646,7 +656,7 @@ Utility functions, third-party service configurations, and business logic that d
    ```bash
    npm run dev
    ```
-   
+
    Access the application at: http://localhost:9002
 
 5. **Optional: AI Features**
@@ -654,16 +664,18 @@ Utility functions, third-party service configurations, and business logic that d
    ```bash
    npm run genkit:dev
    ```
-   
+
    Starts the AI development server for enhanced features.
 
 ### Demo Credentials
 
 #### Employee Account (Job Seeker)
+
 - **Email**: testUser@gmail.com
 - **Password**: test@User1
 
-#### Employer Account (Recruiter)  
+#### Employer Account (Recruiter)
+
 - **Email**: employer@company.com
 - **Password**: employer@Test1
 
@@ -732,7 +744,7 @@ For developers wanting to set up their own instance:
 # Development server
 npm run dev
 
-# AI development server  
+# AI development server
 npm run genkit:dev
 
 # Type checking
