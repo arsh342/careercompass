@@ -20,7 +20,10 @@
 ## 📹 Demo Video
 
 <p align="center">
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/Pj2JjIGT_zs" title="CareerCompass Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <video width="560" height="315" controls>
+    <source src="docs/demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 </p>
 
 ---
