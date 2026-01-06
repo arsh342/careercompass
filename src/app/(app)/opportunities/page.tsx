@@ -50,6 +50,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
+import { LumaSpin } from "@/components/ui/luma-spin";
 
 interface Opportunity {
   id: string;
@@ -289,6 +290,15 @@ function OpportunitiesContent() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentPage, totalPages]);
+
+  // Show loading spinner while data is being fetched
+  if (loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">
