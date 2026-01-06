@@ -6,8 +6,6 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
-  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -21,9 +19,65 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Heart, Loader2, Edit } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Edit } from "lucide-react";
+import { OpportunityCard } from "@/components/ui/opportunity-card";
+import { PricingSection } from "@/components/ui/pricing-section";
+
+// CareerCompass Pricing Plans
+const PAYMENT_FREQUENCIES = ["monthly", "yearly"];
+
+const JOB_SEEKER_TIERS = [
+  {
+    name: "Free",
+    price: {
+      monthly: "Free",
+      yearly: "Free",
+    },
+    description: "Get started with job hunting",
+    features: [
+      "Browse all job listings",
+      "5 applications per month",
+      "Save up to 10 opportunities",
+      "Basic profile",
+      "Email notifications",
+    ],
+    cta: "Current Plan",
+  },
+  {
+    name: "Pro",
+    price: {
+      monthly: 9.99,
+      yearly: 6.99,
+    },
+    description: "For serious job seekers",
+    features: [
+      "Unlimited applications",
+      "Unlimited saved jobs",
+      "Profile boost & visibility",
+      "Application analytics",
+      "Priority email support",
+    ],
+    cta: "Upgrade to Pro",
+    popular: true,
+  },
+  {
+    name: "Premium",
+    price: {
+      monthly: 19.99,
+      yearly: 14.99,
+    },
+    description: "Maximum career advantage",
+    features: [
+      "Everything in Pro",
+      "AI resume review",
+      "Skill gap analysis",
+      "Salary insights",
+      "1:1 career coaching",
+    ],
+    cta: "Go Premium",
+    highlighted: true,
+  },
+];
 
 interface Opportunity {
   id: string;
@@ -34,6 +88,11 @@ interface Opportunity {
   match?: number;
   skills: string[] | string;
   matchedSkills?: string[];
+  description?: string;
+  compensationAndBenefits?: string;
+  experience?: string;
+  workingHours?: string;
+  education?: string;
   createdAt?: {
     toDate: () => Date;
   };
@@ -132,7 +191,6 @@ export default function DashboardPage() {
         if (recommendedOpportunities.length > 0) {
           setOpportunities(recommendedOpportunities.slice(0, 6));
         } else {
-          // Fallback: Show the 6 most recent job postings if no matches are found
           const recentOpps = opportunitiesData
             .sort(
               (a, b) =>
@@ -140,7 +198,7 @@ export default function DashboardPage() {
                 (a.createdAt?.toDate()?.getTime() || 0)
             )
             .slice(0, 6)
-            .map((opp) => ({ ...opp, match: 0, matchedSkills: [] })); // Add default match info
+            .map((opp) => ({ ...opp, match: 0, matchedSkills: [] }));
           setOpportunities(recentOpps);
         }
       } catch (error) {
@@ -204,182 +262,39 @@ export default function DashboardPage() {
           {opportunities.map((opp) => {
             const isSaved = saved.some((savedOpp) => savedOpp.id === opp.id);
             return (
-              <Card key={opp.id} className="flex flex-col">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Badge
-                        variant={
-                          opp.type === "Internship" ? "default" : "secondary"
-                        }
-                        className="mb-2"
-                      >
-                        {opp.type}
-                      </Badge>
-                      <CardTitle className="text-lg">{opp.title}</CardTitle>
-                      <CardDescription>
-                        {opp.employerName} - {opp.location}
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={() => toggleSave(opp)}
-                    >
-                      <Heart
-                        className={cn(
-                          "w-5 h-5",
-                          isSaved && "fill-primary text-primary"
-                        )}
-                      />
-                      <span className="sr-only">Save opportunity</span>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  {/* Job Description Overview */}
-                  {opp.description && (
-                    <div className="mb-4">
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {opp.description.length > 150
-                          ? `${opp.description.substring(0, 150)}...`
-                          : opp.description}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Attractive Info Cards */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {/* Compensation & Benefits */}
-                    {opp.compensationAndBenefits && (
-                      <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                            Compensation
-                          </span>
-                        </div>
-                        <p className="text-xs text-green-600 dark:text-green-400 line-clamp-2">
-                          {opp.compensationAndBenefits.length > 60
-                            ? `${opp.compensationAndBenefits.substring(
-                                0,
-                                60
-                              )}...`
-                            : opp.compensationAndBenefits}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Experience Level */}
-                    {opp.experience && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                            Experience
-                          </span>
-                        </div>
-                        <p className="text-xs text-blue-600 dark:text-blue-400 line-clamp-2">
-                          {opp.experience.length > 60
-                            ? `${opp.experience.substring(0, 60)}...`
-                            : opp.experience}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Working Hours */}
-                    {opp.workingHours && (
-                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                            Schedule
-                          </span>
-                        </div>
-                        <p className="text-xs text-purple-600 dark:text-purple-400 line-clamp-2">
-                          {opp.workingHours.length > 60
-                            ? `${opp.workingHours.substring(0, 60)}...`
-                            : opp.workingHours}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Education Requirements */}
-                    {opp.education && (
-                      <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
-                            Education
-                          </span>
-                        </div>
-                        <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-2">
-                          {opp.education.length > 60
-                            ? `${opp.education.substring(0, 60)}...`
-                            : opp.education}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Skills Section */}
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {opp.match && opp.match > 0
-                          ? "Because you're skilled in:"
-                          : "Required skills for this role:"}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {opp.matchedSkills && opp.matchedSkills.length > 0 ? (
-                          opp.matchedSkills.map((skill, index) => (
-                            <Badge
-                              key={`${skill}-${index}`}
-                              variant="default"
-                              className="bg-primary/10 border-primary text-primary font-medium"
-                            >
-                              {skill}
-                            </Badge>
-                          ))
-                        ) : opp.skills && typeof opp.skills !== "string" ? (
-                          (opp.skills as string[])
-                            .slice(0, 5)
-                            .map((skill, index) => (
-                              <Badge
-                                key={`${skill}-${index}`}
-                                variant="outline"
-                              >
-                                {skill}
-                              </Badge>
-                            ))
-                        ) : (
-                          <p className="text-xs text-muted-foreground">
-                            No specific skills listed.
-                          </p>
-                        )}
-                        {opp.skills &&
-                          typeof opp.skills !== "string" &&
-                          (opp.skills as string[]).length > 5 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{(opp.skills as string[]).length - 5} more
-                            </Badge>
-                          )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between items-center">
-                  <div className="text-sm font-semibold text-primary">
-                    {opp.match && opp.match > 0 && `${opp.match}% Match`}
-                  </div>
-                  <Button asChild>
-                    <Link href={`/opportunities/${opp.id}`}>View Details</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+              <OpportunityCard
+                key={opp.id}
+                id={opp.id}
+                title={opp.title}
+                employerName={opp.employerName}
+                location={opp.location}
+                type={opp.type}
+                description={opp.description}
+                skills={opp.skills}
+                matchedSkills={opp.matchedSkills}
+                match={opp.match}
+                compensationAndBenefits={opp.compensationAndBenefits}
+                experience={opp.experience}
+                workingHours={opp.workingHours}
+                education={opp.education}
+                createdAt={opp.createdAt}
+                isSaved={isSaved}
+                onToggleSave={() => toggleSave(opp)}
+              />
             );
           })}
+        </div>
+      )}
+
+      {/* Pricing Section */}
+      {role === "employee" && !authLoading && (
+        <div className="mt-12 border-t pt-8">
+          <PricingSection
+            title="Upgrade Your Job Search"
+            subtitle="Get more applications, better visibility, and career coaching with our premium plans"
+            frequencies={PAYMENT_FREQUENCIES}
+            tiers={JOB_SEEKER_TIERS}
+          />
         </div>
       )}
     </div>
