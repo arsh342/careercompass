@@ -12,6 +12,7 @@ import { FileText, Loader2, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import { LumaSpin } from "@/components/ui/luma-spin";
 
 interface Application {
   id: string;
@@ -90,6 +91,14 @@ export default function AppliedPage() {
       }
   }
 
+  // Show loading spinner while data is being fetched
+  if (loading || authLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">

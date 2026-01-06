@@ -88,6 +88,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { LumaSpin } from "@/components/ui/luma-spin";
 
 interface Posting {
   id: string;
@@ -260,6 +261,15 @@ export default function EmployerDashboardPage() {
       .map((n) => n[0])
       .join("") || "";
 
+  // Show loading spinner while data is being fetched
+  if (loading || authLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -277,12 +287,7 @@ export default function EmployerDashboardPage() {
         </Button>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : (
-        <div className="grid gap-6">
+      <div className="grid gap-6">
           <div className="grid gap-6 md:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -600,7 +605,6 @@ export default function EmployerDashboardPage() {
             </CardContent>
           </Card>
         </div>
-      )}
     </div>
   );
 }
