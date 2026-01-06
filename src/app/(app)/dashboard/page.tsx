@@ -22,6 +22,7 @@ import {
 import { Loader2, Edit } from "lucide-react";
 import { OpportunityCard } from "@/components/ui/opportunity-card";
 import { PricingSection } from "@/components/ui/pricing-section";
+import { LumaSpin } from "@/components/ui/luma-spin";
 
 // CareerCompass Pricing Plans
 const PAYMENT_FREQUENCIES = ["monthly", "yearly"];
@@ -209,6 +210,15 @@ export default function DashboardPage() {
     };
     fetchOpportunities();
   }, [userProfile, authLoading, role]);
+
+  // Show loading spinner while data is being fetched
+  if (loading || authLoading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">

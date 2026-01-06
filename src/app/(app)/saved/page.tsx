@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import { LumaSpin } from "@/components/ui/luma-spin";
 
 export default function SavedOpportunitiesPage() {
   const { saved, setSaved, toggleSave } = useSavedOpportunities();
@@ -54,6 +55,15 @@ export default function SavedOpportunitiesPage() {
     );
     return Math.round((commonSkills.length / requiredSkills.size) * 100);
   };
+
+  // Show loading spinner while userProfile is being fetched
+  if (!userProfile && role !== "employer") {
+    return (
+      <div className="flex h-full w-full items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto">
