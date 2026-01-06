@@ -16,7 +16,7 @@ export function ConditionalSearchBar() {
   return (
     <Suspense
       fallback={
-        <div className="h-9 w-full bg-muted rounded-md animate-pulse" />
+        <div className="h-9 w-full bg-muted rounded-full animate-pulse" />
       }
     >
       <SearchBar />

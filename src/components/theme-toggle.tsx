@@ -1,76 +1,94 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import { Moon, Sun, SunMoon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "next-themes"
+import { Moon, Sun } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useEffect, useState } from "react"
 
-import { Button } from "@/components/ui/button";
+interface ThemeToggleProps {
+  className?: string
+}
 
-export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [showText, setShowText] = React.useState(false);
+export function ThemeToggle({ className }: ThemeToggleProps) {
+  const { resolvedTheme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
-  const cycleTheme = () => {
-    let nextTheme: string;
-    if (theme === "light") {
-      nextTheme = "dark";
-    } else if (theme === "dark") {
-      nextTheme = "system";
-    } else {
-      nextTheme = "light";
-    }
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-    setTheme(nextTheme);
-    setShowText(true);
+  if (!mounted) {
+    return (
+      <div className={cn(
+        "flex w-16 h-8 p-1 rounded-full bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700",
+        className
+      )} />
+    )
+  }
 
-    // Hide text after 2 seconds
-    setTimeout(() => {
-      setShowText(false);
-    }, 2000);
-  };
-
-  const getIcon = () => {
-    switch (theme) {
-      case "light":
-        return <Sun className="h-[1.2rem] w-[1.2rem]" />;
-      case "dark":
-        return <Moon className="h-[1.2rem] w-[1.2rem]" />;
-      case "system":
-        return <SunMoon className="h-[1.2rem] w-[1.2rem]" />;
-      default:
-        return <SunMoon className="h-[1.2rem] w-[1.2rem]" />;
-    }
-  };
-
-  const getThemeText = () => {
-    switch (theme) {
-      case "light":
-        return "Light";
-      case "dark":
-        return "Dark";
-      case "system":
-        return "System";
-      default:
-        return "System";
-    }
-  };
+  const isDark = resolvedTheme === "dark"
 
   return (
-    <Button
-      variant="ghost"
-      size={showText ? "default" : "icon"}
-      onClick={cycleTheme}
-      className="transition-all duration-200"
+    <div
+      className={cn(
+        "flex w-16 h-8 p-1 rounded-full cursor-pointer transition-all duration-300",
+        isDark 
+          ? "bg-zinc-950 border border-zinc-800" 
+          : "bg-white border border-zinc-200",
+        className
+      )}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          setTheme(isDark ? "light" : "dark")
+        }
+      }}
     >
-      <div className="flex items-center gap-2">
-        {getIcon()}
-        {showText && (
-          <span className="text-sm font-medium animate-in fade-in-0 duration-200">
-            {getThemeText()}
-          </span>
-        )}
+      <div className="flex justify-between items-center w-full">
+        <div
+          className={cn(
+            "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300",
+            isDark 
+              ? "transform translate-x-0 bg-zinc-800" 
+              : "transform translate-x-8 bg-gray-200"
+          )}
+        >
+          {isDark ? (
+            <Moon 
+              className="w-4 h-4 text-white" 
+              strokeWidth={1.5}
+            />
+          ) : (
+            <Sun 
+              className="w-4 h-4 text-gray-700" 
+              strokeWidth={1.5}
+            />
+          )}
+        </div>
+        <div
+          className={cn(
+            "flex justify-center items-center w-6 h-6 rounded-full transition-transform duration-300",
+            isDark 
+              ? "bg-transparent" 
+              : "transform -translate-x-8"
+          )}
+        >
+          {isDark ? (
+            <Sun 
+              className="w-4 h-4 text-gray-500" 
+              strokeWidth={1.5}
+            />
+          ) : (
+            <Moon 
+              className="w-4 h-4 text-black" 
+              strokeWidth={1.5}
+            />
+          )}
+        </div>
       </div>
-      <span className="sr-only">Toggle theme</span>
-    </Button>
-  );
+    </div>
+  )
 }
