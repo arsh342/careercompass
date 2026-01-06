@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Loader2, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 interface Application {
   id: string;
@@ -127,9 +128,9 @@ export default function AppliedPage() {
                     </CardHeader>
                     <CardFooter className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 md:p-6">
                         <Badge variant={getStatusVariant(app.status)}>{app.status}</Badge>
-                        <Button asChild size="sm">
-                            <Link href={`/opportunities/${app.opportunityId}`}>View Posting</Link>
-                        </Button>
+                        <Link href={`/opportunities/${app.opportunityId}`}>
+                            <InteractiveHoverButton text="View Posting" className="w-auto px-4" />
+                        </Link>
                     </CardFooter>
                 </Card>
             ))}

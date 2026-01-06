@@ -28,6 +28,7 @@ import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
+import { OpportunityCard } from "@/components/ui/opportunity-card";
 import {
   Select,
   SelectContent,
@@ -551,232 +552,27 @@ function OpportunitiesContent() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {paginatedOpportunities.map((opp) => {
             const isSaved = saved.some((savedOpp) => savedOpp.id === opp.id);
-            const skillsArray =
-              typeof opp.skills === "string"
-                ? opp.skills.split(",").map((s) => s.trim())
-                : opp.skills || [];
             const matchPercentage = calculateMatch(opp);
-            const searchQuery = searchParams.get("q");
 
             return (
-              <Card key={opp.id} className="flex flex-col">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <Badge
-                        variant={
-                          opp.type === "Internship" ? "default" : "secondary"
-                        }
-                        className="mb-2"
-                      >
-                        {opp.type}
-                      </Badge>
-                      <CardTitle className="text-lg">{opp.title}</CardTitle>
-                      <CardDescription className="flex items-center gap-1">
-                        <span>{opp.employerName}</span>
-                        <span>•</span>
-                        <MapPin className="h-3 w-3" />
-                        <span
-                          className={cn(
-                            searchQuery &&
-                              isLocationMatchingSearch(
-                                opp.location,
-                                searchQuery
-                              )
-                              ? "font-medium text-primary bg-primary/10 px-1 rounded"
-                              : ""
-                          )}
-                        >
-                          {opp.location}
-                        </span>
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0"
-                      onClick={() => toggleSave(opp)}
-                    >
-                      <Heart
-                        className={cn(
-                          "w-5 h-5",
-                          isSaved && "fill-primary text-primary"
-                        )}
-                      />
-                      <span className="sr-only">Save opportunity</span>
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  {/* Job Description Overview */}
-                  {opp.description && (
-                    <div className="mb-4">
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {opp.description.length > 150
-                          ? `${opp.description.substring(0, 150)}...`
-                          : opp.description}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Attractive Info Cards */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {/* Compensation & Benefits */}
-                    {opp.compensationAndBenefits && (
-                      <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                            Compensation
-                          </span>
-                        </div>
-                        <p className="text-xs text-green-600 dark:text-green-400 line-clamp-2">
-                          {opp.compensationAndBenefits.length > 60
-                            ? `${opp.compensationAndBenefits.substring(
-                                0,
-                                60
-                              )}...`
-                            : opp.compensationAndBenefits}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Experience Level */}
-                    {opp.experience && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
-                            Experience
-                          </span>
-                        </div>
-                        <p className="text-xs text-blue-600 dark:text-blue-400 line-clamp-2">
-                          {opp.experience.length > 60
-                            ? `${opp.experience.substring(0, 60)}...`
-                            : opp.experience}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Working Hours */}
-                    {opp.workingHours && (
-                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
-                            Schedule
-                          </span>
-                        </div>
-                        <p className="text-xs text-purple-600 dark:text-purple-400 line-clamp-2">
-                          {opp.workingHours.length > 60
-                            ? `${opp.workingHours.substring(0, 60)}...`
-                            : opp.workingHours}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Education Requirements */}
-                    {opp.education && (
-                      <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                          <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
-                            Education
-                          </span>
-                        </div>
-                        <p className="text-xs text-orange-600 dark:text-orange-400 line-clamp-2">
-                          {opp.education.length > 60
-                            ? `${opp.education.substring(0, 60)}...`
-                            : opp.education}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-3">
-                    {/* Skills Section */}
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {searchQuery &&
-                        skillsArray.some((skill) =>
-                          isSkillMatchingSearch(skill, searchQuery)
-                        )
-                          ? "Matching skills:"
-                          : searchQuery &&
-                            isLocationMatchingSearch(opp.location, searchQuery)
-                          ? "Skills for this location match:"
-                          : "Required skills:"}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {skillsArray.slice(0, 5).map((skill, index) => {
-                          const isMatchingSearch =
-                            searchQuery &&
-                            isSkillMatchingSearch(skill, searchQuery);
-                          return (
-                            <Badge
-                              key={`${skill}-${index}`}
-                              variant={isMatchingSearch ? "default" : "outline"}
-                              className={cn(
-                                isMatchingSearch &&
-                                  "bg-primary/10 border-primary text-primary font-medium"
-                              )}
-                            >
-                              {skill}
-                            </Badge>
-                          );
-                        })}
-                        {skillsArray.length > 5 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{skillsArray.length - 5} more
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Show search match indicators */}
-                    {searchQuery && (
-                      <div className="flex flex-wrap gap-2">
-                        {opp.title.toLowerCase().includes(searchQuery) && (
-                          <Badge variant="secondary" className="text-xs">
-                            Title match
-                          </Badge>
-                        )}
-                        {opp.employerName &&
-                          opp.employerName
-                            .toLowerCase()
-                            .includes(searchQuery) && (
-                            <Badge variant="secondary" className="text-xs">
-                              Company match
-                            </Badge>
-                          )}
-                        {isLocationMatchingSearch(
-                          opp.location,
-                          searchQuery
-                        ) && (
-                          <Badge variant="secondary" className="text-xs">
-                            Location match
-                          </Badge>
-                        )}
-                        {skillsArray.some((skill) =>
-                          isSkillMatchingSearch(skill, searchQuery)
-                        ) && (
-                          <Badge variant="secondary" className="text-xs">
-                            Skill match
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-between items-center">
-                  <div className="text-sm font-semibold text-primary">
-                    {matchPercentage > 0 && `${matchPercentage}% Match`}
-                  </div>
-                  <Button asChild>
-                    <Link href={`/opportunities/${opp.id}`}>View Details</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+              <OpportunityCard
+                key={opp.id}
+                id={opp.id}
+                title={opp.title}
+                employerName={opp.employerName}
+                location={opp.location}
+                type={opp.type}
+                description={opp.description}
+                skills={opp.skills}
+                match={matchPercentage > 0 ? matchPercentage : undefined}
+                compensationAndBenefits={opp.compensationAndBenefits}
+                experience={opp.experience}
+                workingHours={opp.workingHours}
+                education={opp.education}
+                createdAt={opp.createdAt}
+                isSaved={isSaved}
+                onToggleSave={() => toggleSave(opp)}
+              />
             );
           })}
         </div>
