@@ -16,6 +16,7 @@ import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 export default function SavedOpportunitiesPage() {
   const { saved, setSaved, toggleSave } = useSavedOpportunities();
@@ -230,9 +231,9 @@ export default function SavedOpportunitiesPage() {
                   <div className="text-sm font-semibold text-primary">
                     {matchPercentage > 0 && `${matchPercentage}% Match`}
                   </div>
-                  <Button asChild>
-                    <Link href={`/opportunities/${opp.id}`}>View Details</Link>
-                  </Button>
+                  <Link href={`/opportunities/${opp.id}`}>
+                    <InteractiveHoverButton text="View Details" className="w-auto px-4" />
+                  </Link>
                 </CardFooter>
               </Card>
             );
