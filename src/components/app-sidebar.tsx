@@ -148,19 +148,22 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </SidebarBody>
       </Sidebar>
       <div className="flex flex-1 flex-col overflow-hidden rounded-l-2xl bg-white dark:bg-neutral-900">
-        <header className="sticky top-0 z-10 flex h-10 shrink-0 items-center gap-4 dark:border-neutral-700 px-4 sm:h-auto sm:px-6 py-2">
-          <div className="flex-1">
+        <header className="sticky top-0 z-10 flex h-10 shrink-0 items-center justify-between gap-4 dark:border-neutral-700 px-4 sm:h-auto sm:px-6 py-2">
+          <div className="flex-1" />
+          <div className="flex-1 flex justify-center max-w-xl">
             <ConditionalSearchBar />
           </div>
-          <HeaderQuickActions />
-          <Link 
-            href="/pricing"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent text-sm hover:from-amber-600 hover:to-yellow-600 transition-all border border-amber-600 dark:border-amber-600 rounded-full"
-          >
-            <span className="hidden sm:inline">Pricing</span>
-          </Link>
-          <ThemeToggle />
-          <UserNav />
+          <div className="flex-1 flex items-center justify-end gap-4">
+            <HeaderQuickActions />
+            <Link 
+              href="/pricing"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent text-sm hover:from-amber-600 hover:to-yellow-600 transition-all border border-amber-600 dark:border-amber-600 rounded-full"
+            >
+              <span className="hidden sm:inline">Pricing</span>
+            </Link>
+            <ThemeToggle />
+            <UserNav />
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           {children}
