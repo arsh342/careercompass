@@ -57,6 +57,7 @@
     "embla-carousel-react": "^8.6.0",
     "express": "^5.2.1",
     "firebase": "^11.9.1",
+    "firebase-admin": "^13.6.0",
     "framer-motion": "^12.24.0",
     "genkit": "^1.15.5",
     "gsap": "^3.14.2",

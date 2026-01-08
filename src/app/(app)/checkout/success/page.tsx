@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, PartyPopper } from "lucide-react";
 import Link from "next/link";
-import confetti from "canvas-confetti";
+import { triggerFireworks } from "@/components/ui/confetti";
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
@@ -14,35 +14,13 @@ export default function CheckoutSuccessPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Trigger confetti animation
-    const duration = 3 * 1000;
-    const end = Date.now() + duration;
-
-    const frame = () => {
-      confetti({
-        particleCount: 3,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ["#6366f1", "#8b5cf6", "#a855f7"],
-      });
-      confetti({
-        particleCount: 3,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ["#6366f1", "#8b5cf6", "#a855f7"],
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    };
-    
-    frame();
+    // Trigger fireworks confetti animation
+    const interval = triggerFireworks(5000);
     
     // Simulate loading
     setTimeout(() => setLoading(false), 1500);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
