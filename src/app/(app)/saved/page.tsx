@@ -15,22 +15,12 @@ import Link from "next/link";
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { useEffect } from "react";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { LumaSpin } from "@/components/ui/luma-spin";
 
 export default function SavedOpportunitiesPage() {
-  const { saved, setSaved, toggleSave } = useSavedOpportunities();
+  const { saved, setSaved, toggleSave, loading } = useSavedOpportunities();
   const { userProfile, role } = useAuth();
-
-  useEffect(() => {
-    if (role === "employer") return;
-    // Filter out any saved opportunities that are no longer active
-    const activeSaved = saved.filter((opp) => opp.status !== "Archived");
-    if (activeSaved.length !== saved.length) {
-      setSaved(activeSaved);
-    }
-  }, [saved, setSaved, role]);
 
   const calculateMatch = (opportunity: any) => {
     if (!userProfile?.skills || role === "employer") return 0;
@@ -56,8 +46,8 @@ export default function SavedOpportunitiesPage() {
     return Math.round((commonSkills.length / requiredSkills.size) * 100);
   };
 
-  // Show loading spinner while userProfile is being fetched
-  if (!userProfile && role !== "employer") {
+  // Show loading spinner while data is being fetched
+  if (loading || (!userProfile && role !== "employer")) {
     return (
       <div className="flex h-full w-full items-center justify-center min-h-[60vh]">
         <LumaSpin />
