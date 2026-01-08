@@ -53,6 +53,9 @@ import {
   AchievementsSection,
   LanguagesSection,
   SectionManager,
+  TemplateSelector,
+  ResumePreview,
+  type TemplateId,
 } from "@/components/resume-builder";
 
 export default function ResumeBuilderPage() {
@@ -372,6 +375,19 @@ export default function ResumeBuilderPage() {
                   })}
                 </CardContent>
               </Card>
+
+              {/* Template Selector */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Choose Template</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TemplateSelector
+                    selectedTemplate={resume.templateId as TemplateId}
+                    onSelect={(template) => updateResume('templateId', template)}
+                  />
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -457,152 +473,11 @@ export default function ResumeBuilderPage() {
 
               <TabsContent value="preview">
                 <Card>
-                  <CardContent 
-                    className="p-8 space-y-6" 
-                    ref={resumeRef}
-                    style={{ backgroundColor: "#ffffff" }}
-                  >
-                    {/* Resume Preview */}
-                    <div className="text-center border-b border-gray-200 pb-4">
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        {resume.header.fullName || "Your Name"}
-                      </h2>
-                      <p className="text-lg text-gray-600">
-                        {resume.header.jobTitle || "Professional Title"}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {[resume.header.email, resume.header.phone, resume.header.location]
-                          .filter(Boolean)
-                          .join(" | ")}
-                      </p>
-                      {resume.header.linkedin && (
-                        <p className="text-sm text-gray-500">{resume.header.linkedin}</p>
-                      )}
-                    </div>
-
-                    {/* Summary */}
-                    {resume.summary && isSectionEnabled('summary') && (
-                      <>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Professional Summary
-                          </h3>
-                          <p className="text-gray-600">{resume.summary}</p>
-                        </div>
-                        <Separator className="bg-gray-200" />
-                      </>
-                    )}
-
-                    {/* Skills */}
-                    {isSectionEnabled('skills') && (resume.skills.technical.length > 0 || resume.skills.coreCompetencies.length > 0) && (
-                      <>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2">Skills</h3>
-                          <div className="space-y-2">
-                            {resume.skills.technical.length > 0 && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Technical:</span>{" "}
-                                {resume.skills.technical.join(", ")}
-                              </p>
-                            )}
-                            {resume.skills.coreCompetencies.length > 0 && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Core:</span>{" "}
-                                {resume.skills.coreCompetencies.join(", ")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <Separator className="bg-gray-200" />
-                      </>
-                    )}
-
-                    {/* Experience */}
-                    {isSectionEnabled('experience') && resume.experience.length > 0 && (
-                      <>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">Experience</h3>
-                          <div className="space-y-4">
-                            {resume.experience.filter(e => e.jobTitle).map((exp) => (
-                              <div key={exp.id}>
-                                <div className="flex justify-between">
-                                  <div>
-                                    <h4 className="font-medium text-gray-900">{exp.jobTitle}</h4>
-                                    <p className="text-sm text-gray-600">
-                                      {exp.company}{exp.location ? `, ${exp.location}` : ""}
-                                    </p>
-                                  </div>
-                                  <span className="text-sm text-gray-500">
-                                    {exp.startDate} - {exp.current ? "Present" : exp.endDate}
-                                  </span>
-                                </div>
-                                <ul className="mt-2 space-y-1">
-                                  {exp.bullets.filter(b => b.text).map((bullet) => (
-                                    <li key={bullet.id} className="text-sm text-gray-600 flex gap-2">
-                                      <span>•</span>
-                                      <span>{bullet.text}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <Separator className="bg-gray-200" />
-                      </>
-                    )}
-
-                    {/* Projects */}
-                    {isSectionEnabled('projects') && resume.projects.length > 0 && (
-                      <>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-3">Projects</h3>
-                          <div className="space-y-4">
-                            {resume.projects.filter(p => p.name).map((proj) => (
-                              <div key={proj.id}>
-                                <div className="flex justify-between items-start">
-                                  <h4 className="font-medium text-gray-900">{proj.name}</h4>
-                                  {proj.techStack.length > 0 && (
-                                    <span className="text-xs text-gray-500">
-                                      {proj.techStack.join(", ")}
-                                    </span>
-                                  )}
-                                </div>
-                                <ul className="mt-1 space-y-1">
-                                  {proj.bullets.filter(Boolean).map((bullet, i) => (
-                                    <li key={i} className="text-sm text-gray-600 flex gap-2">
-                                      <span>•</span>
-                                      <span>{bullet}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <Separator className="bg-gray-200" />
-                      </>
-                    )}
-
-                    {/* Education */}
-                    {isSectionEnabled('education') && resume.education.length > 0 && (
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Education</h3>
-                        <div className="space-y-2">
-                          {resume.education.filter(e => e.degree).map((edu) => (
-                            <div key={edu.id} className="flex justify-between">
-                              <div>
-                                <h4 className="font-medium text-gray-900">
-                                  {edu.degree} in {edu.fieldOfStudy}
-                                </h4>
-                                <p className="text-sm text-gray-600">{edu.institution}</p>
-                              </div>
-                              <span className="text-sm text-gray-500">{edu.endDate}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <CardContent className="p-0" ref={resumeRef}>
+                    <ResumePreview 
+                      resume={resume} 
+                      templateId={resume.templateId as TemplateId}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
