@@ -1,0 +1,615 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  FileText,
+  Sparkles,
+  Download,
+  Copy,
+  Check,
+  Wand2,
+  Eye,
+  Edit3,
+  User,
+  Briefcase,
+  Code,
+  FolderGit2,
+  GraduationCap,
+  Award,
+  Trophy,
+  Globe,
+  Settings2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { LumaSpin } from "@/components/ui/luma-spin";
+import { AILoader } from "@/components/ui/ai-loader";
+import Link from "next/link";
+
+import {
+  Resume,
+  SectionId,
+  createEmptyResume,
+  validateResume,
+  SECTION_CONFIGS,
+  DEFAULT_SECTION_ORDER,
+  DEFAULT_ENABLED_SECTIONS,
+} from "@/types/resume-types";
+
+import {
+  HeaderSection,
+  SummarySection,
+  SkillsSection,
+  ExperienceSection,
+  ProjectSection,
+  EducationSection,
+  CertificationsSection,
+  AchievementsSection,
+  LanguagesSection,
+  SectionManager,
+} from "@/components/resume-builder";
+
+export default function ResumeBuilderPage() {
+  const { user, userProfile, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+  
+  const [resume, setResume] = useState<Resume | null>(null);
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const resumeRef = useRef<HTMLDivElement>(null);
+  
+  // Initialize resume when user loads
+  useEffect(() => {
+    if (user && !resume) {
+      const newResume = createEmptyResume(user.uid);
+      // Pre-fill from user profile if available
+      if (userProfile) {
+        newResume.header.fullName = user.displayName || '';
+        newResume.header.email = user.email || '';
+        newResume.header.linkedin = userProfile.linkedinLink || '';
+        if (userProfile.skills) {
+          newResume.skills.technical = userProfile.skills.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      setResume(newResume);
+    }
+  }, [user, userProfile, resume]);
+
+  const updateResume = <K extends keyof Resume>(key: K, value: Resume[K]) => {
+    if (!resume) return;
+    setResume({ ...resume, [key]: value, updatedAt: new Date() });
+  };
+
+  const isSectionEnabled = (sectionId: SectionId) => {
+    if (!resume) return false;
+    const config = SECTION_CONFIGS[sectionId];
+    if (!config.removable) return true; // Mandatory sections always enabled
+    return resume.enabledSections.includes(sectionId);
+  };
+
+  const handleAIGenerate = async () => {
+    if (!resume) return;
+    
+    const errors = validateResume(resume);
+    if (errors.length > 0) {
+      toast({
+        title: "Please fill required fields",
+        description: errors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsGenerating(true);
+    try {
+      // Import the AI flow dynamically
+      const { generateFullResume } = await import("@/ai/flows/generate-resume");
+      
+      const result = await generateFullResume({
+        userInfo: {
+          name: resume.header.fullName,
+          email: resume.header.email,
+          phone: resume.header.phone,
+          location: resume.header.location,
+          linkedin: resume.header.linkedin,
+          title: resume.header.jobTitle,
+          experience: resume.experience.map(e => 
+            `${e.jobTitle} at ${e.company} (${e.startDate} - ${e.current ? 'Present' : e.endDate}): ${e.bullets.map(b => b.text).join('; ')}`
+          ).join('\n'),
+          skills: [...resume.skills.technical, ...resume.skills.coreCompetencies].join(', '),
+          education: resume.education.map(e => 
+            `${e.degree} in ${e.fieldOfStudy} from ${e.institution}`
+          ).join('\n'),
+          projects: resume.projects.map(p => 
+            `${p.name} (${p.techStack.join(', ')}): ${p.bullets.join('; ')}`
+          ).join('\n'),
+        },
+        targetRole: resume.targetRole,
+        targetCompany: resume.targetCompany,
+        jobDescription: resume.jobDescription,
+        format: resume.templateId,
+      });
+      
+      // Update resume with AI-generated content
+      updateResume('summary', result.summary);
+      updateResume('atsScore', result.atsScore);
+      
+      toast({
+        title: "Resume Enhanced!",
+        description: `ATS Score: ${result.atsScore}%`,
+      });
+      
+      setActiveTab('preview');
+    } catch (error: any) {
+      console.error("Resume generation error:", error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to enhance resume. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (!resume) return;
+    
+    let text = `${resume.header.fullName}\n`;
+    text += `${resume.header.jobTitle}\n`;
+    text += `${resume.header.email} | ${resume.header.phone} | ${resume.header.location}\n\n`;
+    
+    if (resume.summary) {
+      text += `PROFESSIONAL SUMMARY\n${resume.summary}\n\n`;
+    }
+    
+    if (resume.skills.technical.length > 0) {
+      text += `SKILLS\n`;
+      text += `Technical: ${resume.skills.technical.join(', ')}\n`;
+      if (resume.skills.coreCompetencies.length > 0) {
+        text += `Core: ${resume.skills.coreCompetencies.join(', ')}\n`;
+      }
+      text += '\n';
+    }
+    
+    if (resume.experience.length > 0) {
+      text += `EXPERIENCE\n`;
+      resume.experience.forEach(exp => {
+        text += `${exp.jobTitle} | ${exp.company} | ${exp.startDate} - ${exp.current ? 'Present' : exp.endDate}\n`;
+        exp.bullets.forEach(b => {
+          if (b.text) text += `• ${b.text}\n`;
+        });
+        text += '\n';
+      });
+    }
+    
+    if (resume.projects.length > 0) {
+      text += `PROJECTS\n`;
+      resume.projects.forEach(proj => {
+        text += `${proj.name} | ${proj.techStack.join(', ')}\n`;
+        proj.bullets.forEach(b => {
+          if (b) text += `• ${b}\n`;
+        });
+        text += '\n';
+      });
+    }
+    
+    if (resume.education.length > 0) {
+      text += `EDUCATION\n`;
+      resume.education.forEach(edu => {
+        text += `${edu.degree} in ${edu.fieldOfStudy} | ${edu.institution} | ${edu.endDate}\n`;
+      });
+    }
+    
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast({ title: "Copied to clipboard!" });
+  };
+
+  const downloadAsPDF = async () => {
+    const element = resumeRef.current;
+    if (!element || !resume) return;
+
+    toast({ title: "Generating PDF...", description: "Please wait..." });
+
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.save(`${resume.header.fullName.replace(/\s+/g, "_") || "Resume"}.pdf`);
+
+      toast({ title: "PDF Downloaded!" });
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate PDF.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="container mx-auto flex items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="container mx-auto py-16 text-center">
+        <h1 className="text-2xl font-bold mb-4">Login Required</h1>
+        <p className="text-muted-foreground mb-6">Please log in to access the Resume Builder.</p>
+        <Button asChild>
+          <Link href="/login">Login</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  if (!resume) {
+    return (
+      <div className="container mx-auto flex items-center justify-center min-h-[60vh]">
+        <LumaSpin />
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full relative">
+      {/* Loading Overlay */}
+      {isGenerating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-md" />
+          <div className="relative z-10">
+            <AILoader text="Enhancing" size={160} />
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="border-b bg-background/95 backdrop-blur sticky top-0 z-40">
+        <div className="container mx-auto py-4 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <FileText className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Resume Builder</h1>
+                <p className="text-sm text-muted-foreground">
+                  Professional, ATS-optimized resume
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {resume.atsScore && (
+                <Badge variant="secondary" className="text-sm">
+                  ATS Score: {resume.atsScore}%
+                </Badge>
+              )}
+              <Button variant="outline" size="sm" onClick={copyToClipboard}>
+                {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                {copied ? "Copied" : "Copy"}
+              </Button>
+              <Button variant="outline" size="sm" onClick={downloadAsPDF}>
+                <Download className="h-4 w-4 mr-2" />
+                PDF
+              </Button>
+              <Button onClick={handleAIGenerate} disabled={isGenerating}>
+                <Wand2 className="h-4 w-4 mr-2" />
+                AI Enhance
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container mx-auto py-6 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Sidebar - Section Manager */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24 space-y-4">
+              <SectionManager
+                sectionOrder={resume.sectionOrder}
+                enabledSections={resume.enabledSections}
+                onOrderChange={(order) => updateResume('sectionOrder', order)}
+                onEnabledChange={(enabled) => updateResume('enabledSections', enabled)}
+                experienceCount={resume.experience.length}
+                projectsCount={resume.projects.length}
+              />
+              
+              {/* Quick Nav */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Quick Navigation</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  {resume.sectionOrder.filter(id => isSectionEnabled(id)).map((sectionId) => {
+                    const config = SECTION_CONFIGS[sectionId];
+                    return (
+                      <Button
+                        key={sectionId}
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start text-sm"
+                        onClick={() => {
+                          document.getElementById(`section-${sectionId}`)?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                      >
+                        {config.label}
+                      </Button>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-2">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'preview')}>
+              <TabsList className="mb-6">
+                <TabsTrigger value="edit" className="gap-2">
+                  <Edit3 className="h-4 w-4" />
+                  Edit
+                </TabsTrigger>
+                <TabsTrigger value="preview" className="gap-2">
+                  <Eye className="h-4 w-4" />
+                  Preview
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="edit" className="space-y-6">
+                {/* Render sections based on order */}
+                {resume.sectionOrder.map((sectionId) => {
+                  if (!isSectionEnabled(sectionId)) return null;
+                  
+                  return (
+                    <div key={sectionId} id={`section-${sectionId}`}>
+                      {sectionId === 'header' && (
+                        <HeaderSection
+                          data={resume.header}
+                          onChange={(data) => updateResume('header', data)}
+                        />
+                      )}
+                      {sectionId === 'summary' && (
+                        <SummarySection
+                          data={resume.summary}
+                          onChange={(data) => updateResume('summary', data)}
+                        />
+                      )}
+                      {sectionId === 'skills' && (
+                        <SkillsSection
+                          data={resume.skills}
+                          onChange={(data) => updateResume('skills', data)}
+                        />
+                      )}
+                      {sectionId === 'experience' && (
+                        <ExperienceSection
+                          data={resume.experience}
+                          onChange={(data) => updateResume('experience', data)}
+                        />
+                      )}
+                      {sectionId === 'projects' && (
+                        <ProjectSection
+                          data={resume.projects}
+                          onChange={(data) => updateResume('projects', data)}
+                        />
+                      )}
+                      {sectionId === 'education' && (
+                        <EducationSection
+                          data={resume.education}
+                          onChange={(data) => updateResume('education', data)}
+                        />
+                      )}
+                      {sectionId === 'certifications' && (
+                        <CertificationsSection
+                          data={resume.certifications}
+                          onChange={(data) => updateResume('certifications', data)}
+                        />
+                      )}
+                      {sectionId === 'achievements' && (
+                        <AchievementsSection
+                          data={resume.achievements}
+                          onChange={(data) => updateResume('achievements', data)}
+                        />
+                      )}
+                      {sectionId === 'languages' && (
+                        <LanguagesSection
+                          data={resume.languages}
+                          onChange={(data) => updateResume('languages', data)}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </TabsContent>
+
+              <TabsContent value="preview">
+                <Card>
+                  <CardContent 
+                    className="p-8 space-y-6" 
+                    ref={resumeRef}
+                    style={{ backgroundColor: "#ffffff" }}
+                  >
+                    {/* Resume Preview */}
+                    <div className="text-center border-b border-gray-200 pb-4">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {resume.header.fullName || "Your Name"}
+                      </h2>
+                      <p className="text-lg text-gray-600">
+                        {resume.header.jobTitle || "Professional Title"}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {[resume.header.email, resume.header.phone, resume.header.location]
+                          .filter(Boolean)
+                          .join(" | ")}
+                      </p>
+                      {resume.header.linkedin && (
+                        <p className="text-sm text-gray-500">{resume.header.linkedin}</p>
+                      )}
+                    </div>
+
+                    {/* Summary */}
+                    {resume.summary && isSectionEnabled('summary') && (
+                      <>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            Professional Summary
+                          </h3>
+                          <p className="text-gray-600">{resume.summary}</p>
+                        </div>
+                        <Separator className="bg-gray-200" />
+                      </>
+                    )}
+
+                    {/* Skills */}
+                    {isSectionEnabled('skills') && (resume.skills.technical.length > 0 || resume.skills.coreCompetencies.length > 0) && (
+                      <>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">Skills</h3>
+                          <div className="space-y-2">
+                            {resume.skills.technical.length > 0 && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Technical:</span>{" "}
+                                {resume.skills.technical.join(", ")}
+                              </p>
+                            )}
+                            {resume.skills.coreCompetencies.length > 0 && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Core:</span>{" "}
+                                {resume.skills.coreCompetencies.join(", ")}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Separator className="bg-gray-200" />
+                      </>
+                    )}
+
+                    {/* Experience */}
+                    {isSectionEnabled('experience') && resume.experience.length > 0 && (
+                      <>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-3">Experience</h3>
+                          <div className="space-y-4">
+                            {resume.experience.filter(e => e.jobTitle).map((exp) => (
+                              <div key={exp.id}>
+                                <div className="flex justify-between">
+                                  <div>
+                                    <h4 className="font-medium text-gray-900">{exp.jobTitle}</h4>
+                                    <p className="text-sm text-gray-600">
+                                      {exp.company}{exp.location ? `, ${exp.location}` : ""}
+                                    </p>
+                                  </div>
+                                  <span className="text-sm text-gray-500">
+                                    {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                                  </span>
+                                </div>
+                                <ul className="mt-2 space-y-1">
+                                  {exp.bullets.filter(b => b.text).map((bullet) => (
+                                    <li key={bullet.id} className="text-sm text-gray-600 flex gap-2">
+                                      <span>•</span>
+                                      <span>{bullet.text}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <Separator className="bg-gray-200" />
+                      </>
+                    )}
+
+                    {/* Projects */}
+                    {isSectionEnabled('projects') && resume.projects.length > 0 && (
+                      <>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-3">Projects</h3>
+                          <div className="space-y-4">
+                            {resume.projects.filter(p => p.name).map((proj) => (
+                              <div key={proj.id}>
+                                <div className="flex justify-between items-start">
+                                  <h4 className="font-medium text-gray-900">{proj.name}</h4>
+                                  {proj.techStack.length > 0 && (
+                                    <span className="text-xs text-gray-500">
+                                      {proj.techStack.join(", ")}
+                                    </span>
+                                  )}
+                                </div>
+                                <ul className="mt-1 space-y-1">
+                                  {proj.bullets.filter(Boolean).map((bullet, i) => (
+                                    <li key={i} className="text-sm text-gray-600 flex gap-2">
+                                      <span>•</span>
+                                      <span>{bullet}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <Separator className="bg-gray-200" />
+                      </>
+                    )}
+
+                    {/* Education */}
+                    {isSectionEnabled('education') && resume.education.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Education</h3>
+                        <div className="space-y-2">
+                          {resume.education.filter(e => e.degree).map((edu) => (
+                            <div key={edu.id} className="flex justify-between">
+                              <div>
+                                <h4 className="font-medium text-gray-900">
+                                  {edu.degree} in {edu.fieldOfStudy}
+                                </h4>
+                                <p className="text-sm text-gray-600">{edu.institution}</p>
+                              </div>
+                              <span className="text-sm text-gray-500">{edu.endDate}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
