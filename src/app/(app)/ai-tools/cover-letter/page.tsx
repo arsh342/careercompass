@@ -177,7 +177,7 @@ export default function CoverLetterGeneratorPage() {
         <Button variant="ghost" asChild className="mb-4">
           <Link href="/ai-tools">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to AI Tools
+            Back to LaunchPad
           </Link>
         </Button>
         <div className="text-center">

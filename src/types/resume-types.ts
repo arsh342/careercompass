@@ -283,7 +283,7 @@ export interface Resume {
   id: string;
   userId: string;
   name: string; // Resume name for user reference
-  templateId: 'modern' | 'classic' | 'creative' | 'minimal';
+  templateId: 'modern' | 'classic' | 'creative' | 'minimal' | 'professional' | 'elegant' | 'tech' | 'executive';
   
   // Section ordering (array of section IDs)
   sectionOrder: SectionId[];
