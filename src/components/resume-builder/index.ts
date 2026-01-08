@@ -8,3 +8,4 @@ export { ProjectSection } from './ProjectSection';
 export { EducationSection } from './EducationSection';
 export { CertificationsSection, AchievementsSection, LanguagesSection } from './OptionalSections';
 export { SectionManager } from './SectionManager';
+export { TemplateSelector, ResumePreview, TEMPLATES, type TemplateId } from './ResumeTemplates';

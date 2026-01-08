@@ -16,7 +16,8 @@ import {
   FileText,
   BarChartHorizontal,
   Crown,
-  Sparkles,
+  Rocket,
+  Kanban,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -46,17 +47,17 @@ const employeeLinks = [
     ),
   },
   {
-    label: "AI Tools",
-    href: "/ai-tools",
+    label: "Applications",
+    href: "/applications",
     icon: (
-      <Sparkles className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <Kanban className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
   {
-    label: "Applied",
-    href: "/applied",
+    label: "LaunchPad",
+    href: "/ai-tools",
     icon: (
-      <FileText className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <Rocket className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
   {
