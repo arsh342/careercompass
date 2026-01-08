@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         const userId = session.metadata?.userId;
         const planId = session.metadata?.planId;
 
-        if (userId && planId) {
+        if (userId && planId && adminDb) {
           // Update user's plan in Firestore
           await adminDb.collection("users").doc(userId).update({
             plan: planId,
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.userId;
 
-        if (userId) {
+        if (userId && adminDb) {
           const status = subscription.status;
           await adminDb.collection("users").doc(userId).update({
             subscriptionStatus: status,
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.userId;
 
-        if (userId) {
+        if (userId && adminDb) {
           // Downgrade to free plan
           await adminDb.collection("users").doc(userId).update({
             plan: "free",
