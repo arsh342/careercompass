@@ -46,6 +46,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SkillsInput } from "@/components/skills-input";
+import { AvatarUploader } from "@/components/ui/avatar-uploader";
+import { LumaSpin } from "@/components/ui/luma-spin";
 
 const employabilityOptions = [
   { value: "open_to_work", label: "Open to Work" },
@@ -804,7 +806,7 @@ export default function ProfilePage() {
   if (authLoading) {
     return (
       <div className="container mx-auto flex justify-center items-center h-96">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <LumaSpin />
       </div>
     );
   }
@@ -881,38 +883,64 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-center gap-6 mb-6">
-                <div className="relative">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage
-                      src={user?.photoURL || ""}
-                      alt="Profile picture"
-                      data-ai-hint="profile avatar"
-                    />
-                    <AvatarFallback className="text-3xl">
-                      {user?.displayName ? getInitials(user.displayName) : "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button
-                    size="icon"
-                    className="absolute bottom-0 right-0 rounded-full h-8 w-8"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    {uploading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Edit className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Edit profile picture</span>
-                  </Button>
-                  <Input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept="image/png, image/jpeg"
-                  />
-                </div>
+                <AvatarUploader
+                  onUpload={async (file) => {
+                    if (!user) return { success: false };
+                    
+                    setUploading(true);
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("userId", user.uid);
+
+                    try {
+                      const response = await fetch("/api/upload", {
+                        method: "POST",
+                        body: formData,
+                      });
+
+                      if (!response.ok) throw new Error("Upload failed");
+
+                      const { url } = await response.json();
+                      await updateProfile(user, { photoURL: url });
+                      await setDoc(
+                        doc(db, "users", user.uid),
+                        { photoURL: url },
+                        { merge: true }
+                      );
+
+                      toast({
+                        title: "Profile Picture Updated",
+                        description: "Your new picture has been saved.",
+                      });
+                      return { success: true };
+                    } catch (error) {
+                      toast({
+                        title: "Upload Error",
+                        description: "Failed to upload profile picture.",
+                        variant: "destructive",
+                      });
+                      return { success: false };
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                >
+                  <div className="relative cursor-pointer group">
+                    <Avatar className="h-24 w-24 transition-opacity group-hover:opacity-75">
+                      <AvatarImage
+                        src={user?.photoURL || ""}
+                        alt="Profile picture"
+                        data-ai-hint="profile avatar"
+                      />
+                      <AvatarFallback className="text-3xl">
+                        {user?.displayName ? getInitials(user.displayName) : "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Edit className="h-6 w-6 text-white" />
+                    </div>
+                  </div>
+                </AvatarUploader>
                 <div className="text-center sm:text-left">
                   <h2 className="text-xl font-semibold">{user?.displayName}</h2>
                   <p className="text-muted-foreground">{user?.email}</p>
