@@ -6,7 +6,7 @@ import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { User, Settings, LogOut, Crown } from 'lucide-react';
+import { User, Settings, LogOut, Crown, Sparkles } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,15 @@ const AVATAR_GRADIENTS = [
   'bg-gradient-to-br from-slate-500 via-gray-600 to-zinc-700',
 ];
 
+// Plan display info
+const PLAN_INFO: Record<string, { label: string; color: string; icon: typeof Crown }> = {
+  free: { label: 'Free', color: 'text-muted-foreground', icon: User },
+  pro: { label: 'Pro', color: 'text-blue-500', icon: Sparkles },
+  premium: { label: 'Premium', color: 'text-amber-500', icon: Crown },
+  starter: { label: 'Starter', color: 'text-emerald-500', icon: Sparkles },
+  business: { label: 'Business', color: 'text-purple-500', icon: Crown },
+};
+
 // Get consistent gradient based on user email/id
 const getGradient = (identifier: string) => {
   if (!identifier) return AVATAR_GRADIENTS[0];
@@ -45,7 +54,7 @@ const getGradient = (identifier: string) => {
 };
 
 export function UserNav() {
-  const { user, loading, role } = useAuth();
+  const { user, userProfile, loading, role } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -77,7 +86,7 @@ export function UserNav() {
   };
 
   if (loading) {
-    return <Skeleton className="h-9 w-9 rounded-full" />;
+    return <Skeleton className="h-9 w-24 rounded-full" />;
   }
   
   if (!user) {
@@ -92,18 +101,31 @@ export function UserNav() {
 
   const gradientClass = getGradient(user.email || user.uid);
   const hasPhoto = !!user.photoURL;
+  
+  // Get user's current plan from profile or default to free
+  const currentPlan = userProfile?.plan || 'free';
+  const planInfo = PLAN_INFO[currentPlan] || PLAN_INFO.free;
+  const PlanIcon = planInfo.icon;
 
   return (
-    <div className="flex items-center gap-2 p-3">
+    <div className="flex items-center gap-2">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-            <Avatar className="h-9 w-9">
-              {hasPhoto ? (
-                <AvatarImage src={user.photoURL || ''} alt={`@${user.displayName}`} />
-              ) : null}
-              <AvatarFallback className={gradientClass} />
-            </Avatar>
+          <Button 
+            variant="ghost" 
+            className="rounded-full py-0 ps-0 h-10 bg-background hover:bg-accent/50 border-2 "
+          >
+            <div className="me-1 flex aspect-square h-full p-1">
+              <Avatar className="h-full w-full">
+                {hasPhoto ? (
+                  <AvatarImage src={user.photoURL || ''} alt={`@${user.displayName}`} />
+                ) : null}
+                <AvatarFallback className={gradientClass} />
+              </Avatar>
+            </div>
+            <span className={`flex items-center gap-1 pr-3 ${planInfo.color}`}>
+              {planInfo.label}
+            </span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-64" align="end">
@@ -131,7 +153,7 @@ export function UserNav() {
             <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
               <Link href="/pricing">
                 <Crown className="mr-2 h-4 w-4 text-amber-500" />
-                Upgrade Plan
+                {currentPlan === 'free' ? 'Upgrade Plan' : 'Manage Plan'}
               </Link>
             </Button>
             {role === 'employer' && (
@@ -159,3 +181,4 @@ export function UserNav() {
     </div>
   );
 }
+
