@@ -30,6 +30,7 @@ import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firesto
 import { db } from '@/lib/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/AuthContext';
+import { LumaSpin } from '@/components/ui/luma-spin';
 
 interface Opportunity {
   id: string;
@@ -226,7 +227,7 @@ export default function OpportunityDetailPage() {
   if (loading || authLoading) {
     return (
         <div className="container mx-auto flex justify-center items-center h-96">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <LumaSpin />
         </div>
     )
   }
