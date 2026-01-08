@@ -16,6 +16,7 @@ import {
   FileText,
   BarChartHorizontal,
   Crown,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -42,6 +43,13 @@ const employeeLinks = [
     href: "/opportunities",
     icon: (
       <Briefcase className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "AI Tools",
+    href: "/ai-tools",
+    icon: (
+      <Sparkles className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
   {
