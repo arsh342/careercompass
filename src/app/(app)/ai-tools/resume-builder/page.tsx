@@ -299,11 +299,11 @@ export default function ResumeBuilderPage() {
       )}
 
       {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur sticky top-0 z-40">
-        <div className="container mx-auto py-4 px-4">
+      <div className=" bg-background/95 backdrop-blur sticky top-0 z-40 rounded-full">
+        <div className="container mx-auto py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-primary/10 rounded-full">
                 <FileText className="h-5 w-5 text-primary" />
               </div>
               <div>
@@ -315,19 +315,19 @@ export default function ResumeBuilderPage() {
             </div>
             <div className="flex items-center gap-2">
               {resume.atsScore && (
-                <Badge variant="secondary" className="text-sm">
+                <Badge variant="secondary" className="text-sm rounded-full">
                   ATS Score: {resume.atsScore}%
                 </Badge>
               )}
-              <Button variant="outline" size="sm" onClick={copyToClipboard}>
+              <Button variant="outline" size="lg" onClick={copyToClipboard} className="rounded-full">
                 {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
                 {copied ? "Copied" : "Copy"}
               </Button>
-              <Button variant="outline" size="sm" onClick={downloadAsPDF}>
+              <Button variant="outline" size="lg" onClick={downloadAsPDF} className="rounded-full">
                 <Download className="h-4 w-4 mr-2" />
                 PDF
               </Button>
-              <Button onClick={handleAIGenerate} disabled={isGenerating}>
+              <Button onClick={handleAIGenerate} disabled={isGenerating} className="rounded-full">
                 <Wand2 className="h-4 w-4 mr-2" />
                 AI Enhance
               </Button>
@@ -394,12 +394,12 @@ export default function ResumeBuilderPage() {
           {/* Main Content Area */}
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'preview')}>
-              <TabsList className="mb-6">
-                <TabsTrigger value="edit" className="gap-2">
+              <TabsList className="mb-6 rounded-full">
+                <TabsTrigger value="edit" className="gap-2 rounded-full">
                   <Edit3 className="h-4 w-4" />
                   Edit
                 </TabsTrigger>
-                <TabsTrigger value="preview" className="gap-2">
+                <TabsTrigger value="preview" className="gap-2 rounded-full">
                   <Eye className="h-4 w-4" />
                   Preview
                 </TabsTrigger>

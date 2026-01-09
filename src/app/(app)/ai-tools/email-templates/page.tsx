@@ -267,7 +267,7 @@ export default function EmailTemplatesPage() {
               <div className="space-y-2">
                 <Label>Tone</Label>
                 <Select value={tone} onValueChange={(v) => setTone(v as typeof tone)}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-48 rounded-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -279,9 +279,8 @@ export default function EmailTemplatesPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleGenerate} className="w-full" disabled={isGenerating}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Generate Email
+              <Button onClick={handleGenerate} className="w-full rounded-full" disabled={isGenerating}>
+                Generate
               </Button>
             </CardFooter>
           </Card>
@@ -293,7 +292,7 @@ export default function EmailTemplatesPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Subject Line</CardTitle>
-                <Button variant="outline" size="sm" onClick={copySubject}>
+                <Button className="rounded-full" variant="outline" size="sm" onClick={copySubject}>
                   {copiedSubject ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
                   {copiedSubject ? "Copied!" : "Copy"}
                 </Button>
@@ -324,11 +323,11 @@ export default function EmailTemplatesPage() {
               <div className="flex items-center justify-between">
                 <CardTitle>Email Body</CardTitle>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={copyBody}>
+                  <Button className="rounded-full" variant="outline" size="sm" onClick={copyBody}>
                     {copiedBody ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
                     {copiedBody ? "Copied!" : "Copy Body"}
                   </Button>
-                  <Button size="sm" onClick={copyAll}>
+                  <Button className="rounded-full" size="sm" onClick={copyAll}>
                     <Copy className="h-4 w-4 mr-2" />
                     Copy All
                   </Button>
@@ -377,10 +376,10 @@ export default function EmailTemplatesPage() {
           </div>
 
           <div className="flex justify-center gap-4">
-            <Button variant="outline" onClick={() => setResult(null)}>
+            <Button className="rounded-full" variant="outline" onClick={() => setResult(null)}>
               Generate Another
             </Button>
-            <Button asChild>
+            <Button asChild className="rounded-full">
               <Link href="/ai-tools">Back to LaunchPad</Link>
             </Button>
           </div>
