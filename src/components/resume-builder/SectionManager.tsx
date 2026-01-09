@@ -137,7 +137,7 @@ export function SectionManager({
           return (
             <div 
               key={sectionId}
-              className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 p-2 rounded-full transition-colors ${
                 isEnabled ? 'bg-muted/50' : 'opacity-50'
               }`}
             >
