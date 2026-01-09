@@ -222,8 +222,7 @@ export default function SkillGapPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleAnalyze} className="w-full" disabled={isAnalyzing}>
-                <Sparkles className="h-4 w-4 mr-2" />
+              <Button onClick={handleAnalyze} className="w-full rounded-full" disabled={isAnalyzing}>
                 Analyze Skill Gap
               </Button>
             </CardFooter>
@@ -268,7 +267,7 @@ export default function SkillGapPage() {
               <CardContent>
                 <div className="space-y-3">
                   {result.matchedSkills.map((skill, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-green-500/5">
+                    <div key={i} className="flex items-center justify-between p-2 rounded-full bg-green-500/5">
                       <span className="font-medium">{skill.skill}</span>
                       <Badge variant={
                         skill.strength === "strong" ? "default" :
@@ -350,10 +349,10 @@ export default function SkillGapPage() {
           </Card>
 
           <div className="flex justify-center gap-4">
-            <Button variant="outline" onClick={() => setResult(null)}>
+            <Button variant="outline" className="rounded-full" onClick={() => setResult(null)}>
               Analyze Another Job
             </Button>
-            <Button asChild>
+            <Button asChild className="rounded-full">
               <Link href="/ai-tools">Back to LaunchPad</Link>
             </Button>
           </div>

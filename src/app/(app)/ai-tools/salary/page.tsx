@@ -192,7 +192,7 @@ export default function SalaryNegotiatorPage() {
               <div className="space-y-2">
                 <Label>Years of Experience</Label>
                 <Select value={experienceYears.toString()} onValueChange={(v) => setExperienceYears(parseInt(v))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -230,7 +230,7 @@ export default function SalaryNegotiatorPage() {
             <div className="space-y-2">
               <Label>What do you need?</Label>
               <Select value={negotiationType} onValueChange={(v) => setNegotiationType(v as NegotiationType)}>
-                <SelectTrigger>
+                <SelectTrigger className="rounded-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -243,8 +243,7 @@ export default function SalaryNegotiatorPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={handleAnalyze} className="w-full" disabled={isAnalyzing}>
-              <Sparkles className="h-4 w-4 mr-2" />
+            <Button onClick={handleAnalyze} className="w-full rounded-full" disabled={isAnalyzing}>
               Get Salary Insights
             </Button>
           </CardFooter>
@@ -314,8 +313,8 @@ export default function SalaryNegotiatorPage() {
                   <MessageSquare className="h-5 w-5" />
                   Negotiation Script
                 </CardTitle>
-                <Button variant="outline" size="sm" onClick={copyScript}>
-                  {copiedScript ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
+                <Button className="rounded-full" variant="outline" size="sm" onClick={copyScript}>
+                  {copiedScript ? <Check className="h-4 w-4 mr-1 " /> : <Copy className="h-4 w-4 mr-1" />}
                   {copiedScript ? "Copied!" : "Copy"}
                 </Button>
               </div>
@@ -408,10 +407,10 @@ export default function SalaryNegotiatorPage() {
           </Card>
 
           <div className="flex justify-center gap-4">
-            <Button variant="outline" onClick={() => setResult(null)}>
+            <Button className="rounded-full" variant="outline" onClick={() => setResult(null)}>
               New Research
             </Button>
-            <Button asChild>
+            <Button asChild className="rounded-full">
               <Link href="/ai-tools">Back to LaunchPad</Link>
             </Button>
           </div>

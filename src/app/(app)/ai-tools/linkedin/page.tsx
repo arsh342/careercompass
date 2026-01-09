@@ -241,9 +241,8 @@ export default function LinkedInOptimizerPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleOptimize} className="w-full" disabled={isOptimizing}>
-                <Sparkles className="h-4 w-4 mr-2" />
-                Optimize My Profile
+              <Button onClick={handleOptimize} className="w-full rounded-full" disabled={isOptimizing}>
+                Optimize
               </Button>
             </CardFooter>
           </Card>

@@ -265,7 +265,7 @@ export default function InterviewPrepPage() {
               <div className="space-y-2">
                 <Label>Experience Level</Label>
                 <Select value={experienceLevel} onValueChange={(v) => setExperienceLevel(v as ExperienceLevel)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -279,7 +279,7 @@ export default function InterviewPrepPage() {
               <div className="space-y-2">
                 <Label>Question Type</Label>
                 <Select value={questionType} onValueChange={(v) => setQuestionType(v as QuestionType)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-full" >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -293,7 +293,7 @@ export default function InterviewPrepPage() {
               <div className="space-y-2">
                 <Label>Number of Questions</Label>
                 <Select value={questionCount.toString()} onValueChange={(v) => setQuestionCount(parseInt(v))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -306,8 +306,7 @@ export default function InterviewPrepPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button onClick={handleGenerateQuestions} className="w-full" disabled={isGenerating}>
-              <Sparkles className="h-4 w-4 mr-2" />
+            <Button onClick={handleGenerateQuestions} className="w-full rounded-full" disabled={isGenerating}>
               Generate Questions
             </Button>
           </CardFooter>
@@ -369,6 +368,7 @@ export default function InterviewPrepPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="rounded-full"
                       onClick={() => setShowTips(!showTips)}
                     >
                       <Lightbulb className="h-4 w-4 mr-1" />
@@ -377,6 +377,7 @@ export default function InterviewPrepPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="rounded-full"
                       onClick={() => setShowSampleAnswer(!showSampleAnswer)}
                     >
                       <MessageSquare className="h-4 w-4 mr-1" />
@@ -449,12 +450,12 @@ export default function InterviewPrepPage() {
               )}
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep("setup")}>
+              <Button variant="outline" onClick={() => setStep("setup")} className="rounded-full">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Start Over
               </Button>
               {!currentQuestion.evaluation ? (
-                <Button onClick={handleSubmitAnswer} disabled={isEvaluating || !currentAnswer.trim()}>
+                <Button onClick={handleSubmitAnswer} disabled={isEvaluating || !currentAnswer.trim()} className="rounded-full">
                   <Sparkles className="h-4 w-4 mr-2" />
                   Evaluate Answer
                 </Button>
