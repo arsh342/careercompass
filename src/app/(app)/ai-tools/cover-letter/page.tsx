@@ -174,7 +174,7 @@ export default function CoverLetterGeneratorPage() {
     <div className="container mx-auto py-8 max-w-5xl">
       {/* Header */}
       <div className="mb-8">
-        <Button variant="ghost" asChild className="mb-4">
+        <Button variant="ghost" asChild className="mb-4 rounded-full">
           <Link href="/ai-tools">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to LaunchPad
@@ -320,7 +320,7 @@ export default function CoverLetterGeneratorPage() {
                     value={formData.tone}
                     onValueChange={(value: Tone) => updateField("tone", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -337,7 +337,7 @@ export default function CoverLetterGeneratorPage() {
                     value={formData.length}
                     onValueChange={(value: Length) => updateField("length", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -350,13 +350,12 @@ export default function CoverLetterGeneratorPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full">
+              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full rounded-full">
                 {isGenerating ? (
                   <>Generating...</>
                 ) : (
                   <>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    Generate Cover Letter
+                    Generate
                   </>
                 )}
               </Button>

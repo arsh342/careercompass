@@ -441,19 +441,19 @@ function OpportunitiesContent() {
               onChange={(e) => setLocationFilter(e.target.value)}
             />
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Internship">Internship</SelectItem>
-                <SelectItem value="Volunteer">Volunteer</SelectItem>
-                <SelectItem value="Full-time">Full-time</SelectItem>
-                <SelectItem value="Part-time">Part-time</SelectItem>
-                <SelectItem value="Contract">Contract</SelectItem>
+              <SelectContent className="rounded-xl">
+                <SelectItem className="rounded-full" value="Internship">Internship</SelectItem>
+                <SelectItem className="rounded-full" value="Volunteer">Volunteer</SelectItem>
+                <SelectItem className="rounded-full" value="Full-time">Full-time</SelectItem>
+                <SelectItem className="rounded-full" value="Part-time">Part-time</SelectItem>
+                <SelectItem className="rounded-full" value="Contract">Contract</SelectItem>
               </SelectContent>
             </Select>
             <Popover>
-              <PopoverTrigger asChild>
+              <PopoverTrigger asChild className="rounded-full">
                 <Button variant="outline" className="justify-start">
                   Filter by skills...
                   {selectedSkills.size > 0 && (
@@ -519,6 +519,7 @@ function OpportunitiesContent() {
               </PopoverContent>
             </Popover>
             <Button
+              className="rounded-full"
               variant="outline"
               onClick={() => {
                 setLocationFilter("");
