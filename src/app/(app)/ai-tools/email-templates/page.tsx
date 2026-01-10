@@ -198,7 +198,7 @@ export default function EmailTemplatesPage() {
       {!result ? (
         <div className="space-y-6">
           {/* Template Type Selection */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>Choose Email Type</CardTitle>
             </CardHeader>
@@ -210,7 +210,7 @@ export default function EmailTemplatesPage() {
                     <button
                       key={type.value}
                       onClick={() => setTemplateType(type.value)}
-                      className={`p-4 rounded-lg border text-left transition-all ${
+                      className={`p-4 rounded-2xl border text-left transition-all ${
                         templateType === type.value
                           ? "border-primary bg-primary/5"
                           : "hover:border-primary/50"
@@ -229,7 +229,7 @@ export default function EmailTemplatesPage() {
           </Card>
 
           {/* Details Form */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>Email Details</CardTitle>
             </CardHeader>
@@ -306,7 +306,7 @@ export default function EmailTemplatesPage() {
       ) : (
         <div className="space-y-6">
           {/* Subject Line */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Subject Line</CardTitle>
@@ -336,7 +336,7 @@ export default function EmailTemplatesPage() {
           </Card>
 
           {/* Email Body */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Email Body</CardTitle>
@@ -361,7 +361,7 @@ export default function EmailTemplatesPage() {
 
           {/* Tips & Timing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Lightbulb className="h-4 w-4 text-yellow-500" />
@@ -380,7 +380,7 @@ export default function EmailTemplatesPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Clock className="h-4 w-4 text-blue-500" />

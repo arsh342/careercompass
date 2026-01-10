@@ -177,7 +177,7 @@ export default function LinkedInOptimizerPage() {
 
       {!result ? (
         <div className="space-y-6">
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>Your Target</CardTitle>
               <CardDescription>What role are you targeting?</CardDescription>
@@ -234,7 +234,7 @@ export default function LinkedInOptimizerPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>Current Profile (Optional)</CardTitle>
               <CardDescription>Share your current content for better suggestions</CardDescription>
@@ -268,7 +268,7 @@ export default function LinkedInOptimizerPage() {
       ) : (
         <div className="space-y-6">
           {/* Completeness Score */}
-          <Card className="bg-gradient-to-r from-[#0077B5]/10 to-[#0077B5]/5">
+          <Card className="bg-gradient-to-r from-[#0077B5]/10 to-[#0077B5]/5 rounded-3xl">
             <CardContent className="py-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -282,7 +282,7 @@ export default function LinkedInOptimizerPage() {
           </Card>
 
           {/* Optimized Headline */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -326,7 +326,7 @@ export default function LinkedInOptimizerPage() {
           </Card>
 
           {/* Optimized About */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Optimized About Section</CardTitle>
@@ -358,7 +358,7 @@ export default function LinkedInOptimizerPage() {
           </Card>
 
           {/* Strategic Keywords */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
@@ -391,7 +391,7 @@ export default function LinkedInOptimizerPage() {
           </Card>
 
           {/* Profile Tips */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-yellow-500" />
@@ -417,7 +417,7 @@ export default function LinkedInOptimizerPage() {
 
           {/* Improvements */}
           {result.improvements.length > 0 && (
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle>Quick Wins</CardTitle>
               </CardHeader>

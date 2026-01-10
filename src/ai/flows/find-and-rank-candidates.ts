@@ -11,16 +11,15 @@
 import { ai } from "@/ai/genkit";
 import { sendApplicationStatusEmail } from "./send-application-status-email";
 import { z } from "zod";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-  documentId,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
+
+// Helper to get Firestore collection reference using Admin SDK
+function getCollection(collectionName: string) {
+  if (!adminDb) {
+    throw new Error("Firebase Admin not initialized");
+  }
+  return adminDb.collection(collectionName);
+}
 
 const FindAndRankCandidatesInputSchema = z.object({
   employerId: z
@@ -101,12 +100,16 @@ const findAndRankCandidatesFlow = ai.defineFlow(
     outputSchema: FindAndRankCandidatesOutputSchema,
   },
   async ({ employerId }) => {
+    // Check if Admin SDK is initialized
+    if (!adminDb) {
+      console.error("Firebase Admin not initialized");
+      return { candidates: [] };
+    }
+
     // 1. Fetch employer's active postings to get required skills and opportunity IDs
-    const postingsQuery = query(
-      collection(db, "opportunities"),
-      where("employerId", "==", employerId)
-    );
-    const postingsSnapshot = await getDocs(postingsQuery);
+    const postingsSnapshot = await getCollection("opportunities")
+      .where("employerId", "==", employerId)
+      .get();
 
     if (postingsSnapshot.empty) {
       return { candidates: [] };
@@ -132,31 +135,46 @@ const findAndRankCandidatesFlow = ai.defineFlow(
     const appliedUserIds = new Set<string>();
     const invitedUserIds = new Set<string>();
     if (opportunityIds.length > 0) {
-      const applicationsQuery = query(
-        collection(db, "applications"),
-        where("opportunityId", "in", opportunityIds)
-      );
-      const applicationsSnapshot = await getDocs(applicationsQuery);
-      applicationsSnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (
-          ["Approved", "Rejected", "Pending", "Applied"].includes(data.status)
-        ) {
-          appliedUserIds.add(data.userId);
-        } else if (data.status === "Invited") {
-          invitedUserIds.add(data.userId);
-        }
-      });
+      // Admin SDK 'in' queries are limited to 10 items, so we batch if needed
+      const batches = [];
+      for (let i = 0; i < opportunityIds.length; i += 10) {
+        batches.push(opportunityIds.slice(i, i + 10));
+      }
+      
+      for (const batch of batches) {
+        const applicationsSnapshot = await getCollection("applications")
+          .where("opportunityId", "in", batch)
+          .get();
+        
+        applicationsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (
+            ["Approved", "Rejected", "Pending", "Applied"].includes(data.status)
+          ) {
+            appliedUserIds.add(data.userId);
+          } else if (data.status === "Invited") {
+            invitedUserIds.add(data.userId);
+          }
+        });
+      }
     }
 
     // 3. Fetch all employees
-    const usersQuery = query(
-      collection(db, "users"),
-      where("role", "==", "employee")
-    );
-    const usersSnapshot = await getDocs(usersQuery);
+    const usersSnapshot = await getCollection("users")
+      .where("role", "==", "employee")
+      .get();
 
-    const allEmployees = usersSnapshot.docs.map((doc) => {
+    interface EmployeeData {
+      uid: string;
+      displayName: string;
+      email: string;
+      photoURL?: string;
+      skills: string;
+      experience: string;
+      careerGoals: string;
+    }
+
+    const allEmployees: EmployeeData[] = usersSnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         uid: data.uid,

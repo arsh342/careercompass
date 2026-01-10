@@ -166,7 +166,7 @@ export default function SkillGapPage() {
       {!result ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Your Skills */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>Your Skills</CardTitle>
               <CardDescription>Add your current skills and experience</CardDescription>
@@ -215,7 +215,7 @@ export default function SkillGapPage() {
           </Card>
 
           {/* Target Job */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>Target Job</CardTitle>
               <CardDescription>Enter the job you&apos;re targeting</CardDescription>
@@ -275,7 +275,7 @@ export default function SkillGapPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Matched Skills */}
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-green-600">
                   <CheckCircle2 className="h-5 w-5" />
@@ -300,7 +300,7 @@ export default function SkillGapPage() {
             </Card>
 
             {/* Missing Skills */}
-            <Card>
+            <Card className="rounded-3xl">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-orange-600">
                   <Target className="h-5 w-5" />
@@ -339,7 +339,7 @@ export default function SkillGapPage() {
           </div>
 
           {/* Recommendations */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="h-5 w-5 text-primary" />

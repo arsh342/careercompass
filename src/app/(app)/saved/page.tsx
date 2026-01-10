@@ -134,7 +134,7 @@ export default function SavedOpportunitiesPage() {
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     {/* Compensation & Benefits */}
                     {opp.compensationAndBenefits && (
-                      <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-3xl border border-green-200 dark:border-green-800">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                           <span className="text-xs font-medium text-green-700 dark:text-green-300">
@@ -154,7 +154,7 @@ export default function SavedOpportunitiesPage() {
 
                     {/* Experience Level */}
                     {opp.experience && (
-                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-3xl border border-blue-200 dark:border-blue-800">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                           <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
@@ -171,7 +171,7 @@ export default function SavedOpportunitiesPage() {
 
                     {/* Working Hours */}
                     {opp.workingHours && (
-                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-3xl border border-purple-200 dark:border-purple-800">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                           <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
@@ -188,7 +188,7 @@ export default function SavedOpportunitiesPage() {
 
                     {/* Education Requirements */}
                     {opp.education && (
-                      <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-3xl border border-orange-200 dark:border-orange-800">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                           <span className="text-xs font-medium text-orange-700 dark:text-orange-300">

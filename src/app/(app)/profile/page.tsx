@@ -867,13 +867,14 @@ export default function ProfilePage() {
       </div>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-2">
-          <Card className="mb-8">
+          <Card className="mb-8 rounded-3xl">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>Personal Information</CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
+                  className="rounded-full"
                   onClick={() => setIsEditingPersonal(!isEditingPersonal)}
                 >
                   <Edit className="h-4 w-4 mr-2" />
@@ -1152,7 +1153,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
@@ -1165,6 +1166,7 @@ export default function ProfilePage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="rounded-full"
                   onClick={() =>
                     setIsEditingProfessional(!isEditingProfessional)
                   }
@@ -2010,7 +2012,7 @@ export default function ProfilePage() {
           </Card>
         </div>
         <div className="md:col-span-1 space-y-8">
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>AI Resume Parser</CardTitle>
               <CardDescription>
@@ -2020,7 +2022,7 @@ export default function ProfilePage() {
             <CardContent>
               <Button
                 type="button"
-                className="w-full"
+                className="w-full rounded-full"
                 onClick={() => resumeInputRef.current?.click()}
                 disabled={isPending}
               >
@@ -2041,7 +2043,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
           {/* ATS Score Checker Section */}
-          <Card className="mb-8">
+          <Card className="mb-8 rounded-3xl">
             <CardHeader>
               <CardTitle>ATS Score Checker</CardTitle>
               <CardDescription>
@@ -2062,6 +2064,7 @@ export default function ProfilePage() {
                   }}
                 />
                 <Textarea
+                  className="rounded-3xl"
                   placeholder="Paste job description here..."
                   rows={5}
                   value={atsJobDesc}
@@ -2074,6 +2077,7 @@ export default function ProfilePage() {
                     (!atsResumeText && !atsResumeFile) ||
                     !atsJobDesc
                   }
+                  className="rounded-full"
                 >
                   {atsLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -2149,7 +2153,7 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="sticky top-20">
+          <Card className="sticky top-20 rounded-3xl">
             <CardHeader>
               <CardTitle>AI Profile Summary</CardTitle>
               <CardDescription>
@@ -2177,7 +2181,7 @@ export default function ProfilePage() {
               <Button
                 onClick={onGenerateSummary}
                 disabled={isPending}
-                className="w-full"
+                className="w-full rounded-full"
               >
                 {isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

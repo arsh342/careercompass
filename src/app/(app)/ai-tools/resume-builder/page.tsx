@@ -299,8 +299,8 @@ export default function ResumeBuilderPage() {
       )}
 
       {/* Header */}
-      <div className=" bg-background/95 backdrop-blur sticky top-0 z-40 rounded-full">
-        <div className="container mx-auto py-6">
+      <div className=" bg-background/95 backdrop-blur sticky top-0 z-40 rounded-3xl">
+        <div className="container mx-auto py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-primary/10 rounded-full">
@@ -352,7 +352,7 @@ export default function ResumeBuilderPage() {
               />
               
               {/* Quick Nav */}
-              <Card>
+              <Card className="rounded-3xl">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Quick Navigation</CardTitle>
                 </CardHeader>
@@ -377,7 +377,7 @@ export default function ResumeBuilderPage() {
               </Card>
 
               {/* Template Selector */}
-              <Card>
+              <Card className="rounded-3xl">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">Choose Template</CardTitle>
                 </CardHeader>
@@ -394,12 +394,12 @@ export default function ResumeBuilderPage() {
           {/* Main Content Area */}
           <div className="lg:col-span-2">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'preview')}>
-              <TabsList className="mb-6 rounded-full">
-                <TabsTrigger value="edit" className="gap-2 rounded-full">
+              <TabsList className="mb-6 rounded-3xl">
+                <TabsTrigger value="edit" className="gap-2 rounded-3xl">
                   <Edit3 className="h-4 w-4" />
                   Edit
                 </TabsTrigger>
-                <TabsTrigger value="preview" className="gap-2 rounded-full">
+                <TabsTrigger value="preview" className="gap-2 rounded-3xl">
                   <Eye className="h-4 w-4" />
                   Preview
                 </TabsTrigger>

@@ -113,7 +113,7 @@ export function TemplateSelector({ selectedTemplate, onSelect }: TemplateSelecto
           key={template.id}
           onClick={() => onSelect(template.id)}
           className={cn(
-            "relative rounded-lg border-2 p-3 text-left transition-all hover:shadow-md",
+            "relative rounded-2xl border-2 p-3 text-left transition-all hover:shadow-md",
             selectedTemplate === template.id
               ? "border-primary bg-primary/5 shadow-md"
               : "border-muted hover:border-muted-foreground/30"
@@ -122,7 +122,7 @@ export function TemplateSelector({ selectedTemplate, onSelect }: TemplateSelecto
           {/* Preview gradient */}
           <div 
             className={cn(
-              "h-16 rounded-md bg-gradient-to-br mb-2",
+              "h-16 rounded-xl bg-gradient-to-br mb-2",
               template.preview
             )}
           />
@@ -131,7 +131,7 @@ export function TemplateSelector({ selectedTemplate, onSelect }: TemplateSelecto
             {template.description}
           </p>
           {selectedTemplate === template.id && (
-            <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+            <div className="absolute top-2 right-2 w-2 h-2 rounded-xl bg-primary" />
           )}
         </button>
       ))}
@@ -166,7 +166,7 @@ const templateStyles: Record<TemplateId, {
     sectionContent: "text-gray-700",
     separator: "my-4",
     bullet: "text-blue-500",
-    skillBadge: "bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-sm",
+    skillBadge: "bg-blue-100 text-blue-800 px-2 py-0.5 rounded-3xl text-sm",
     accentColor: "blue",
   },
   classic: {
@@ -179,7 +179,7 @@ const templateStyles: Record<TemplateId, {
     sectionContent: "text-gray-700",
     separator: "my-4",
     bullet: "text-gray-800",
-    skillBadge: "bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-sm",
+    skillBadge: "bg-gray-100 text-gray-800 px-2 py-0.5 rounded-3xl text-sm",
     accentColor: "gray",
   },
   minimal: {

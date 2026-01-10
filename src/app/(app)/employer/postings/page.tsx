@@ -45,9 +45,33 @@ export default function EmployerPostingsPage() {
                     orderBy("createdAt", "desc")
                 );
                 const querySnapshot = await getDocs(q);
+                
+                // Get opportunity IDs to fetch application counts
+                const opportunityIds = querySnapshot.docs.map((d) => d.id);
+
+                // Fetch all applications for these opportunities
+                const applicantCounts: Record<string, number> = {};
+                
+                if (opportunityIds.length > 0) {
+                    // Batch queries for 'in' limitation (max 10)
+                    for (let i = 0; i < opportunityIds.length; i += 10) {
+                        const batch = opportunityIds.slice(i, i + 10);
+                        const applicationsQuery = query(
+                            collection(db, "applications"),
+                            where("opportunityId", "in", batch)
+                        );
+                        const applicationsSnapshot = await getDocs(applicationsQuery);
+                        applicationsSnapshot.forEach((appDoc) => {
+                            const oppId = appDoc.data().opportunityId;
+                            applicantCounts[oppId] = (applicantCounts[oppId] || 0) + 1;
+                        });
+                    }
+                }
+
                 const postingsData = querySnapshot.docs.map(doc => ({
                     id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
+                    applicants: applicantCounts[doc.id] || 0, // Use actual count
                 } as Posting));
                 setPostings(postingsData);
             } catch (error) {

@@ -113,7 +113,7 @@ export function SectionManager({
   };
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Settings2 className="h-5 w-5" />
