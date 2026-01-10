@@ -202,7 +202,7 @@ const Column = ({
     <div className="w-72 shrink-0">
       <div className="mb-3 flex items-center justify-between">
         <h3 className={`font-medium ${headingColor}`}>{title}</h3>
-        <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-sm text-neutral-400">
+        <span className="rounded-full bg-muted px-2 py-0.5 text-sm text-muted-foreground">
           {filteredCards.length}
         </span>
       </div>
@@ -212,7 +212,7 @@ const Column = ({
         onDragLeave={handleDragLeave}
         className={cn(
           "w-full rounded-lg transition-colors min-h-[400px] pb-4",
-          active ? "bg-neutral-800/50" : "bg-neutral-800/0"
+          active ? "bg-muted/50" : "bg-transparent"
         )}
       >
         {filteredCards.map((c) => (
@@ -261,15 +261,15 @@ const Card = ({
         draggable="true"
         onDragStart={(e) => handleDragStart(e as unknown as DragEvent, cardData)}
         className={cn(
-          "cursor-grab rounded-lg border bg-neutral-800 p-3 active:cursor-grabbing hover:border-neutral-600 transition-colors",
-          isApplied ? "border-blue-700/50" : isSaved ? "border-amber-700/50" : "border-neutral-700"
+          "cursor-grab rounded-lg border bg-card p-3 active:cursor-grabbing hover:border-primary/50 transition-colors",
+          isApplied ? "border-blue-500/50" : isSaved ? "border-amber-500/50" : "border-border"
         )}
       >
         <div className="flex items-start gap-2">
-          <GripVertical className="h-4 w-4 text-neutral-500 shrink-0 mt-0.5" />
+          <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <p className="text-sm font-medium text-neutral-100 truncate flex-1">{title}</p>
+              <p className="text-sm font-medium text-foreground truncate flex-1">{title}</p>
               {isApplied && (
                 <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">
                   Applied
@@ -281,12 +281,12 @@ const Card = ({
                 </span>
               )}
             </div>
-            <p className="text-xs text-neutral-400 flex items-center gap-1 mt-1">
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
               <Building2 className="h-3 w-3" />
               <span className="truncate">{company}</span>
             </p>
             {location && (
-              <p className="text-xs text-neutral-500 flex items-center gap-1 mt-0.5">
+              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                 <MapPin className="h-3 w-3" />
                 <span className="truncate">{location}</span>
               </p>
@@ -301,7 +301,7 @@ const Card = ({
               target="_blank" 
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="text-neutral-500 hover:text-neutral-300 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
@@ -366,7 +366,7 @@ const BurnBarrel = ({
         "mt-10 grid h-56 w-56 shrink-0 place-content-center rounded-lg border text-3xl transition-colors",
         active
           ? "border-red-800 bg-red-800/20 text-red-500"
-          : "border-neutral-700 bg-neutral-800/50 text-neutral-500"
+          : "border-border bg-muted/50 text-muted-foreground"
       )}
     >
       {active ? <Flame className="h-10 w-10 animate-bounce" /> : <Trash2 className="h-10 w-10" />}
@@ -427,7 +427,7 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
             <button
               type="button"
               onClick={() => setAdding(false)}
-              className="px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+              className="px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               Cancel
             </button>
@@ -444,7 +444,7 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
         <motion.button
           layout
           onClick={() => setAdding(true)}
-          className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+          className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
         >
           <span>Add job</span>
           <Plus className="h-3 w-3" />
