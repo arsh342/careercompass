@@ -170,11 +170,8 @@ export default function ApplicationsPage() {
     isSaved: true,
   }));
 
-  // Debug logging
-  console.log("Saved opportunities from context:", saved.length);
-  console.log("Saved cards converted:", savedCards.length);
-
   // Merge all cards (deduplicate by opportunityId)
+  // Jobs that are both saved AND applied will only appear in Applied column
   const allCards = [...manualCards];
   
   // Add applied jobs (avoid duplicates)
@@ -184,7 +181,7 @@ export default function ApplicationsPage() {
     }
   });
   
-  // Add saved cards (avoid duplicates with applied)
+  // Add saved cards (only if not already applied)
   savedCards.forEach((savedCard) => {
     const opportunityId = savedCard.opportunityId;
     if (!allCards.find(c => c.opportunityId === opportunityId)) {
@@ -361,19 +358,19 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-neutral-900 -m-4 md:-m-6">
+    <div className="h-full flex flex-col bg-background -m-4 md:-m-6">
       {/* Withdraw Confirmation Dialog */}
       <AlertDialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <AlertDialogContent className="bg-neutral-900 border-neutral-700">
+        <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-neutral-100">Withdraw Application?</AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-400">
+            <AlertDialogTitle className="text-foreground">Withdraw Application?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               Are you sure you want to withdraw your application for {cardToWithdraw?.title} at {cardToWithdraw?.company}? 
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-neutral-700 text-neutral-300">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-border text-foreground">Cancel</AlertDialogCancel>
             <AlertDialogAction 
               className="bg-red-600 hover:bg-red-700"
               onClick={() => {
@@ -391,7 +388,7 @@ export default function ApplicationsPage() {
       </AlertDialog>
 
       {/* Header */}
-      <div className="border-b border-neutral-700 bg-neutral-900 sticky top-0 z-40">
+      <div className="border-b border-border bg-background sticky top-0 z-40">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -399,20 +396,20 @@ export default function ApplicationsPage() {
                 <Briefcase className="h-5 w-5 text-violet-400" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-neutral-100">Application Tracker</h1>
-                <p className="text-sm text-neutral-400">
+                <h1 className="text-xl font-bold text-foreground">Application Tracker</h1>
+                <p className="text-sm text-muted-foreground">
                   {stats.total} total • {stats.applied} applied • {stats.interview} interviews • {stats.offer} offers
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search jobs..."
-                  className="pl-9 w-64 bg-neutral-800 border-neutral-700 text-neutral-100 placeholder:text-neutral-500"
+                  className="pl-9 w-64 bg-muted border-border text-foreground placeholder:text-muted-foreground"
                 />
               </div>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -422,64 +419,64 @@ export default function ApplicationsPage() {
                     Add Application
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-neutral-900 border-neutral-700">
+                <DialogContent className="bg-card border-border">
                   <DialogHeader>
-                    <DialogTitle className="text-neutral-100">Add New Application</DialogTitle>
-                    <DialogDescription className="text-neutral-400">
+                    <DialogTitle className="text-foreground">Add New Application</DialogTitle>
+                    <DialogDescription className="text-muted-foreground">
                       Track a new job application
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                      <Label className="text-neutral-300">Job Title *</Label>
+                      <Label className="text-foreground">Job Title *</Label>
                       <Input
                         value={newApp.jobTitle}
                         onChange={(e) => setNewApp({ ...newApp, jobTitle: e.target.value })}
                         placeholder="Software Engineer"
-                        className="bg-neutral-800 border-neutral-700 text-neutral-100"
+                        className="bg-muted border-border text-foreground"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-neutral-300">Company *</Label>
+                      <Label className="text-foreground">Company *</Label>
                       <Input
                         value={newApp.company}
                         onChange={(e) => setNewApp({ ...newApp, company: e.target.value })}
                         placeholder="Google"
-                        className="bg-neutral-800 border-neutral-700 text-neutral-100"
+                        className="bg-muted border-border text-foreground"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-neutral-300">Location</Label>
+                        <Label className="text-foreground">Location</Label>
                         <Input
                           value={newApp.location}
                           onChange={(e) => setNewApp({ ...newApp, location: e.target.value })}
                           placeholder="San Francisco, CA"
-                          className="bg-neutral-800 border-neutral-700 text-neutral-100"
+                          className="bg-muted border-border text-foreground"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-300">Salary</Label>
+                        <Label className="text-foreground">Salary</Label>
                         <Input
                           value={newApp.salary}
                           onChange={(e) => setNewApp({ ...newApp, salary: e.target.value })}
                           placeholder="$120k - $150k"
-                          className="bg-neutral-800 border-neutral-700 text-neutral-100"
+                          className="bg-muted border-border text-foreground"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-neutral-300">Job URL</Label>
+                      <Label className="text-foreground">Job URL</Label>
                       <Input
                         value={newApp.jobUrl}
                         onChange={(e) => setNewApp({ ...newApp, jobUrl: e.target.value })}
                         placeholder="https://..."
-                        className="bg-neutral-800 border-neutral-700 text-neutral-100"
+                        className="bg-muted border-border text-foreground"
                       />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-neutral-700 text-neutral-300">
+                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-border text-foreground">
                       Cancel
                     </Button>
                     <Button onClick={handleAddApplication} className="bg-violet-600 hover:bg-violet-700">

@@ -1,8 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AutomatedEmailService } from "@/lib/automated-email-service";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { requireAuth, validateBody, validators, validationErrorResponse } from "@/lib/api-auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const rateLimitResponse = withRateLimit(request, RATE_LIMITS.applicationStatus);
+    if (rateLimitResponse) return rateLimitResponse;
+
+    // Authentication required
+    const { response: authError, user } = await requireAuth(request);
+    if (authError) return authError;
+
+    const body = await request.json();
+
+    // Validate required fields
+    const validation = validateBody(body, [
+      "applicationId",
+      "status",
+      "applicantEmail",
+      "applicantName",
+      "jobTitle",
+      "companyName",
+    ], {
+      applicantEmail: validators.isEmail,
+      status: validators.isOneOf(["approved", "rejected"]),
+    });
+
+    if (!validation.valid) {
+      return validationErrorResponse(validation.errors);
+    }
+
     const {
       applicationId,
       jobId,
@@ -12,37 +41,7 @@ export async function POST(request: NextRequest) {
       companyName,
       applicantName,
       applicantEmail,
-    } = await request.json();
-
-    // Validate required fields
-    if (
-      !applicationId ||
-      !status ||
-      !applicantEmail ||
-      !applicantName ||
-      !jobTitle ||
-      !companyName
-    ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            "Missing required fields: applicationId, status, applicantEmail, applicantName, jobTitle, companyName",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Only handle approved and rejected statuses
-    if (status !== "approved" && status !== "rejected") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Status must be either "approved" or "rejected"',
-        },
-        { status: 400 }
-      );
-    }
+    } = body;
 
     // Trigger automated email based on status
     await AutomatedEmailService.handleApplicationStatusChange({
@@ -67,7 +66,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Failed to process request",
       },
       { status: 500 }
     );

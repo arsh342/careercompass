@@ -44,6 +44,7 @@ import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { generateEmail, type GenerateEmailOutput, type GenerateEmailInput } from "@/ai/flows/email-templates";
+import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 
 type TemplateType = GenerateEmailInput['templateType'];
 
@@ -59,8 +60,12 @@ const TEMPLATE_TYPES: { value: TemplateType; label: string; icon: React.ElementT
 ];
 
 export default function EmailTemplatesPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  // Rate limiting
+  const isPremium = userProfile?.plan === "premium" || userProfile?.plan === "pro";
+  const rateLimit = useRateLimit("emailTemplates", AI_RATE_LIMITS.emailTemplates, isPremium);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<GenerateEmailOutput | null>(null);
@@ -77,10 +82,23 @@ export default function EmailTemplatesPage() {
   const [tone, setTone] = useState<'formal' | 'professional' | 'friendly'>('professional');
 
   const handleGenerate = async () => {
+    // Check rate limit
+    if (!rateLimit.canProceed) {
+      toast({
+        title: "Rate Limit Reached",
+        description: `You've reached your limit. Try again in ${formatTimeUntilReset(rateLimit.timeUntilReset)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!companyName.trim()) {
       toast({ title: "Please enter company name", variant: "destructive" });
       return;
     }
+
+    // Increment rate limit
+    rateLimit.increment();
 
     setIsGenerating(true);
     try {
