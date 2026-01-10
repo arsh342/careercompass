@@ -53,7 +53,7 @@ export function SkillsSection({ data, onChange, onAIEnhance }: SkillsSectionProp
   };
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>

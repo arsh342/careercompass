@@ -217,7 +217,7 @@ function ActionSearchBar({
             <AnimatePresence>
                 {isFocused && result && result.actions.length > 0 && (
                     <motion.div
-                        className="absolute top-full left-0 right-0 z-50 border rounded-lg shadow-lg overflow-hidden dark:border-neutral-700 bg-background mt-1"
+                        className="absolute top-full left-0 right-0 z-50 border rounded-3xl shadow-lg overflow-hidden dark:border-neutral-700 bg-background mt-1"
                         variants={container}
                         initial="hidden"
                         animate="show"

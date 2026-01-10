@@ -255,7 +255,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Streak & Points Banner */}
-      <Card className="mb-6 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-yellow-500/10">
+      <Card className="mb-6 bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-yellow-500/10 rounded-3xl">
         <CardContent className="py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">

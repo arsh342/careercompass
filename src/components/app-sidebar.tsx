@@ -18,6 +18,7 @@ import {
   Crown,
   Rocket,
   Kanban,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -74,6 +75,13 @@ const employeeLinks = [
       <User className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
+  {
+    label: "Inbox",
+    href: "/inbox",
+    icon: (
+      <MessageSquare className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
 ];
 
 const employerLinks = [
@@ -103,6 +111,13 @@ const employerLinks = [
     href: "/employer/profile",
     icon: (
       <User className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "Inbox",
+    href: "/inbox",
+    icon: (
+      <MessageSquare className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
 ];
@@ -193,7 +208,7 @@ export const Logo = ({ href }: { href: string }) => {
         alt="CareerCompass logo"
         width={24}
         height={24}
-        className="dark:bg-white dark:p-0.5 dark:rounded-md flex-shrink-0"
+        className="dark:bg-white dark:p-0.5 dark:rounded-3xl flex-shrink-0"
       />
       <motion.span
         initial={{ opacity: 0 }}
@@ -217,7 +232,7 @@ export const LogoIcon = ({ href }: { href: string }) => {
         alt="CareerCompass logo"
         width={24}
         height={24}
-        className="dark:bg-white dark:p-0.5 dark:rounded-md flex-shrink-0"
+        className="dark:bg-white dark:p-0.5 dark:rounded-3xl flex-shrink-0"
       />
     </Link>
   );

@@ -17,6 +17,7 @@ import {
   Check,
   X,
   Eye,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -62,6 +63,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 type PotentialCandidate = FindAndRankCandidatesOutput["candidates"][0];
 
@@ -107,6 +109,7 @@ export default function ApplicantsPage() {
   const { id } = params;
   const { toast } = useToast();
   const { user } = useAuth();
+  const router = useRouter();
   const [potentialCandidates, setPotentialCandidates] = useState<
     PotentialCandidate[]
   >([]);
@@ -116,6 +119,23 @@ export default function ApplicantsPage() {
 
   const [applicantStatusFilter, setApplicantStatusFilter] = useState("All");
   const [matchPercentageFilter, setMatchPercentageFilter] = useState([0]);
+
+  // Function to start a chat with an applicant
+  const startChatWithApplicant = async (applicant: Applicant) => {
+    if (!user || !opportunity) return;
+    
+    // Navigate to chat room with query params to open/create chat
+    const params = new URLSearchParams({
+      userId: applicant.userId,
+      userName: applicant.userName,
+      userPhoto: applicant.photoURL || "",
+      opportunityId: id as string,
+      opportunityTitle: opportunity.title,
+      applicationId: applicant.id,
+    });
+    
+    router.push(`/chat/new?${params.toString()}`);
+  };
 
   useEffect(() => {
     if (!id || !user) return;
@@ -528,7 +548,7 @@ export default function ApplicantsPage() {
         </Button>
       </div>
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card>
+        <Card className="rounded-3xl">
           <CardHeader>
             <div className="flex justify-between items-start gap-4">
               <div>
@@ -539,6 +559,7 @@ export default function ApplicantsPage() {
               </div>
               <Button
                 size="sm"
+                className="rounded-3xl"
                 onClick={handleNotify}
                 disabled={filteredPotentialCandidates.length === 0}
               >
@@ -580,7 +601,7 @@ export default function ApplicantsPage() {
                 {filteredPotentialCandidates.map((candidate) => (
                   <div
                     key={candidate.uid}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-accent"
+                    className="flex items-center gap-2 p-2 rounded-3xl hover:bg-accent"
                   >
                     <Link
                       href={`/users/${candidate.uid}`}
@@ -610,7 +631,7 @@ export default function ApplicantsPage() {
                         </div>
                         {/* Show which job this candidate is matched for */}
                         {opportunity?.title && (
-                          <span className="inline-block text-xs bg-muted px-2 py-0.5 rounded mb-1 mt-1 text-muted-foreground">
+                          <span className="inline-block text-xs bg-muted px-2 py-0.5 rounded-3xl mb-1 mt-1 text-muted-foreground">
                             Matched for:{" "}
                             <span className="font-medium text-primary">
                               {opportunity.title}
@@ -626,6 +647,7 @@ export default function ApplicantsPage() {
                       <Button
                         size="sm"
                         variant="outline"
+                        className="rounded-3xl"
                         disabled={
                           candidate.applicationStatus === "invited" ||
                           candidate.applicationStatus === "applied"
@@ -641,6 +663,7 @@ export default function ApplicantsPage() {
                       <Button
                         size="sm"
                         variant="ghost"
+                        className="rounded-3xl"
                         onClick={() => handleDismissPotential(candidate.uid)}
                       >
                         Dismiss
@@ -652,7 +675,7 @@ export default function ApplicantsPage() {
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="rounded-3xl">
           <CardHeader>
             <CardTitle>Applicants</CardTitle>
             <CardDescription>
@@ -665,14 +688,22 @@ export default function ApplicantsPage() {
                 value={applicantStatusFilter}
                 onValueChange={setApplicantStatusFilter}
               >
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px] rounded-3xl">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All">All Statuses</SelectItem>
-                  <SelectItem value="Submitted">Submitted</SelectItem>
-                  <SelectItem value="Approved">Approved</SelectItem>
-                  <SelectItem value="Rejected">Rejected</SelectItem>
+                <SelectContent className="rounded-3xl">
+                  <SelectItem className="rounded-3xl" value="All">
+                    All Statuses
+                  </SelectItem>
+                  <SelectItem className="rounded-3xl" value="Submitted">
+                    Submitted
+                  </SelectItem>
+                  <SelectItem className="rounded-3xl" value="Approved">
+                    Approved
+                  </SelectItem>
+                  <SelectItem className="rounded-3xl" value="Rejected">
+                    Rejected
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -691,7 +722,7 @@ export default function ApplicantsPage() {
                 {filteredApplicants.map((applicant) => (
                   <div
                     key={applicant.id}
-                    className="flex items-center gap-2 p-2 rounded-md hover:bg-accent"
+                    className="flex items-center gap-2 p-2 rounded-3xl hover:bg-accent"
                   >
                     <Link
                       href={`/users/${applicant.userId}`}
@@ -737,7 +768,7 @@ export default function ApplicantsPage() {
                           <Button
                             size="icon"
                             variant="outline"
-                            className="h-8 w-8"
+                            className="h-8 w-8 rounded-3xl"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -754,10 +785,23 @@ export default function ApplicantsPage() {
                         </DialogContent>
                       </Dialog>
 
+                      {/* Chat button - shown for Approved, Invited, or Interview status */}
+                      {["Approved", "Invited", "Interview"].includes(applicant.status) && (
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-8 w-8 rounded-3xl text-primary hover:text-primary border-primary/20 hover:bg-primary/10"
+                          onClick={() => startChatWithApplicant(applicant)}
+                          title="Chat with applicant"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                      )}
+
                       <Button
                         size="icon"
                         variant="outline"
-                        className="h-8 w-8 text-green-600 hover:text-green-600 border-green-200 hover:bg-green-50"
+                        className="h-8 w-8 rounded-3xl text-green-600 hover:text-green-600 border-green-200 hover:bg-green-50"
                         onClick={() =>
                           handleUpdateStatus(applicant, "Approved")
                         }
@@ -771,7 +815,7 @@ export default function ApplicantsPage() {
                       <Button
                         size="icon"
                         variant="outline"
-                        className="h-8 w-8 text-red-600 hover:text-red-600 border-red-200 hover:bg-red-50"
+                        className="h-8 w-8 rounded-3xl text-red-600 hover:text-red-600 border-red-200 hover:bg-red-50"
                         onClick={() =>
                           handleUpdateStatus(applicant, "Rejected")
                         }
