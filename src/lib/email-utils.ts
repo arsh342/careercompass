@@ -1,14 +1,14 @@
 "use server";
 
-import * as nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { db } from "@/lib/firebase";
 import {
   doc,
-  getDoc,
-  setDoc,
   increment,
   runTransaction,
 } from "firebase/firestore";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export interface EmailInput {
   to: string;
@@ -58,35 +58,25 @@ export async function sendEmailDirect(
     return { success: false };
   }
 
-  if (
-    !process.env.BREVO_SMTP_HOST ||
-    !process.env.BREVO_SMTP_PORT ||
-    !process.env.BREVO_SMTP_USER ||
-    !process.env.BREVO_SMTP_PASSWORD
-  ) {
-    console.error("Missing Brevo SMTP credentials in .env file");
+  if (!process.env.RESEND_API_KEY) {
+    console.error("Missing RESEND_API_KEY in .env file");
     return { success: false };
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.BREVO_SMTP_HOST,
-    port: parseInt(process.env.BREVO_SMTP_PORT, 10),
-    secure: parseInt(process.env.BREVO_SMTP_PORT, 10) === 465,
-    auth: {
-      user: process.env.BREVO_SMTP_USER,
-      pass: process.env.BREVO_SMTP_PASSWORD,
-    },
-  });
-
   try {
-    const result = await transporter.sendMail({
-      from: `"CareerCompass" <${process.env.BREVO_SMTP_USER}>`,
-      replyTo: `"CareerCompass Support" <${process.env.BREVO_SMTP_USER}>`,
-      to: to,
+    const { data, error } = await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+      to: [to],
       subject: subject,
       html: body,
     });
-    return { success: true, messageId: result.messageId };
+
+    if (error) {
+      console.error("Resend error:", error);
+      return { success: false };
+    }
+
+    return { success: true, messageId: data?.id };
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false };

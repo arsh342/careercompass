@@ -250,7 +250,7 @@ export default function InterviewPrepPage() {
 
       {/* Setup Step */}
       {step === "setup" && (
-        <Card>
+        <Card className="rounded-3xl">
           <CardHeader>
             <CardTitle>Configure Your Practice Session</CardTitle>
             <CardDescription>
@@ -491,7 +491,7 @@ export default function InterviewPrepPage() {
       {/* Review Step */}
       {step === "review" && (
         <div className="space-y-6">
-          <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
+          <Card className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-3xl">
             <CardContent className="py-8 text-center">
               <h2 className="text-2xl font-bold mb-2">Practice Complete!</h2>
               <p className="text-muted-foreground mb-4">
@@ -503,7 +503,7 @@ export default function InterviewPrepPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle>General Interview Tips for {role}</CardTitle>
             </CardHeader>

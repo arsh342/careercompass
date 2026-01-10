@@ -65,7 +65,7 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
   };
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -80,6 +80,7 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
           <Button 
             variant="outline" 
             size="sm" 
+            className="rounded-full"
             onClick={addEntry}
             disabled={data.length >= FIELD_LIMITS.maxEducation}
           >
@@ -93,14 +94,14 @@ export function EducationSection({ data, onChange }: EducationSectionProps) {
           <div className="text-center py-8 text-muted-foreground">
             <GraduationCap className="h-12 w-12 mx-auto mb-4 opacity-20" />
             <p>No education added yet</p>
-            <Button variant="outline" size="sm" onClick={addEntry} className="mt-4">
+            <Button variant="outline" size="sm" onClick={addEntry} className="mt-4 rounded-full">
               <Plus className="h-4 w-4 mr-2" />
               Add Education
             </Button>
           </div>
         ) : (
           data.map((entry, index) => (
-            <div key={entry.id} className="border rounded-lg p-4 space-y-4 bg-muted/30">
+            <div key={entry.id} className="border rounded-2xl p-4 space-y-4 bg-muted/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />

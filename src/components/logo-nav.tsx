@@ -14,7 +14,7 @@ export default function LogoNav() {
         alt="CareerCompass logo"
         width={32}
         height={32}
-        className="dark:bg-white dark:p-1 dark:rounded-md group-hover:opacity-80 transition"
+        className="dark:bg-white dark:p-1 dark:rounded-3xl group-hover:opacity-80 transition"
       />
       <span className="text-xl font-bold tracking-tight">CareerCompass</span>
     </Link>

@@ -69,7 +69,7 @@ function LayoutAnimation() {
         {[1, 2, 3].map((i) => (
           <motion.div
             key={i}
-            className="bg-white/20 rounded-md h-5 w-full"
+            className="bg-white/20 rounded-3xl h-5 w-full"
             layout
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           />
@@ -96,7 +96,7 @@ function SpeedIndicator() {
           {loading ? (
             <motion.div
               key="loader"
-              className="h-8 w-24 bg-white/10 rounded"
+              className="h-8 w-24 bg-white/10 rounded-3xl"
               animate={{ opacity: [0.4, 0.7, 0.4] }}
               transition={{ duration: 1, repeat: Infinity }}
             />
@@ -150,7 +150,7 @@ function SecurityBadge() {
       {shields.map((shield) => (
         <motion.div
           key={shield.id}
-          className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+          className={`w-12 h-12 rounded-xl flex items-center justify-center ${
             shield.active ? 'bg-white/20' : 'bg-white/5'
           }`}
           animate={{ scale: shield.active ? 1.1 : 1 }}
@@ -292,7 +292,7 @@ export default function AIToolsPage() {
           
           {/* 1. Resume Builder - Tall (2x2) */}
           <motion.div
-            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-8 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-8 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -314,7 +314,7 @@ export default function AIToolsPage() {
 
           {/* 2. Cover Letter - Standard (2x1) */}
           <motion.div
-            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -337,7 +337,7 @@ export default function AIToolsPage() {
 
           {/* 3. LinkedIn - Tall (2x2) */}
           <motion.div
-            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -360,7 +360,7 @@ export default function AIToolsPage() {
 
           {/* 4. Interview Prep - Standard (2x1) */}
           <motion.div
-            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -383,7 +383,7 @@ export default function AIToolsPage() {
 
           {/* 5. Skill Gap - Standard (2x1) */}
           <motion.div
-            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -406,7 +406,7 @@ export default function AIToolsPage() {
 
           {/* 6. Salary - Standard (2x1) */}
           <motion.div
-            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -429,7 +429,7 @@ export default function AIToolsPage() {
 
           {/* 7. Email Templates - Standard (2x1) */}
           <motion.div
-            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

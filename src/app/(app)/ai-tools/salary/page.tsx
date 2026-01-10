@@ -162,7 +162,7 @@ export default function SalaryNegotiatorPage() {
           <span>Salary Negotiator</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
+          <div className="p-2 bg-primary/10 rounded-3xl">
             <DollarSign className="h-6 w-6 text-primary" />
           </div>
           <div>
@@ -173,7 +173,7 @@ export default function SalaryNegotiatorPage() {
       </div>
 
       {!result ? (
-        <Card>
+        <Card className="rounded-3xl">
           <CardHeader>
             <CardTitle>Salary Research</CardTitle>
             <CardDescription>Enter your details for personalized advice</CardDescription>
@@ -269,7 +269,7 @@ export default function SalaryNegotiatorPage() {
       ) : (
         <div className="space-y-6">
           {/* Market Data */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -303,7 +303,7 @@ export default function SalaryNegotiatorPage() {
           </Card>
 
           {/* Target */}
-          <Card className="bg-gradient-to-r from-green-500/10 to-green-500/5">
+          <Card className="bg-gradient-to-r from-green-500/10 to-green-500/5 rounded-3xl">
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -324,7 +324,7 @@ export default function SalaryNegotiatorPage() {
           </Card>
 
           {/* Negotiation Script */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -377,7 +377,7 @@ export default function SalaryNegotiatorPage() {
           </Card>
 
           {/* Alternative Compensation */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Gift className="h-5 w-5" />
@@ -405,7 +405,7 @@ export default function SalaryNegotiatorPage() {
           </Card>
 
           {/* Tips */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="h-5 w-5 text-yellow-500" />

@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Plus, Trash2, Flame, Building2, MapPin, ExternalLink, GripVertical } from "lucide-react";
+import { Plus, Trash2, Flame, Building2, MapPin, ExternalLink, GripVertical, MessageSquare } from "lucide-react";
 
 // ============================================
 // TYPES
@@ -30,6 +30,11 @@ export type CardType = {
   isApplied?: boolean;
   isSaved?: boolean;
   opportunityId?: string;
+  // For chat functionality
+  applicationId?: string;
+  employerId?: string;
+  employerName?: string;
+  status?: string;
 };
 
 export type ColumnConfig = {
@@ -47,6 +52,7 @@ type KanbanProps = {
   setCards: Dispatch<SetStateAction<CardType[]>>;
   columns?: ColumnConfig[];
   className?: string;
+  onChat?: (card: CardType) => void;
 };
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
@@ -61,7 +67,8 @@ export const Kanban = ({
   cards, 
   setCards, 
   columns = DEFAULT_COLUMNS,
-  className 
+  className,
+  onChat 
 }: KanbanProps) => {
   return (
     <div className={cn("flex h-full w-full gap-4 overflow-x-auto p-6 pt-8", className)}>
@@ -73,6 +80,7 @@ export const Kanban = ({
           headingColor={col.headingColor}
           cards={cards}
           setCards={setCards}
+          onChat={onChat}
         />
       ))}
       <BurnBarrel setCards={setCards} />
@@ -90,6 +98,7 @@ type ColumnProps = {
   cards: CardType[];
   column: ColumnType;
   setCards: Dispatch<SetStateAction<CardType[]>>;
+  onChat?: (card: CardType) => void;
 };
 
 const Column = ({
@@ -98,6 +107,7 @@ const Column = ({
   cards,
   column,
   setCards,
+  onChat,
 }: ColumnProps) => {
   const [active, setActive] = useState(false);
 
@@ -211,12 +221,12 @@ const Column = ({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={cn(
-          "w-full rounded-lg transition-colors min-h-[400px] pb-4",
+          "w-full rounded-3xl transition-colors min-h-[400px] pb-4",
           active ? "bg-muted/50" : "bg-transparent"
         )}
       >
         {filteredCards.map((c) => (
-          <Card key={c.id} {...c} handleDragStart={handleDragStart} />
+          <Card key={c.id} {...c} handleDragStart={handleDragStart} onChat={onChat} />
         ))}
         <DropIndicator beforeId={null} column={column} />
         <AddCard column={column} setCards={setCards} />
@@ -231,6 +241,7 @@ const Column = ({
 
 type CardProps = CardType & {
   handleDragStart: (e: DragEvent, card: CardType) => void;
+  onChat?: (card: CardType) => void;
 };
 
 const Card = ({ 
@@ -245,12 +256,21 @@ const Card = ({
   isApplied,
   isSaved,
   opportunityId,
-  handleDragStart 
+  applicationId,
+  employerId,
+  employerName,
+  status,
+  handleDragStart,
+  onChat
 }: CardProps) => {
   const cardData: CardType = { 
     title, id, column, company, location, jobUrl, salary,
-    isManual, isApplied, isSaved, opportunityId
+    isManual, isApplied, isSaved, opportunityId,
+    applicationId, employerId, employerName, status
   };
+
+  // Check if chat should be available (for Approved, Invited, Interview statuses)
+  const canChat = onChat && ["Approved", "Invited", "Interview", "interview", "offer"].includes(status || column);
 
   return (
     <>
@@ -261,7 +281,7 @@ const Card = ({
         draggable="true"
         onDragStart={(e) => handleDragStart(e as unknown as DragEvent, cardData)}
         className={cn(
-          "cursor-grab rounded-lg border bg-card p-3 active:cursor-grabbing hover:border-primary/50 transition-colors",
+          "cursor-grab rounded-3xl border bg-card p-3 active:cursor-grabbing hover:border-primary/50 transition-colors",
           isApplied ? "border-blue-500/50" : isSaved ? "border-amber-500/50" : "border-border"
         )}
       >
@@ -295,17 +315,33 @@ const Card = ({
               <p className="text-xs text-emerald-400 mt-1">{salary}</p>
             )}
           </div>
-          {jobUrl && (
-            <a 
-              href={jobUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          )}
+          <div className="flex items-center gap-1">
+            {canChat && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onChat(cardData);
+                }}
+                className="text-primary hover:text-primary/80 transition-colors p-1 rounded hover:bg-primary/10"
+                title="Chat with employer"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {jobUrl && (
+              <a 
+                href={jobUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            )}
+          </div>
         </div>
       </motion.div>
     </>
@@ -363,7 +399,7 @@ const BurnBarrel = ({
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       className={cn(
-        "mt-10 grid h-56 w-56 shrink-0 place-content-center rounded-lg border text-3xl transition-colors",
+        "mt-10 grid h-56 w-56 shrink-0 place-content-center rounded-3xl border text-3xl transition-colors",
         active
           ? "border-red-800 bg-red-800/20 text-red-500"
           : "border-border bg-muted/50 text-muted-foreground"
@@ -415,25 +451,25 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
             onChange={(e) => setText(e.target.value)}
             autoFocus
             placeholder="Job title..."
-            className="w-full rounded border border-violet-400 bg-violet-400/20 p-2 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0 mb-2"
+            className="w-full rounded-full border border-violet-400 bg-violet-400/20 p-2 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0 mb-2"
           />
           <input
             value={company}
             onChange={(e) => setCompany(e.target.value)}
             placeholder="Company..."
-            className="w-full rounded border border-violet-400 bg-violet-400/20 p-2 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0"
+            className="w-full rounded-full border border-violet-400 bg-violet-400/20 p-2 text-sm text-neutral-50 placeholder-violet-300 focus:outline-0"
           />
           <div className="mt-2 flex items-center justify-end gap-1.5">
             <button
               type="button"
               onClick={() => setAdding(false)}
-              className="px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground rounded-full"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded bg-neutral-50 px-3 py-1.5 text-xs text-neutral-950 transition-colors hover:bg-neutral-300"
+              className="flex items-center gap-1.5 rounded-full bg-neutral-50 px-3 py-1.5 text-xs text-neutral-950 transition-colors hover:bg-neutral-300"
             >
               <span>Add</span>
               <Plus className="h-3 w-3" />

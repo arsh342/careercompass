@@ -99,7 +99,7 @@ export function UserNav() {
     )
   }
 
-  const gradientClass = getGradient(user.email || user.uid);
+  const gradientClass = getGradient(user.uid || user.email || "");
   const hasPhoto = !!user.photoURL;
   
   // Get user's current plan from profile or default to free
