@@ -1,16 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, PLAN_DETAILS } from "@/lib/stripe";
+import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { requireAuth, validateBody, validators, validationErrorResponse } from "@/lib/api-auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const { planId, frequency, userId, userEmail } = await request.json();
+    // Rate limiting
+    const rateLimitResponse = withRateLimit(request, RATE_LIMITS.checkout);
+    if (rateLimitResponse) return rateLimitResponse;
 
-    if (!planId || !frequency) {
-      return NextResponse.json(
-        { error: "Missing planId or frequency" },
-        { status: 400 }
-      );
+    // Authentication (optional for checkout - user might not be logged in yet)
+    const { user } = await requireAuth(request);
+    
+    const body = await request.json();
+    
+    // Validate required fields
+    const validation = validateBody(body, ["planId", "frequency"], {
+      planId: validators.isNonEmptyString,
+      frequency: validators.isOneOf(["monthly", "yearly"]),
+    });
+    
+    if (!validation.valid) {
+      return validationErrorResponse(validation.errors);
     }
+
+    const { planId, frequency, userId, userEmail } = body;
 
     const plan = PLAN_DETAILS[planId];
     if (!plan) {
