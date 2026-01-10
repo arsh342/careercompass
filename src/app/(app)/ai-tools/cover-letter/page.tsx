@@ -32,12 +32,15 @@ import {
   Building2,
   User,
   Lightbulb,
+  AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { generateCoverLetter } from "@/ai/flows/generate-cover-letter";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoaderInline } from "@/components/ui/ai-loader";
 import Link from "next/link";
+import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Tone = "professional" | "enthusiastic" | "confident" | "conversational";
 type Length = "short" | "medium" | "long";
@@ -68,6 +71,10 @@ interface GeneratedCoverLetter {
 export default function CoverLetterGeneratorPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  
+  // Rate limiting
+  const isPremium = userProfile?.plan === "premium" || userProfile?.plan === "pro";
+  const rateLimit = useRateLimit("coverLetter", AI_RATE_LIMITS.coverLetter, isPremium);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedLetter, setGeneratedLetter] = useState<GeneratedCoverLetter | null>(null);
@@ -94,6 +101,16 @@ export default function CoverLetterGeneratorPage() {
   };
 
   const handleGenerate = async () => {
+    // Check rate limit
+    if (!rateLimit.canProceed) {
+      toast({
+        title: "Rate Limit Reached",
+        description: `You've reached your limit. Try again in ${formatTimeUntilReset(rateLimit.timeUntilReset)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!formData.jobTitle || !formData.company || !formData.jobDescription) {
       toast({
         title: "Missing Information",
@@ -102,6 +119,9 @@ export default function CoverLetterGeneratorPage() {
       });
       return;
     }
+
+    // Increment rate limit counter
+    rateLimit.increment();
 
     setIsGenerating(true);
     try {
@@ -348,9 +368,23 @@ export default function CoverLetterGeneratorPage() {
                   </Select>
                 </div>
               </div>
+              
+              {/* Rate Limit Display */}
+              {!rateLimit.canProceed && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Rate limit reached. Try again in {formatTimeUntilReset(rateLimit.timeUntilReset)}.
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
-            <CardFooter>
-              <Button onClick={handleGenerate} disabled={isGenerating} className="w-full rounded-full">
+            <CardFooter className="flex flex-col gap-2">
+              <Button 
+                onClick={handleGenerate} 
+                disabled={isGenerating || !rateLimit.canProceed} 
+                className="w-full rounded-full"
+              >
                 {isGenerating ? (
                   <>Generating...</>
                 ) : (

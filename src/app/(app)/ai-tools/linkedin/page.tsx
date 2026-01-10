@@ -34,10 +34,15 @@ import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { optimizeLinkedIn, type OptimizeLinkedInOutput } from "@/ai/flows/linkedin-optimizer";
+import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 
 export default function LinkedInOptimizerPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  // Rate limiting
+  const isPremium = userProfile?.plan === "premium" || userProfile?.plan === "pro";
+  const rateLimit = useRateLimit("linkedinOptimizer", AI_RATE_LIMITS.linkedinOptimizer, isPremium);
 
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [result, setResult] = useState<OptimizeLinkedInOutput | null>(null);
@@ -62,6 +67,16 @@ export default function LinkedInOptimizerPage() {
   };
 
   const handleOptimize = async () => {
+    // Check rate limit
+    if (!rateLimit.canProceed) {
+      toast({
+        title: "Rate Limit Reached",
+        description: `You've reached your limit. Try again in ${formatTimeUntilReset(rateLimit.timeUntilReset)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!role.trim() || !industry.trim()) {
       toast({ title: "Please fill in role and industry", variant: "destructive" });
       return;
@@ -70,6 +85,9 @@ export default function LinkedInOptimizerPage() {
       toast({ title: "Please add your skills", variant: "destructive" });
       return;
     }
+
+    // Increment rate limit
+    rateLimit.increment();
 
     setIsOptimizing(true);
     try {

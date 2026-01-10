@@ -37,10 +37,15 @@ import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { analyzeSkillGap, type AnalyzeSkillGapOutput } from "@/ai/flows/skill-gap";
+import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 
 export default function SkillGapPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  // Rate limiting
+  const isPremium = userProfile?.plan === "premium" || userProfile?.plan === "pro";
+  const rateLimit = useRateLimit("skillGap", AI_RATE_LIMITS.skillGap, isPremium);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalyzeSkillGapOutput | null>(null);
@@ -66,6 +71,16 @@ export default function SkillGapPage() {
   };
 
   const handleAnalyze = async () => {
+    // Check rate limit
+    if (!rateLimit.canProceed) {
+      toast({
+        title: "Rate Limit Reached",
+        description: `You've reached your limit. Try again in ${formatTimeUntilReset(rateLimit.timeUntilReset)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!jobTitle.trim() || !jobDescription.trim()) {
       toast({ title: "Please fill in job details", variant: "destructive" });
       return;
@@ -74,6 +89,9 @@ export default function SkillGapPage() {
       toast({ title: "Please add your skills", variant: "destructive" });
       return;
     }
+
+    // Increment rate limit
+    rateLimit.increment();
 
     setIsAnalyzing(true);
     try {

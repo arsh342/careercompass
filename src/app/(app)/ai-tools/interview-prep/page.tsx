@@ -50,6 +50,7 @@ import {
   type GenerateQuestionsOutput,
   type EvaluateAnswerOutput,
 } from "@/ai/flows/interview-prep";
+import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 
 type ExperienceLevel = "entry" | "mid" | "senior" | "executive";
 type QuestionType = "behavioral" | "technical" | "situational" | "all";
@@ -67,8 +68,12 @@ interface Question {
 }
 
 export default function InterviewPrepPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+
+  // Rate limiting
+  const isPremium = userProfile?.plan === "premium" || userProfile?.plan === "pro";
+  const rateLimit = useRateLimit("interviewPrep", AI_RATE_LIMITS.interviewPrep, isPremium);
 
   const [step, setStep] = useState<"setup" | "practice" | "review">("setup");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -90,10 +95,23 @@ export default function InterviewPrepPage() {
   const [showSampleAnswer, setShowSampleAnswer] = useState(false);
 
   const handleGenerateQuestions = async () => {
+    // Check rate limit
+    if (!rateLimit.canProceed) {
+      toast({
+        title: "Rate Limit Reached",
+        description: `You've reached your limit. Try again in ${formatTimeUntilReset(rateLimit.timeUntilReset)}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!role.trim()) {
       toast({ title: "Please enter a role", variant: "destructive" });
       return;
     }
+
+    // Increment rate limit
+    rateLimit.increment();
 
     setIsGenerating(true);
     try {

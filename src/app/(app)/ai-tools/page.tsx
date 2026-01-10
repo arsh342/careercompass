@@ -260,7 +260,7 @@ export default function AIToolsPage() {
   const isPremium = ["pro", "premium"].includes(userPlan);
 
   return (
-    <div className="min-h-screen bg-zinc-950 -m-4 md:-m-6 p-6 md:p-8">
+    <div className="min-h-screen bg-background -m-4 md:-m-6 p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.p
@@ -271,7 +271,7 @@ export default function AIToolsPage() {
           Career LaunchPad
         </motion.p>
         <motion.h1 
-          className="text-3xl md:text-4xl font-bold mb-2 text-white"
+          className="text-3xl md:text-4xl font-bold mb-2 text-foreground"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -279,7 +279,7 @@ export default function AIToolsPage() {
           Launch Your Dream Career
         </motion.h1>
         <motion.p 
-          className="text-zinc-400 mb-10 max-w-2xl"
+          className="text-muted-foreground mb-10 max-w-2xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
