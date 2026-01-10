@@ -95,7 +95,7 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
       <motion.div
         ref={ref}
         className={cn(
-          "w-full rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-sm font-sans flex flex-col",
+          "w-full rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-sm font-sans flex flex-col",
           className
         )}
         variants={cardVariants}
@@ -162,7 +162,7 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
         {/* Info Grid */}
         <div className="grid grid-cols-2 gap-2 mt-4">
           {compensationAndBenefits && (
-            <div className="bg-green-50 dark:bg-green-900/20 p-2.5 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="bg-green-50 dark:bg-green-900/20 p-2.5 rounded-3xl border border-green-200 dark:border-green-800">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <DollarSign className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
                 <span className="text-xs font-medium text-green-700 dark:text-green-300">
@@ -176,7 +176,7 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
           )}
 
           {experience && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-2.5 rounded-3xl border border-blue-200 dark:border-blue-800">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Briefcase className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                 <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
@@ -190,7 +190,7 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
           )}
 
           {workingHours && (
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-lg border border-purple-200 dark:border-purple-800">
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-2.5 rounded-3xl border border-purple-200 dark:border-purple-800">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Clock className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
                 <span className="text-xs font-medium text-purple-700 dark:text-purple-300">
@@ -204,7 +204,7 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
           )}
 
           {education && (
-            <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-lg border border-orange-200 dark:border-orange-800">
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-2.5 rounded-3xl border border-orange-200 dark:border-orange-800">
               <div className="flex items-center gap-1.5 mb-0.5">
                 <GraduationCap className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
                 <span className="text-xs font-medium text-orange-700 dark:text-orange-300">

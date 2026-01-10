@@ -216,7 +216,7 @@ export default function CoverLetterGeneratorPage() {
         {/* Input Form */}
         <div className="space-y-6">
           {/* Your Info Card */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <User className="h-5 w-5" />
@@ -277,7 +277,7 @@ export default function CoverLetterGeneratorPage() {
           </Card>
 
           {/* Job Info Card */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Building2 className="h-5 w-5" />
@@ -328,7 +328,7 @@ export default function CoverLetterGeneratorPage() {
           </Card>
 
           {/* Options Card */}
-          <Card>
+          <Card className="rounded-3xl">
             <CardHeader>
               <CardTitle className="text-lg">Options</CardTitle>
             </CardHeader>
@@ -399,7 +399,7 @@ export default function CoverLetterGeneratorPage() {
 
         {/* Output Panel */}
         <div>
-          <Card className="sticky top-20">
+          <Card className="sticky top-20 rounded-3xl">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">

@@ -118,7 +118,7 @@ export function AvatarUploader({
 						accept="image/*"
 					/>
 					{photo?.file && (
-						<div className="bg-accent relative aspect-square w-full overflow-hidden rounded-lg">
+						<div className="bg-accent relative aspect-square w-full overflow-hidden rounded-3xl">
 							<Cropper
 								image={photo.url}
 								crop={crop}
@@ -139,7 +139,7 @@ export function AvatarUploader({
 
 				<ModalFooter className="grid w-full grid-cols-2">
 					<Button
-						className="w-full"
+						className="w-full rounded-3xl"
 						variant="outline"
 						disabled={isPending}
 						onClick={() => onOpenChange(false)}
@@ -148,7 +148,7 @@ export function AvatarUploader({
 					</Button>
 
 					<Button
-						className="w-full"
+						className="w-full rounded-3xl"
 						type="button"
 						onClick={handleUpdate}
 						disabled={isPending}

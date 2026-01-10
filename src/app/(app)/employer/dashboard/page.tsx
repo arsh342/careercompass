@@ -138,15 +138,39 @@ export default function EmployerDashboardPage() {
         let totalApplicants = 0;
         let activeJobs = 0;
 
+        // Get opportunity IDs to fetch application counts
+        const opportunityIds = postingsSnapshot.docs.map((d) => d.id);
+
+        // Fetch all applications for these opportunities
+        const applicantCounts: Record<string, number> = {};
+        
+        if (opportunityIds.length > 0) {
+          // Batch queries for 'in' limitation (max 10)
+          for (let i = 0; i < opportunityIds.length; i += 10) {
+            const batch = opportunityIds.slice(i, i + 10);
+            const applicationsQuery = query(
+              collection(db, "applications"),
+              where("opportunityId", "in", batch)
+            );
+            const applicationsSnapshot = await getDocs(applicationsQuery);
+            applicationsSnapshot.forEach((appDoc) => {
+              const oppId = appDoc.data().opportunityId;
+              applicantCounts[oppId] = (applicantCounts[oppId] || 0) + 1;
+            });
+          }
+        }
+
         const postingsData = postingsSnapshot.docs.map((doc) => {
           const data = doc.data();
-          totalApplicants += data.applicants || 0;
+          const applicants = applicantCounts[doc.id] || 0;
+          totalApplicants += applicants;
           if (data.status === "Active") {
             activeJobs++;
           }
           return {
             id: doc.id,
             ...data,
+            applicants, // Override with actual count
           } as Posting;
         });
 

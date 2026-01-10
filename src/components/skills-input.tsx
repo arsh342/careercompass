@@ -88,7 +88,7 @@ export function SkillsInput({
   return (
     <div
       className={cn(
-        "min-h-[2.5rem] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+        "min-h-[2.5rem] w-full rounded-3xl border border-input bg-background px-3 py-2 text-sm ring-offset-background",
         "focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
         disabled && "cursor-not-allowed opacity-50",
         className

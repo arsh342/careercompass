@@ -52,7 +52,7 @@ export function CertificationsSection({ data, onChange }: CertificationsSectionP
   };
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -64,7 +64,7 @@ export function CertificationsSection({ data, onChange }: CertificationsSectionP
               Professional certifications and credentials
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={addEntry}>
+          <Button className="rounded-full" variant="outline" size="sm" onClick={addEntry}>
             <Plus className="h-4 w-4 mr-2" />
             Add Certification
           </Button>
@@ -78,7 +78,7 @@ export function CertificationsSection({ data, onChange }: CertificationsSectionP
           </div>
         ) : (
           data.map((entry, index) => (
-            <div key={entry.id} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+            <div key={entry.id} className="border rounded-2xl p-4 space-y-3 bg-muted/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -173,7 +173,7 @@ export function AchievementsSection({ data, onChange }: AchievementsSectionProps
   };
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -185,7 +185,7 @@ export function AchievementsSection({ data, onChange }: AchievementsSectionProps
               Notable recognitions and accomplishments
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={addEntry}>
+          <Button className="rounded-full" variant="outline" size="sm" onClick={addEntry}>
             <Plus className="h-4 w-4 mr-2" />
             Add Achievement
           </Button>
@@ -199,7 +199,7 @@ export function AchievementsSection({ data, onChange }: AchievementsSectionProps
           </div>
         ) : (
           data.map((entry, index) => (
-            <div key={entry.id} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+            <div key={entry.id} className="border rounded-2xl p-4 space-y-3 bg-muted/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -273,7 +273,7 @@ export function LanguagesSection({ data, onChange }: LanguagesSectionProps) {
   };
 
   return (
-    <Card>
+    <Card className="rounded-3xl">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -285,7 +285,7 @@ export function LanguagesSection({ data, onChange }: LanguagesSectionProps) {
               Languages you speak
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm" onClick={addEntry}>
+          <Button className="rounded-full" variant="outline" size="sm" onClick={addEntry}>
             <Plus className="h-4 w-4 mr-2" />
             Add Language
           </Button>
@@ -310,14 +310,14 @@ export function LanguagesSection({ data, onChange }: LanguagesSectionProps) {
                 value={entry.proficiency}
                 onValueChange={(value: LanguageEntry['proficiency']) => updateEntry(entry.id, { proficiency: value })}
               >
-                <SelectTrigger className="w-[160px]">
+                <SelectTrigger className="w-[160px] rounded-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="native">Native</SelectItem>
-                  <SelectItem value="fluent">Fluent</SelectItem>
-                  <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="basic">Basic</SelectItem>
+                <SelectContent className="rounded-3xl">
+                  <SelectItem className="rounded-3xl" value="native">Native</SelectItem>
+                  <SelectItem className="rounded-3xl" value="fluent">Fluent</SelectItem>
+                  <SelectItem className="rounded-3xl" value="professional">Professional</SelectItem>
+                  <SelectItem className="rounded-3xl" value="basic">Basic</SelectItem>
                 </SelectContent>
               </Select>
               <Button

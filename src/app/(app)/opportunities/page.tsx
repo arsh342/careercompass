@@ -389,7 +389,7 @@ function OpportunitiesContent() {
           )}
       </div>
 
-      <Card className="mb-6">
+      <Card className="mb-6 rounded-3xl">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <SlidersHorizontal className="h-5 w-5" />
@@ -444,7 +444,7 @@ function OpportunitiesContent() {
               <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
-              <SelectContent className="rounded-xl">
+              <SelectContent className="rounded-3xl">
                 <SelectItem className="rounded-full" value="Internship">Internship</SelectItem>
                 <SelectItem className="rounded-full" value="Volunteer">Volunteer</SelectItem>
                 <SelectItem className="rounded-full" value="Full-time">Full-time</SelectItem>
@@ -549,7 +549,7 @@ function OpportunitiesContent() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : filteredOpportunities.length === 0 ? (
-        <Card>
+        <Card className="rounded-3xl">
           <CardContent className="pt-6">
             <div className="text-center text-muted-foreground py-10">
               <p>

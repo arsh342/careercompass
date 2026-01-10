@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Kanban, type CardType, type ColumnType } from "@/components/ui/kanban";
 import { db } from "@/lib/firebase";
 import {
@@ -52,6 +53,7 @@ export default function ApplicationsPage() {
   const { user, loading: authLoading } = useAuth();
   const { saved, toggleSave, loading: savedLoading } = useSavedOpportunities();
   const { toast } = useToast();
+  const router = useRouter();
 
   const [manualCards, setManualCards] = useState<CardType[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<CardType[]>([]);
@@ -118,14 +120,24 @@ export default function ApplicationsPage() {
         const applied: CardType[] = await Promise.all(
           snapshot.docs.map(async (docSnap) => {
             const data = docSnap.data();
-            let opportunityDetails = { title: "Unknown Job", employerName: "Unknown Company", location: "" };
+            let opportunityDetails: { title: string; employerName: string; location: string; employerId?: string } = { 
+              title: "Unknown Job", 
+              employerName: "Unknown Company", 
+              location: "" 
+            };
             
             // Fetch opportunity details
             if (data.opportunityId) {
               const oppRef = doc(db, "opportunities", data.opportunityId);
               const oppSnap = await getDoc(oppRef);
               if (oppSnap.exists()) {
-                opportunityDetails = oppSnap.data() as typeof opportunityDetails;
+                const oppData = oppSnap.data();
+                opportunityDetails = {
+                  title: oppData.title || "Unknown Job",
+                  employerName: oppData.employerName || "Unknown Company",
+                  location: oppData.location || "",
+                  employerId: oppData.employerId,
+                };
               }
             }
 
@@ -133,7 +145,7 @@ export default function ApplicationsPage() {
             let column: ColumnType = "applied";
             const status = data.status?.toLowerCase();
             if (status === "interview" || status === "under review") column = "interview";
-            else if (status === "hired" || status === "accepted") column = "offer";
+            else if (status === "hired" || status === "accepted" || status === "approved") column = "offer";
             else if (status === "rejected") column = "rejected";
 
             return {
@@ -144,6 +156,11 @@ export default function ApplicationsPage() {
               column,
               opportunityId: data.opportunityId,
               isApplied: true,
+              // For chat functionality
+              applicationId: docSnap.id,
+              employerId: opportunityDetails.employerId,
+              employerName: opportunityDetails.employerName,
+              status: data.status,
             } as CardType;
           })
         );
@@ -361,7 +378,7 @@ export default function ApplicationsPage() {
     <div className="h-full flex flex-col bg-background -m-4 md:-m-6">
       {/* Withdraw Confirmation Dialog */}
       <AlertDialog open={withdrawDialogOpen} onOpenChange={setWithdrawDialogOpen}>
-        <AlertDialogContent className="bg-card border-border">
+        <AlertDialogContent className="bg-card border-border rounded-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-foreground">Withdraw Application?</AlertDialogTitle>
             <AlertDialogDescription className="text-muted-foreground">
@@ -370,9 +387,9 @@ export default function ApplicationsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-border text-foreground">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="border-border text-foreground rounded-full">Cancel</AlertDialogCancel>
             <AlertDialogAction 
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 rounded-full"
               onClick={() => {
                 if (cardToWithdraw) {
                   withdrawApplication(cardToWithdraw);
@@ -414,7 +431,7 @@ export default function ApplicationsPage() {
               </div>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-violet-600 hover:bg-violet-700">
+                  <Button className="bg-violet-600 hover:bg-violet-700 rounded-full">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Application
                   </Button>
@@ -476,10 +493,10 @@ export default function ApplicationsPage() {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-border text-foreground">
+                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="border-border text-foreground rounded-full">
                       Cancel
                     </Button>
-                    <Button onClick={handleAddApplication} className="bg-violet-600 hover:bg-violet-700">
+                    <Button onClick={handleAddApplication} className="bg-violet-600 hover:bg-violet-700 rounded-full">
                       Add Application
                     </Button>
                   </DialogFooter>
@@ -496,6 +513,25 @@ export default function ApplicationsPage() {
           cards={filteredCards} 
           setCards={handleSetCards}
           className="min-h-full"
+          onChat={(card) => {
+            // Navigate to chat room with employer
+            if (card.employerId && card.opportunityId && card.applicationId) {
+              const params = new URLSearchParams({
+                userId: card.employerId,
+                userName: card.employerName || card.company,
+                opportunityId: card.opportunityId,
+                opportunityTitle: card.title,
+                applicationId: card.applicationId,
+              });
+              router.push(`/chat/new?${params.toString()}`);
+            } else {
+              toast({ 
+                title: "Cannot start chat", 
+                description: "Missing employer information for this application.",
+                variant: "destructive"
+              });
+            }
+          }}
         />
       </div>
     </div>
