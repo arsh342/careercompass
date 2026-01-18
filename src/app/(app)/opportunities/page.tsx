@@ -28,7 +28,6 @@ import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
-import { OpportunityCard } from "@/components/ui/opportunity-card";
 import {
   Select,
   SelectContent,
@@ -560,33 +559,138 @@ function OpportunitiesContent() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {paginatedOpportunities.map((opp) => {
-            const isSaved = saved.some((savedOpp) => savedOpp.id === opp.id);
-            const matchPercentage = calculateMatch(opp);
+        <Card className="rounded-3xl overflow-hidden">
+          {/* Table Header */}
+          <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-muted/50 border-b border-border text-sm font-medium text-muted-foreground">
+            <div className="col-span-4">Job Title</div>
+            <div className="col-span-3">Role</div>
+            <div className="col-span-2">Location</div>
+            <div className="col-span-1">Date</div>
+            <div className="col-span-2 text-right">Action</div>
+          </div>
 
-            return (
-              <OpportunityCard
-                key={opp.id}
-                id={opp.id}
-                title={opp.title}
-                employerName={opp.employerName}
-                location={opp.location}
-                type={opp.type}
-                description={opp.description}
-                skills={opp.skills}
-                match={matchPercentage > 0 ? matchPercentage : undefined}
-                compensationAndBenefits={opp.compensationAndBenefits}
-                experience={opp.experience}
-                workingHours={opp.workingHours}
-                education={opp.education}
-                createdAt={opp.createdAt}
-                isSaved={isSaved}
-                onToggleSave={() => toggleSave(opp)}
-              />
-            );
-          })}
-        </div>
+          {/* Table Body */}
+          <div className="divide-y divide-border">
+            {paginatedOpportunities.map((opp) => {
+              const isSaved = saved.some((savedOpp) => savedOpp.id === opp.id);
+              const matchPercentage = calculateMatch(opp);
+              const createdDate = opp.createdAt?.toDate?.() 
+                ? new Date(opp.createdAt.toDate()).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+                : 'Recently';
+              
+              // Parse skills for badges
+              const skillsArray = typeof opp.skills === "string"
+                ? opp.skills.split(",").slice(0, 2).map(s => s.trim())
+                : (opp.skills || []).slice(0, 2);
+
+              return (
+                <div
+                  key={opp.id}
+                  className="group grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-4 hover:bg-muted/30 transition-colors items-center"
+                >
+                  {/* Job Title & Company */}
+                  <div className="md:col-span-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-lg font-bold text-primary">
+                        {opp.employerName?.charAt(0)?.toUpperCase() || 'J'}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <Link 
+                        href={`/opportunities/${opp.id}`}
+                        className="font-semibold text-foreground hover:text-primary transition-colors line-clamp-1"
+                      >
+                        {opp.title}
+                      </Link>
+                      <p className="text-sm text-muted-foreground line-clamp-1">
+                        {opp.employerName}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Role Badges */}
+                  <div className="md:col-span-3 flex flex-wrap gap-1.5">
+                    {opp.type && (
+                      <Badge 
+                        variant="secondary" 
+                        className={cn(
+                          "text-xs rounded-full",
+                          opp.type === "Full-time" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                          opp.type === "Part-time" && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                          opp.type === "Internship" && "bg-purple-500/10 text-purple-600 border-purple-500/20",
+                          opp.type === "Contract" && "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+                          opp.type === "Volunteer" && "bg-pink-500/10 text-pink-600 border-pink-500/20"
+                        )}
+                      >
+                        {opp.type}
+                      </Badge>
+                    )}
+                    {opp.experience && (
+                      <Badge variant="outline" className="text-xs rounded-full">
+                        {opp.experience}
+                      </Badge>
+                    )}
+                    {opp.workMode && (
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-xs rounded-full",
+                          opp.workMode === "Remote" && "bg-green-500/10 text-green-600 border-green-500/20",
+                          opp.workMode === "Hybrid" && "bg-orange-500/10 text-orange-600 border-orange-500/20"
+                        )}
+                      >
+                        {opp.workMode}
+                      </Badge>
+                    )}
+                    {matchPercentage > 0 && (
+                      <Badge className="text-xs rounded-full bg-primary/10 text-primary border-primary/20">
+                        {matchPercentage}% Match
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Location */}
+                  <div className="md:col-span-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="line-clamp-1">{opp.location || 'Remote'}</span>
+                  </div>
+
+                  {/* Date */}
+                  <div className="md:col-span-1 text-sm text-muted-foreground">
+                    {createdDate}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="md:col-span-2 flex items-center justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "rounded-full h-8 w-8 p-0",
+                        isSaved && "bg-red-500/10 border-red-500/20 text-red-500"
+                      )}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleSave(opp);
+                      }}
+                    >
+                      <Heart className={cn("h-4 w-4", isSaved && "fill-current")} />
+                    </Button>
+                    <Button
+                      asChild
+                      size="sm"
+                      className="rounded-full bg-primary hover:bg-primary/90"
+                    >
+                      <Link href={`/opportunities/${opp.id}`}>
+                        Apply Now
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       )}
 
       {/* Pagination Controls */}

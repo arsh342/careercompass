@@ -34,12 +34,15 @@ import {
   UserMinus2,
   Check,
   CheckCheck,
+  Video,
 } from "lucide-react";
 
 interface ChatWindowProps {
   onBack?: () => void;
   showBackButton?: boolean;
 }
+
+import { useRouter } from "next/navigation";
 
 // Gradient backgrounds for avatars - matching user-nav style
 const AVATAR_GRADIENTS = [
@@ -213,6 +216,24 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  // Video call handler for employers
+  const handleVideoCall = () => {
+    if (!activeChat || userProfile?.role !== "employer") return;
+    const other = getOtherParticipant(activeChat);
+    if (!other) return;
+    
+    const params = new URLSearchParams({
+      recipientId: other.id,
+      recipientName: other.displayName || "Applicant",
+      opportunityId: activeChat.opportunityId || "",
+      opportunityTitle: activeChat.opportunityTitle || "",
+      applicationId: activeChat.applicationId || "",
+    });
+    
+    router.push(`/chat/video?${params.toString()}`);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -383,7 +404,21 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
             )}
           </div>
         </div>
-        <UserActionsMenu />
+        <div className="flex items-center gap-2">
+          {/* Video call button - only for employers */}
+          {userProfile?.role === "employer" && activeChat && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full text-emerald-600 hover:text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+              onClick={handleVideoCall}
+              title="Video call"
+            >
+              <Video className="h-4 w-4" />
+            </Button>
+          )}
+          <UserActionsMenu />
+        </div>
       </div>
 
       {/* Messages */}
