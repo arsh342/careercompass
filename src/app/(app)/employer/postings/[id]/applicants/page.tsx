@@ -18,6 +18,7 @@ import {
   X,
   Eye,
   MessageSquare,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -135,6 +136,21 @@ export default function ApplicantsPage() {
     });
     
     router.push(`/chat/new?${params.toString()}`);
+  };
+
+  // Function to start a video call with an applicant
+  const startVideoCallWithApplicant = (applicant: Applicant) => {
+    if (!user || !opportunity) return;
+    
+    const params = new URLSearchParams({
+      recipientId: applicant.userId,
+      recipientName: applicant.userName,
+      opportunityId: id as string,
+      opportunityTitle: opportunity.title,
+      applicationId: applicant.id,
+    });
+    
+    router.push(`/chat/video?${params.toString()}`);
   };
 
   useEffect(() => {
@@ -787,15 +803,26 @@ export default function ApplicantsPage() {
 
                       {/* Chat button - shown for Approved, Invited, or Interview status */}
                       {["Approved", "Invited", "Interview"].includes(applicant.status) && (
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8 rounded-3xl text-primary hover:text-primary border-primary/20 hover:bg-primary/10"
-                          onClick={() => startChatWithApplicant(applicant)}
-                          title="Chat with applicant"
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </Button>
+                        <>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 rounded-3xl text-primary hover:text-primary border-primary/20 hover:bg-primary/10"
+                            onClick={() => startChatWithApplicant(applicant)}
+                            title="Chat with applicant"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 rounded-3xl text-emerald-600 hover:text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                            onClick={() => startVideoCallWithApplicant(applicant)}
+                            title="Video call with applicant"
+                          >
+                            <Video className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
 
                       <Button

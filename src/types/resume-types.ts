@@ -448,6 +448,47 @@ export function createEmptyAchievement(): AchievementEntry {
   };
 }
 
+export function createEmptyPublication(): PublicationEntry {
+  return {
+    id: crypto.randomUUID(),
+    title: '',
+    journal: '',
+    year: '',
+    url: '',
+    authors: '',
+  };
+}
+
+export function createEmptyVolunteering(): VolunteeringEntry {
+  return {
+    id: crypto.randomUUID(),
+    role: '',
+    organization: '',
+    description: '',
+    startDate: '',
+    endDate: '',
+  };
+}
+
+export function createEmptyCustomSection(): CustomSection {
+  return {
+    id: crypto.randomUUID(),
+    title: 'New Section',
+    entries: [createEmptyCustomSectionEntry()],
+  };
+}
+
+export function createEmptyCustomSectionEntry(): CustomSectionEntry {
+  return {
+    id: crypto.randomUUID(),
+    title: '',
+    subtitle: '',
+    description: '',
+    date: '',
+    url: '',
+  };
+}
+
 // ============================================
 // VALIDATION
 // ============================================

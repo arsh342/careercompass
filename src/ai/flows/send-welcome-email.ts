@@ -8,15 +8,22 @@
 
 import { ai } from "@/ai/genkit";
 import { z } from "genkit";
-import * as nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { db } from "@/lib/firebase";
 import {
   doc,
-  getDoc,
-  setDoc,
   increment,
   runTransaction,
 } from "firebase/firestore";
+
+// Lazy initialization to avoid client-side errors
+let resend: Resend | null = null;
+function getResend(): Resend {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 const SendWelcomeEmailInputSchema = z.object({
   to: z.string().email().describe("The email address of the recipient."),
@@ -61,55 +68,46 @@ const sendWelcomeEmailFlow = ai.defineFlow(
         console.warn(
           `Daily email limit of ${DAILY_LIMIT} reached. Welcome email to ${to} not sent.`
         );
-        return; // Stop execution if limit is reached
+        return;
       }
     } catch (e) {
       console.error("Email rate limit transaction failed: ", e);
-      // Decide if you want to proceed or not. For safety, we'll stop.
       return;
     }
 
-    if (
-      !process.env.BREVO_SMTP_HOST ||
-      !process.env.BREVO_SMTP_USER ||
-      !process.env.BREVO_SMTP_PASS
-    ) {
-      console.error("Missing Brevo SMTP credentials in .env file");
+    if (!process.env.RESEND_API_KEY) {
+      console.error("Missing RESEND_API_KEY in .env file");
       throw new Error("Email service is not configured.");
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.BREVO_SMTP_HOST,
-      port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
-      secure: parseInt(process.env.BREVO_SMTP_PORT || "587", 10) === 465, // true for 465, false for other ports
-      auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_PASSWORD,
-      },
-    });
-
     const subject = "Welcome to CareerCompass!";
     const body = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2563eb;">Welcome to CareerCompass!</h2>
         <p>Hi ${name},</p>
         <p>Welcome to CareerCompass! We're thrilled to have you join our community.</p>
         <p>Get started by completing your profile to receive personalized job recommendations.</p>
         <p>Best,</p>
         <p>The CareerCompass Team</p>
+      </div>
     `;
 
     try {
-      const result = await transporter.sendMail({
-        from: `"CareerCompass" <no-reply@careercompass.com>`,
-        to: to,
+      const { data, error } = await getResend().emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+        to: [to],
         subject: subject,
         html: body,
       });
+
+      if (error) {
+        console.error("Resend error:", error);
+        return;
+      }
+
+      console.log("Welcome email sent successfully:", data?.id);
     } catch (error) {
       console.error("Error sending welcome email:", error);
-      console.error(
-        "Welcome email error details:",
-        JSON.stringify(error, null, 2)
-      );
     }
   }
 );

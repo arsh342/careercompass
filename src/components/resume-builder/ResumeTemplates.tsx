@@ -465,6 +465,44 @@ export function ResumePreview({ resume, templateId, className }: ResumePreviewPr
         </>
       )}
 
+      {/* Internships */}
+      {resume.enabledSections.includes('internships') && resume.internships.length > 0 && (
+        <>
+          <div>
+            <h3 className={styles.sectionTitle}>Internships</h3>
+            <div className="space-y-4">
+              {resume.internships.map((internship) => (
+                <div key={internship.id}>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-semibold">{internship.jobTitle}</h4>
+                      <p className={cn("text-sm", styles.sectionContent)}>
+                        {internship.company} | {internship.location}
+                      </p>
+                    </div>
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {internship.startDate} - {internship.current ? 'Present' : internship.endDate}
+                    </span>
+                  </div>
+                  {internship.bullets.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {internship.bullets.map((bullet) => (
+                        <li key={bullet.id} className={cn("flex gap-2 text-sm", styles.sectionContent)}>
+                          <span className={styles.bullet}>•</span>
+                          {bullet.text}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          <Separator className={styles.separator} />
+        </>
+      )}
+
       {/* Education */}
       {resume.enabledSections.includes('education') && resume.education.length > 0 && (
         <>
@@ -523,6 +561,144 @@ export function ResumePreview({ resume, templateId, className }: ResumePreviewPr
           </div>
         </div>
       )}
+
+      {/* Achievements */}
+      {resume.enabledSections.includes('achievements') && resume.achievements.length > 0 && (
+        <>
+        <div>
+          <h3 className={styles.sectionTitle}>Achievements & Awards</h3>
+          <div className="space-y-3">
+            {resume.achievements.map((entry) => (
+              <div key={entry.id}>
+                <div className="flex justify-between items-start">
+                  <h4 className="font-medium">{entry.title}</h4>
+                  <span className="text-sm text-muted-foreground">{entry.year}</span>
+                </div>
+                {entry.description && (
+                   <p className={cn("text-sm mt-0.5", styles.sectionContent)}>{entry.description}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+        <Separator className={styles.separator} />
+        </>
+      )}
+
+      {/* Publications */}
+      {resume.enabledSections.includes('publications') && resume.publications.length > 0 && (
+        <>
+        <div>
+          <h3 className={styles.sectionTitle}>Publications</h3>
+          <div className="space-y-3">
+            {resume.publications.map((pub) => (
+              <div key={pub.id}>
+                <div className="flex justify-between items-start">
+                   <div>
+                      <h4 className="font-medium">
+                        {pub.title}
+                        {pub.url && (
+                          <a href={pub.url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-block text-muted-foreground hover:text-primary">
+                             <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </h4>
+                      <p className={cn("text-sm italic", styles.sectionContent)}>{pub.journal}</p>
+                   </div>
+                   <span className="text-sm text-muted-foreground">{pub.year}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Separator className={styles.separator} />
+        </>
+      )}
+
+      {/* Volunteering */}
+      {resume.enabledSections.includes('volunteering') && resume.volunteering.length > 0 && (
+         <>
+         <div>
+            <h3 className={styles.sectionTitle}>Volunteering</h3>
+            <div className="space-y-3">
+               {resume.volunteering.map((vol) => (
+                  <div key={vol.id}>
+                     <div className="flex justify-between items-start">
+                        <div>
+                           <h4 className="font-medium">{vol.role}</h4>
+                           <p className={cn("text-sm", styles.sectionContent)}>{vol.organization}</p>
+                        </div>
+                        <span className="text-sm text-muted-foreground text-right">
+                           {vol.startDate} - {vol.endDate}
+                        </span>
+                     </div>
+                     {vol.description && (
+                        <p className={cn("text-sm mt-1", styles.sectionContent)}>{vol.description}</p>
+                     )}
+                  </div>
+               ))}
+            </div>
+         </div>
+         <Separator className={styles.separator} />
+         </>
+      )}
+
+      {/* Interests */}
+      {resume.enabledSections.includes('interests') && resume.interests.length > 0 && (
+        <>
+        <div>
+          <h3 className={styles.sectionTitle}>Interests</h3>
+          <div className="flex flex-wrap gap-2">
+            {resume.interests.map((interest, i) => (
+              <span key={i} className={cn("text-sm", styles.sectionContent)}>
+                {interest}{i < resume.interests.length - 1 ? " • " : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+        <Separator className={styles.separator} />
+        </>
+      )}
+
+      {/* Custom Sections */}
+      {resume.customSections && resume.customSections.map((section) => (
+         resume.enabledSections.includes('custom') && (
+           <React.Fragment key={section.id}>
+             <div>
+                <h3 className={styles.sectionTitle}>{section.title}</h3>
+                <div className="space-y-3">
+                   {section.entries.map((entry) => (
+                      <div key={entry.id}>
+                         <div className="flex justify-between items-start">
+                            <div>
+                               <h4 className="font-medium">
+                                 {entry.title}
+                                 {entry.url && (
+                                   <a href={entry.url} target="_blank" rel="noopener noreferrer" className="ml-2 inline-block">
+                                      <ExternalLink className="w-3 h-3" />
+                                   </a>
+                                 )}
+                               </h4>
+                               {entry.subtitle && (
+                                  <p className={cn("text-sm italic", styles.sectionContent)}>{entry.subtitle}</p>
+                               )}
+                            </div>
+                            {entry.date && (
+                               <span className="text-sm text-muted-foreground">{entry.date}</span>
+                            )}
+                         </div>
+                         {entry.description && (
+                            <p className={cn("text-sm mt-1", styles.sectionContent)}>{entry.description}</p>
+                         )}
+                      </div>
+                   ))}
+                </div>
+             </div>
+             <Separator className={styles.separator} />
+           </React.Fragment>
+         )
+      ))}
+
     </div>
   );
 }
