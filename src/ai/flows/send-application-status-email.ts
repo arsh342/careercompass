@@ -12,20 +12,26 @@ import {
   SendApplicationStatusEmailInput,
   SendApplicationStatusEmailInputSchema,
 } from "./types";
-import * as nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { db } from "@/lib/firebase";
 import {
   doc,
-  getDoc,
-  setDoc,
   increment,
   runTransaction,
 } from "firebase/firestore";
 
+// Lazy initialization to avoid client-side errors
+let resend: Resend | null = null;
+function getResend(): Resend {
+  if (!resend) {
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
+
 export async function sendApplicationStatusEmail(
   input: SendApplicationStatusEmailInput
 ): Promise<void> {
-  // Call the flow directly instead of using the wrapper
   return sendApplicationStatusEmailFlow(input);
 }
 
@@ -60,45 +66,34 @@ const sendApplicationStatusEmailFlow = ai.defineFlow(
         console.warn(
           `Daily email limit of ${DAILY_LIMIT} reached. Email to ${to} not sent.`
         );
-        return; // Stop execution if limit is reached
+        return;
       }
     } catch (e) {
       console.error("Email rate limit transaction failed: ", e);
-      // Decide if you want to proceed or not. For safety, we'll stop.
       return;
     }
 
-    if (
-      !process.env.BREVO_SMTP_HOST ||
-      !process.env.BREVO_SMTP_USER ||
-      !process.env.BREVO_SMTP_PASS
-    ) {
-      console.error("Missing Brevo SMTP credentials in .env file");
+    if (!process.env.RESEND_API_KEY) {
+      console.error("Missing RESEND_API_KEY in .env file");
       throw new Error("Email service is not configured.");
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.BREVO_SMTP_HOST,
-      port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
-      secure: parseInt(process.env.BREVO_SMTP_PORT || "587", 10) === 465, // true for 465, false for other ports
-      auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_PASSWORD,
-      },
-    });
-
     try {
-      const result = await transporter.sendMail({
-        from: `"CareerCompass" <no-reply@careercompass.com>`,
-        to: to,
+      const { data, error } = await getResend().emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+        to: [to],
         subject: subject,
         html: body,
       });
+
+      if (error) {
+        console.error("Resend error:", error);
+        return;
+      }
+
+      console.log("Application status email sent successfully:", data?.id);
     } catch (error) {
-      console.error("Error sending email:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-      // We don't rethrow the error to the client, but we log it.
-      // In a real app, you might want to have more robust error handling/monitoring.
+      console.error("Error sending application status email:", error);
     }
   }
 );

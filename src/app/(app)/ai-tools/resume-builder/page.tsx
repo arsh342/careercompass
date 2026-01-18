@@ -52,11 +52,17 @@ import {
   CertificationsSection,
   AchievementsSection,
   LanguagesSection,
+  InternshipsSection,
+  PublicationsSection,
+  VolunteeringSection,
+  InterestsSection,
+  CustomSectionComponent,
   SectionManager,
   TemplateSelector,
   ResumePreview,
   type TemplateId,
 } from "@/components/resume-builder";
+import { createEmptyCustomSection } from "@/types/resume-types";
 
 export default function ResumeBuilderPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -465,6 +471,56 @@ export default function ResumeBuilderPage() {
                           data={resume.languages}
                           onChange={(data) => updateResume('languages', data)}
                         />
+                      )}
+                      {sectionId === 'internships' && (
+                        <InternshipsSection
+                          data={resume.internships}
+                          onChange={(data) => updateResume('internships', data)}
+                        />
+                      )}
+                      {sectionId === 'publications' && (
+                        <PublicationsSection
+                          data={resume.publications}
+                          onChange={(data) => updateResume('publications', data)}
+                        />
+                      )}
+                      {sectionId === 'volunteering' && (
+                        <VolunteeringSection
+                          data={resume.volunteering}
+                          onChange={(data) => updateResume('volunteering', data)}
+                        />
+                      )}
+                      {sectionId === 'interests' && (
+                        <InterestsSection
+                          data={resume.interests}
+                          onChange={(data) => updateResume('interests', data)}
+                        />
+                      )}
+                      {sectionId === 'custom' && (
+                        <div className="space-y-6">
+                           {resume.customSections.map((section, index) => (
+                             <CustomSectionComponent
+                               key={section.id}
+                               section={section}
+                               onChange={(updatedSection) => {
+                                  const newSections = [...resume.customSections];
+                                  newSections[index] = updatedSection;
+                                  updateResume('customSections', newSections);
+                               }}
+                               onRemove={() => {
+                                  const newSections = resume.customSections.filter(s => s.id !== section.id);
+                                  updateResume('customSections', newSections);
+                               }}
+                             />
+                           ))}
+                           <Button 
+                             variant="outline" 
+                             className="w-full border-dashed rounded-3xl"
+                             onClick={() => updateResume('customSections', [...resume.customSections, createEmptyCustomSection()])}
+                           >
+                             Add Custom Section
+                           </Button>
+                        </div>
                       )}
                     </div>
                   );
