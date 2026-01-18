@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { sendWelcomeEmailDirect } from "@/lib/email-utils";
-import { AutomatedEmailService } from "@/lib/automated-email-service";
+import { handleFirstLogin } from "@/lib/automated-email-service";
 import { AnimatedCharacters } from "@/components/ui/animated-characters";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
@@ -71,7 +71,7 @@ export default function LoginPage() {
       // Handle first login automation
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
-        await AutomatedEmailService.handleFirstLogin(
+        await handleFirstLogin(
           user.uid,
           user.email!,
           userData.displayName || user.email!
@@ -135,7 +135,7 @@ export default function LoginPage() {
         );
 
         // Handle first login for new Google users
-        await AutomatedEmailService.handleFirstLogin(
+        await handleFirstLogin(
           user.uid,
           user.email!,
           user.displayName!

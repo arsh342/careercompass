@@ -532,6 +532,7 @@ export default function ApplicationsPage() {
               });
             }
           }}
+          // Note: Video calls can only be initiated by employers
         />
       </div>
     </div>

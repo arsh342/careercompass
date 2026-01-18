@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Plus, Trash2, Flame, Building2, MapPin, ExternalLink, GripVertical, MessageSquare } from "lucide-react";
+import { Plus, Trash2, Flame, Building2, MapPin, ExternalLink, GripVertical, MessageSquare, Video } from "lucide-react";
 
 // ============================================
 // TYPES
@@ -53,6 +53,7 @@ type KanbanProps = {
   columns?: ColumnConfig[];
   className?: string;
   onChat?: (card: CardType) => void;
+  onVideoCall?: (card: CardType) => void;
 };
 
 const DEFAULT_COLUMNS: ColumnConfig[] = [
@@ -68,10 +69,29 @@ export const Kanban = ({
   setCards, 
   columns = DEFAULT_COLUMNS,
   className,
-  onChat 
+  onChat,
+  onVideoCall
 }: KanbanProps) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null);
+  const [isOverDeleteZone, setIsOverDeleteZone] = useState(false);
+
+  const handleDragStart = (cardId: string) => {
+    setIsDragging(true);
+    setDraggingCardId(cardId);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDraggingCardId(null);
+    setIsOverDeleteZone(false);
+  };
+
   return (
-    <div className={cn("flex h-full w-full gap-4 overflow-x-auto p-6 pt-8", className)}>
+    <div 
+      className={cn("relative flex h-full w-full gap-4 overflow-x-auto p-6 pt-8", className)}
+      onDragEnd={handleDragEnd}
+    >
       {columns.map((col) => (
         <Column
           key={col.id}
@@ -81,9 +101,17 @@ export const Kanban = ({
           cards={cards}
           setCards={setCards}
           onChat={onChat}
+          onDragStart={handleDragStart}
+          draggingCardId={draggingCardId}
+          isOverDeleteZone={isOverDeleteZone}
+          onVideoCall={onVideoCall}
         />
       ))}
-      <BurnBarrel setCards={setCards} />
+      <DeleteDropZone 
+        setCards={setCards} 
+        isDragging={isDragging} 
+        onHoverChange={setIsOverDeleteZone}
+      />
     </div>
   );
 };
@@ -99,6 +127,10 @@ type ColumnProps = {
   column: ColumnType;
   setCards: Dispatch<SetStateAction<CardType[]>>;
   onChat?: (card: CardType) => void;
+  onDragStart?: (cardId: string) => void;
+  draggingCardId?: string | null;
+  isOverDeleteZone?: boolean;
+  onVideoCall?: (card: CardType) => void;
 };
 
 const Column = ({
@@ -108,11 +140,16 @@ const Column = ({
   column,
   setCards,
   onChat,
+  onDragStart: onColumnDragStart,
+  draggingCardId,
+  isOverDeleteZone,
+  onVideoCall,
 }: ColumnProps) => {
   const [active, setActive] = useState(false);
 
   const handleDragStart = (e: DragEvent, card: CardType) => {
     e.dataTransfer.setData("cardId", card.id);
+    onColumnDragStart?.(card.id);
   };
 
   const handleDragEnd = (e: DragEvent) => {
@@ -226,7 +263,14 @@ const Column = ({
         )}
       >
         {filteredCards.map((c) => (
-          <Card key={c.id} {...c} handleDragStart={handleDragStart} onChat={onChat} />
+          <Card 
+            key={c.id} 
+            {...c} 
+            handleDragStart={handleDragStart} 
+            onChat={onChat}
+            isBeingDeletedPreview={draggingCardId === c.id && isOverDeleteZone}
+            onVideoCall={onVideoCall}
+          />
         ))}
         <DropIndicator beforeId={null} column={column} />
         <AddCard column={column} setCards={setCards} />
@@ -242,6 +286,8 @@ const Column = ({
 type CardProps = CardType & {
   handleDragStart: (e: DragEvent, card: CardType) => void;
   onChat?: (card: CardType) => void;
+  isBeingDeletedPreview?: boolean;
+  onVideoCall?: (card: CardType) => void;
 };
 
 const Card = ({ 
@@ -261,7 +307,9 @@ const Card = ({
   employerName,
   status,
   handleDragStart,
-  onChat
+  onChat,
+  isBeingDeletedPreview,
+  onVideoCall
 }: CardProps) => {
   const cardData: CardType = { 
     title, id, column, company, location, jobUrl, salary,
@@ -280,9 +328,20 @@ const Card = ({
         layoutId={id}
         draggable="true"
         onDragStart={(e) => handleDragStart(e as unknown as DragEvent, cardData)}
+        animate={{
+          scale: isBeingDeletedPreview ? 0.95 : 1,
+          opacity: isBeingDeletedPreview ? 0.6 : 1,
+        }}
+        transition={{ duration: 0.15 }}
         className={cn(
           "cursor-grab rounded-3xl border bg-card p-3 active:cursor-grabbing hover:border-primary/50 transition-colors",
-          isApplied ? "border-blue-500/50" : isSaved ? "border-amber-500/50" : "border-border"
+          isBeingDeletedPreview 
+            ? "border-red-500 bg-red-500/20" 
+            : isApplied 
+              ? "border-blue-500/50" 
+              : isSaved 
+                ? "border-amber-500/50" 
+                : "border-border"
         )}
       >
         <div className="flex items-start gap-2">
@@ -330,6 +389,20 @@ const Card = ({
                 <MessageSquare className="h-3.5 w-3.5" />
               </button>
             )}
+            {canChat && onVideoCall && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onVideoCall(cardData);
+                }}
+                className="text-emerald-500 hover:text-emerald-400 transition-colors p-1 rounded hover:bg-emerald-500/10"
+                title="Video call"
+              >
+                <Video className="h-3.5 w-3.5" />
+              </button>
+            )}
             {jobUrl && (
               <a 
                 href={jobUrl} 
@@ -371,42 +444,63 @@ const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
 // BURN BARREL (DELETE)
 // ============================================
 
-const BurnBarrel = ({
+const DeleteDropZone = ({
   setCards,
+  isDragging,
+  onHoverChange,
 }: {
   setCards: Dispatch<SetStateAction<CardType[]>>;
+  isDragging: boolean;
+  onHoverChange?: (isOver: boolean) => void;
 }) => {
   const [active, setActive] = useState(false);
 
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault();
     setActive(true);
+    onHoverChange?.(true);
   };
 
   const handleDragLeave = () => {
     setActive(false);
+    onHoverChange?.(false);
   };
 
   const handleDragEnd = (e: DragEvent) => {
     const cardId = e.dataTransfer.getData("cardId");
     setCards((pv) => pv.filter((c) => c.id !== cardId));
     setActive(false);
+    onHoverChange?.(false);
   };
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ 
+        opacity: isDragging ? 1 : 0, 
+        y: isDragging ? 0 : 50,
+        pointerEvents: isDragging ? "auto" : "none"
+      }}
+      transition={{ duration: 0.2 }}
       onDrop={handleDragEnd}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       className={cn(
-        "mt-10 grid h-56 w-56 shrink-0 place-content-center rounded-3xl border text-3xl transition-colors",
+        "fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center gap-2 px-6 py-3 rounded-full border transition-colors shadow-xl",
         active
-          ? "border-red-800 bg-red-800/20 text-red-500"
-          : "border-border bg-muted/50 text-muted-foreground"
+          ? "border-red-500 bg-red-500/20 text-red-400 scale-110"
+          : "border-border bg-card/90 backdrop-blur-sm text-muted-foreground"
       )}
     >
-      {active ? <Flame className="h-10 w-10 animate-bounce" /> : <Trash2 className="h-10 w-10" />}
-    </div>
+      {active ? (
+        <Flame className="h-5 w-5 animate-bounce" />
+      ) : (
+        <Trash2 className="h-5 w-5" />
+      )}
+      <span className="text-sm font-medium">
+        {active ? "Release to delete" : "Drop here to delete"}
+      </span>
+    </motion.div>
   );
 };
 
@@ -490,4 +584,4 @@ const AddCard = ({ column, setCards }: AddCardProps) => {
   );
 };
 
-export { Column, Card, DropIndicator, BurnBarrel, AddCard };
+export { Column, Card, DropIndicator, DeleteDropZone, AddCard };
