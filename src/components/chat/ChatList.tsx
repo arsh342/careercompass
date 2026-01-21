@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2, User } from "lucide-react";
 
 export function ChatList() {
   const { chats, loading, activeChat, setActiveChat, markAsRead } = useChat();
@@ -19,15 +19,6 @@ export function ChatList() {
       id: otherId,
       ...chat.participantDetails[otherId],
     };
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   const handleChatClick = async (chat: Chat) => {
@@ -69,7 +60,7 @@ export function ChatList() {
             key={chat.id}
             onClick={() => handleChatClick(chat)}
             className={cn(
-              "flex items-start gap-3 p-3 rounded-lg text-left transition-colors w-full",
+              "flex items-start gap-2 p-3 rounded-2xl text-left transition-colors w-full",
               isActive
                 ? "bg-primary/10 border border-primary/20"
                 : "hover:bg-muted/50"
@@ -77,8 +68,8 @@ export function ChatList() {
           >
             <Avatar className="h-10 w-10">
               <AvatarImage src={other.photoURL} />
-              <AvatarFallback className="bg-primary/10 text-primary">
-                {getInitials(other.displayName)}
+              <AvatarFallback className="bg-muted">
+                <User className="h-5 w-5 text-muted-foreground" />
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
@@ -95,16 +86,15 @@ export function ChatList() {
                 )}
               </div>
               <p className="text-xs text-muted-foreground truncate mt-0.5">
-                {chat.opportunityTitle}
               </p>
               {chat.lastMessage && (
                 <p
                   className={cn(
-                    "text-sm truncate mt-1",
+                    "text-sm truncate",
                     isUnread ? "text-foreground font-medium" : "text-muted-foreground"
                   )}
                 >
-                  {chat.lastMessage.senderId === user?.uid && "You: "}
+                  {chat.lastMessage.senderId === user?.uid}
                   {chat.lastMessage.text}
                 </p>
               )}

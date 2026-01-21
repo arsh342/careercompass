@@ -29,6 +29,7 @@ import { usePathname } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConditionalSearchBar } from "@/components/conditional-search-bar";
 import { HeaderQuickActions } from "@/components/header-quick-actions";
+import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { UserNav } from "@/components/user-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -171,7 +172,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarBody>
       </Sidebar>
-      <div className="flex flex-1 flex-col overflow-hidden rounded-l-2xl bg-white dark:bg-neutral-900">
+      <div className="flex flex-1 flex-col overflow-hidden rounded-l-3xl bg-white dark:bg-neutral-900">
         <header className="sticky top-0 z-10 flex h-10 shrink-0 items-center justify-between gap-4 dark:border-neutral-700 px-4 sm:h-auto sm:px-6 py-2">
           <div className="flex-1" />
           <div className="flex-1 flex justify-center max-w-xl">
@@ -185,6 +186,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             >
               <span className="hidden sm:inline">Pricing</span>
             </Link>
+            <NotificationsDropdown />
             <ThemeToggle />
             <UserNav />
           </div>

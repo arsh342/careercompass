@@ -15,6 +15,7 @@ import {
   MoreHorizontal,
   Send,
   ThumbsUp,
+  User,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -108,8 +109,8 @@ export function PostCard({
             <Link href={`/users/${post.userId}`}>
               <Avatar className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity">
                 <AvatarImage src={post.userPhoto} alt={post.userName} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold">
-                  {post.userName?.charAt(0)?.toUpperCase() || "U"}
+                <AvatarFallback className="bg-muted">
+                  <User className="h-6 w-6 text-muted-foreground" />
                 </AvatarFallback>
               </Avatar>
             </Link>

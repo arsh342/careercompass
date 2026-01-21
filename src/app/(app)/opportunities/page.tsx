@@ -51,6 +51,28 @@ import {
 } from "@/components/ui/command";
 import { LumaSpin } from "@/components/ui/luma-spin";
 
+// Gradient backgrounds for avatars
+const AVATAR_GRADIENTS = [
+  'bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-500',
+  'bg-gradient-to-br from-violet-400 via-purple-500 to-fuchsia-500',
+  'bg-gradient-to-br from-pink-400 via-rose-400 to-red-400',
+  'bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500',
+  'bg-gradient-to-br from-amber-400 via-orange-400 to-red-400',
+  'bg-gradient-to-br from-yellow-300 via-amber-400 to-orange-400',
+  'bg-gradient-to-br from-cyan-400 via-sky-400 to-blue-400',
+  'bg-gradient-to-br from-slate-500 via-gray-600 to-zinc-700',
+];
+
+// Get consistent gradient based on identifier
+const getGradient = (identifier: string) => {
+  if (!identifier) return AVATAR_GRADIENTS[0];
+  let hash = 0;
+  for (let i = 0; i < identifier.length; i++) {
+    hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
+};
+
 interface Opportunity {
   id: string;
   title: string;
@@ -590,11 +612,10 @@ function OpportunitiesContent() {
                 >
                   {/* Job Title & Company */}
                   <div className="md:col-span-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-                      <span className="text-lg font-bold text-primary">
-                        {opp.employerName?.charAt(0)?.toUpperCase() || 'J'}
-                      </span>
-                    </div>
+                    <div className={cn(
+                      "w-10 h-10 rounded-full flex-shrink-0",
+                      getGradient(opp.id || opp.employerName)
+                    )} />
                     <div className="min-w-0">
                       <Link 
                         href={`/opportunities/${opp.id}`}
