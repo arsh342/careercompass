@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Textarea, type TextareaProps } from "@/components/ui/textarea";
 import { motion, AnimatePresence } from "motion/react";
-import { CornerUpLeft, X } from "lucide-react";
+import { Send, X } from "lucide-react";
 
 // Interface for individual file props
 interface FileAttachment {
@@ -174,7 +174,7 @@ const AdvancedChatInput = React.forwardRef<HTMLDivElement, AdvancedChatInputProp
                   className="h-4 w-4 border-2 border-current border-t-transparent rounded-full"
                 />
               ) : (
-                <CornerUpLeft className="h-4 w-4" />
+                <Send className="h-4 w-4" />
               )}
               <span className="sr-only">Send</span>
             </Button>
