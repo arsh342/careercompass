@@ -18,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
+import { useChat } from "@/context/ChatContext";
 import { useToast } from "@/hooks/use-toast";
 import {
   Loader2,
@@ -52,6 +53,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostCard, Post } from "@/components/ui/post-card";
 import { LumaSpin } from "@/components/ui/luma-spin";
+import { FollowersModal } from "@/components/followers-modal";
 
 interface UserProfile {
   uid: string;
@@ -86,6 +88,7 @@ export default function UserProfilePage() {
   const router = useRouter();
   const { id } = params;
   const { user, userProfile: currentUserProfile } = useAuth();
+  const { startDirectMessage } = useChat();
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -98,6 +101,10 @@ export default function UserProfilePage() {
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
   const [uploading, setUploading] = useState(false);
+  const [followersModalOpen, setFollowersModalOpen] = useState(false);
+  const [followingModalOpen, setFollowingModalOpen] = useState(false);
+  const [followersList, setFollowersList] = useState<string[]>([]);
+  const [followingList, setFollowingList] = useState<string[]>([]);
 
   const isOwnProfile = user?.uid === id;
 
@@ -467,11 +474,31 @@ export default function UserProfilePage() {
                       </>
                     )}
                   </Button>
-                  <Button variant="outline" className="rounded-full" asChild>
-                    <a href={`mailto:${profile.email}`}>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Message
-                    </a>
+                  <Button 
+                    variant="outline" 
+                    className="rounded-full"
+                    onClick={async () => {
+                      try {
+                        const chatId = await startDirectMessage(
+                          profile.uid,
+                          {
+                            displayName: displayName,
+                            photoURL: profile.photoURL,
+                            role: profile.role,
+                          }
+                        );
+                        router.push(`/inbox?chat=${chatId}`);
+                      } catch (error) {
+                        toast({
+                          title: "Error",
+                          description: "Failed to start conversation",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Message
                   </Button>
                 </>
               ) : (
@@ -488,11 +515,23 @@ export default function UserProfilePage() {
               <div className="text-xl font-bold">{posts.length}</div>
               <div className="text-sm text-muted-foreground">Posts</div>
             </div>
-            <div className="text-center cursor-pointer hover:text-primary">
+            <div 
+              className="text-center cursor-pointer hover:text-primary transition-colors"
+              onClick={() => {
+                setFollowersList(profile.followers || []);
+                setFollowersModalOpen(true);
+              }}
+            >
               <div className="text-xl font-bold">{followersCount}</div>
               <div className="text-sm text-muted-foreground">Followers</div>
             </div>
-            <div className="text-center cursor-pointer hover:text-primary">
+            <div 
+              className="text-center cursor-pointer hover:text-primary transition-colors"
+              onClick={() => {
+                setFollowingList(profile.following || []);
+                setFollowingModalOpen(true);
+              }}
+            >
               <div className="text-xl font-bold">{followingCount}</div>
               <div className="text-sm text-muted-foreground">Following</div>
             </div>
@@ -704,6 +743,26 @@ export default function UserProfilePage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Followers Modal */}
+      <FollowersModal
+        isOpen={followersModalOpen}
+        onClose={() => setFollowersModalOpen(false)}
+        userIds={followersList}
+        title="Followers"
+        currentUserId={user?.uid || ""}
+        currentUserFollowing={currentUserProfile?.following || []}
+      />
+
+      {/* Following Modal */}
+      <FollowersModal
+        isOpen={followingModalOpen}
+        onClose={() => setFollowingModalOpen(false)}
+        userIds={followingList}
+        title="Following"
+        currentUserId={user?.uid || ""}
+        currentUserFollowing={currentUserProfile?.following || []}
+      />
     </div>
   );
 }

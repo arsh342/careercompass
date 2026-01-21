@@ -339,10 +339,10 @@ export default function OpportunityDetailPage() {
                    {renderSection("Equal Opportunity Statement", opportunity.legalStatement, Info)}
                 </CardContent>
                 <CardFooter className="gap-2">
-                    <Button asChild className="w-full" size="lg" disabled={hasApplied}>
+                    <Button asChild className="w-full rounded-full" size="lg" disabled={hasApplied}>
                       {hasApplied ? <span>Applied</span> : <Link href={`/opportunities/${opportunity.id}/apply`}>Apply Now</Link>}
                     </Button>
-                    <Button variant="outline" size="lg" onClick={() => opportunity && toggleSave(opportunity)}>
+                    <Button variant="outline" className="rounded-full" size="lg" onClick={() => opportunity && toggleSave(opportunity)}>
                         <Heart className={cn("mr-2 h-4 w-4", isSaved && "fill-primary text-primary")} /> {isSaved ? 'Saved' : 'Save'}
                     </Button>
                 </CardFooter>
@@ -414,6 +414,7 @@ export default function OpportunityDetailPage() {
                             }}
                         />
                         <Textarea
+                            className="rounded-3xl"
                             placeholder="Or paste your resume text here..."
                             rows={5}
                             value={atsResumeText}
