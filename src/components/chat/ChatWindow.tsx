@@ -35,7 +35,10 @@ import {
   Check,
   CheckCheck,
   Video,
+  Lock,
+  User,
 } from "lucide-react";
+import { useEncryption } from "@/context/EncryptionContext";
 
 interface ChatWindowProps {
   onBack?: () => void;
@@ -209,11 +212,13 @@ function MessageActions({ isMe, onCopy, onReply }: { isMe: boolean; onCopy: () =
 export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
   const { activeChat, messages, messagesLoading, sendMessage, markAsRead } = useChat();
   const { user, userProfile } = useAuth();
+  const { isReady: encryptionReady, isSupported: encryptionSupported, encrypt, decrypt, ensureKeys } = useEncryption();
   const { toast } = useToast();
   const [inputValue, setInputValue] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [sending, setSending] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [decryptedMessages, setDecryptedMessages] = useState<Map<string, string>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -248,6 +253,47 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
       markAsRead(activeChat.id);
     }
   }, [activeChat, markAsRead]);
+
+  // Decrypt encrypted messages
+  useEffect(() => {
+    const decryptMessages = async () => {
+      if (!encryptionReady || !messages.length) return;
+
+      const newDecrypted = new Map(decryptedMessages);
+      let hasNew = false;
+
+      for (const message of messages) {
+        if (message.encrypted && message.ciphertext && message.iv && !newDecrypted.has(message.id)) {
+          try {
+            const plaintext = await decrypt(message.ciphertext, message.iv, message.senderId);
+            if (plaintext) {
+              newDecrypted.set(message.id, plaintext);
+              hasNew = true;
+            }
+          } catch (error) {
+            console.error("Failed to decrypt message:", message.id, error);
+            newDecrypted.set(message.id, "[Unable to decrypt]");
+            hasNew = true;
+          }
+        }
+      }
+
+      if (hasNew) {
+        setDecryptedMessages(newDecrypted);
+      }
+    };
+
+    decryptMessages();
+  }, [messages, encryptionReady, decrypt, decryptedMessages]);
+
+  // Helper to get message text (decrypted or plain)
+  const getMessageText = useCallback((message: typeof messages[0]) => {
+    if (message.encrypted) {
+      return decryptedMessages.get(message.id) || "...";
+    }
+    return message.text;
+  }, [decryptedMessages]);
+
 
   const getOtherParticipant = (chat: Chat) => {
     if (!user?.uid) return null;
@@ -285,12 +331,35 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
       const messageToSend = replyingTo 
         ? `> ${replyingTo}\n\n${inputValue}`
         : inputValue;
-      await sendMessage(activeChat.id, messageToSend, attachments);
+
+      // Get the other participant for encryption
+      const other = getOtherParticipant(activeChat);
+      
+      // Try to encrypt if encryption is supported and ready
+      let encryption: { ciphertext: string; iv: string } | undefined;
+      
+      if (encryptionSupported && other && inputValue.trim()) {
+        // Ensure keys exist
+        await ensureKeys();
+        
+        // Encrypt the message
+        const encrypted = await encrypt(messageToSend, other.id);
+        if (encrypted) {
+          encryption = encrypted;
+        }
+      }
+
+      await sendMessage(activeChat.id, messageToSend, attachments.length > 0 ? attachments : undefined, encryption);
       setInputValue("");
       setAttachments([]);
       setReplyingTo(null);
     } catch (error) {
       console.error("Error sending message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message",
+        variant: "destructive",
+      });
     } finally {
       setSending(false);
     }
@@ -484,25 +553,29 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
                               : "bg-accent text-foreground"
                           )}
                         >
-                          {message.text && (
+                          {(message.text || message.encrypted) && (
                             <div className="leading-relaxed whitespace-pre-wrap">
-                              {message.text.startsWith("> ") && message.text.includes("\n\n") ? (
-                                <>
-                                  <div className={cn(
-                                    "mb-2 rounded-xl border-l-4 p-2 text-xs opacity-90",
-                                    isOwn 
-                                      ? "bg-white/10 border-white/50" 
-                                      : "bg-black/5 dark:bg-white/5 border-primary"
-                                  )}>
-                                    <p className="line-clamp-2 font-medium opacity-80">
-                                      {message.text.split("\n\n")[0].substring(2)}
-                                    </p>
-                                  </div>
-                                  <p>{message.text.split("\n\n").slice(1).join("\n\n")}</p>
-                                </>
-                              ) : (
-                                <p>{message.text}</p>
-                              )}
+                              {(() => {
+                                const displayText = getMessageText(message);
+                                if (displayText.startsWith("> ") && displayText.includes("\n\n")) {
+                                  return (
+                                    <>
+                                      <div className={cn(
+                                        "mb-2 rounded-xl border-l-4 p-2 text-xs opacity-90",
+                                        isOwn 
+                                          ? "bg-white/10 border-white/50" 
+                                          : "bg-black/5 dark:bg-white/5 border-primary"
+                                      )}>
+                                        <p className="line-clamp-2 font-medium opacity-80">
+                                          {displayText.split("\n\n")[0].substring(2)}
+                                        </p>
+                                      </div>
+                                      <p>{displayText.split("\n\n").slice(1).join("\n\n")}</p>
+                                    </>
+                                  );
+                                }
+                                return <p>{displayText}</p>;
+                              })()}
                             </div>
                           )}
                           {message.attachments?.map((att, i) => (
@@ -530,8 +603,8 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
                           <div className="opacity-0 transition-all group-hover:opacity-100">
                             <MessageActions 
                               isMe={isOwn} 
-                              onCopy={() => handleCopyMessage(message.text || "")}
-                              onReply={() => handleReplyMessage(message.text || "")}
+                              onCopy={() => handleCopyMessage(getMessageText(message))}
+                              onReply={() => handleReplyMessage(getMessageText(message))}
                             />
                           </div>
                         </div>
