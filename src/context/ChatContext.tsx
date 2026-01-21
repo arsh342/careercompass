@@ -38,6 +38,10 @@ export interface Message {
   timestamp: Timestamp;
   read: boolean;
   attachments?: Attachment[];
+  // E2E encryption fields
+  encrypted?: boolean;
+  ciphertext?: string;
+  iv?: string;
 }
 
 export interface Chat {
@@ -69,13 +73,17 @@ interface ChatContextType {
   messages: Message[];
   messagesLoading: boolean;
   setActiveChat: (chat: Chat | null) => void;
-  sendMessage: (chatId: string, text: string, attachments?: File[]) => Promise<void>;
+  sendMessage: (chatId: string, text: string, attachments?: File[], encryption?: { ciphertext: string; iv: string }) => Promise<void>;
   markAsRead: (chatId: string) => Promise<void>;
   createOrGetChat: (
     otherUserId: string,
     opportunityId: string,
     opportunityTitle: string,
     applicationId: string,
+    otherUserDetails: { displayName: string; photoURL?: string; role: "employer" | "employee" }
+  ) => Promise<string>;
+  startDirectMessage: (
+    otherUserId: string,
     otherUserDetails: { displayName: string; photoURL?: string; role: "employer" | "employee" }
   ) => Promise<string>;
 }
@@ -214,7 +222,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Send message
   const sendMessage = useCallback(
-    async (chatId: string, text: string, files?: File[]) => {
+    async (chatId: string, text: string, files?: File[], encryption?: { ciphertext: string; iv: string }) => {
       if (!user?.uid || (!text.trim() && (!files || files.length === 0))) return;
 
       let attachments: Attachment[] | undefined;
@@ -222,13 +230,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         attachments = await uploadAttachments(chatId, files);
       }
 
+      // Build message data - either encrypted or plain text
       const messageData: Partial<Message> = {
         senderId: user.uid,
-        text: text.trim(),
         timestamp: serverTimestamp() as Timestamp,
         read: false,
         ...(attachments && { attachments }),
       };
+
+      if (encryption) {
+        // Encrypted message - store ciphertext instead of plain text
+        messageData.encrypted = true;
+        messageData.ciphertext = encryption.ciphertext;
+        messageData.iv = encryption.iv;
+        messageData.text = ""; // Empty - actual content is encrypted
+      } else {
+        // Plain text message
+        messageData.text = text.trim();
+      }
 
       // Add message
       await addDoc(collection(db, "chats", chatId, "messages"), messageData);
@@ -332,6 +351,68 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     [user?.uid, user?.email]
   );
 
+  // Start a direct message conversation (no opportunity/application needed)
+  const startDirectMessage = useCallback(
+    async (
+      otherUserId: string,
+      otherUserDetails: { displayName: string; photoURL?: string; role: "employer" | "employee" }
+    ): Promise<string> => {
+      if (!user?.uid) throw new Error("Not authenticated");
+
+      // Check for existing direct message chat between these users
+      const existingQuery = query(
+        collection(db, "chats"),
+        where("participants", "array-contains", user.uid),
+        where("type", "==", "direct")
+      );
+
+      const existingSnapshot = await getDocs(existingQuery);
+      const existingChat = existingSnapshot.docs.find(doc => {
+        const data = doc.data();
+        return data.participants.includes(otherUserId);
+      });
+
+      if (existingChat) {
+        return existingChat.id;
+      }
+
+      // Get current user details
+      const currentUserDoc = await getDoc(doc(db, "users", user.uid));
+      const currentUserData = currentUserDoc.data();
+
+      const currentUserParticipant: { displayName: string; photoURL?: string; role: "employer" | "employee" } = {
+        displayName: currentUserData?.displayName || user.email || "Unknown",
+        role: currentUserData?.role || "employee",
+      };
+      if (currentUserData?.photoURL) {
+        currentUserParticipant.photoURL = currentUserData.photoURL;
+      }
+
+      const otherUserParticipant: { displayName: string; photoURL?: string; role: "employer" | "employee" } = {
+        displayName: otherUserDetails.displayName,
+        role: otherUserDetails.role,
+      };
+      if (otherUserDetails.photoURL) {
+        otherUserParticipant.photoURL = otherUserDetails.photoURL;
+      }
+
+      // Create new direct message chat
+      const chatData = {
+        type: "direct",
+        participants: [user.uid, otherUserId],
+        participantDetails: {
+          [user.uid]: currentUserParticipant,
+          [otherUserId]: otherUserParticipant,
+        },
+        createdAt: serverTimestamp(),
+      };
+
+      const chatRef = await addDoc(collection(db, "chats"), chatData);
+      return chatRef.id;
+    },
+    [user?.uid, user?.email]
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -345,6 +426,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         sendMessage,
         markAsRead,
         createOrGetChat,
+        startDirectMessage,
       }}
     >
       {children}
