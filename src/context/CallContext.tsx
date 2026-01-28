@@ -29,21 +29,34 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for incoming calls
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid) {
+      console.log('[CallContext] No user, not listening for calls');
+      return;
+    }
 
+    console.log('[CallContext] Setting up incoming call listener for user:', user.uid);
+    
     const unsubscribe = listenForIncomingCalls(user.uid, (callId, callData) => {
+      console.log('[CallContext] Received incoming call:', { callId, callData });
+      
       // Don't show incoming call if already in a call
-      if (isInCall) return;
+      if (isInCall) {
+        console.log('[CallContext] Already in call, ignoring');
+        return;
+      }
       
       setIncomingCall({ callId, callData });
       
       // Play ringtone
       if (audioRef.current) {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().catch((e) => console.log('[CallContext] Ringtone play failed:', e));
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      console.log('[CallContext] Cleaning up call listener');
+      unsubscribe();
+    };
   }, [user?.uid, isInCall]);
 
   // Accept the incoming call
