@@ -17,12 +17,33 @@ import {
 } from "firebase/firestore";
 
 // STUN/TURN servers for WebRTC
+// Using free public STUN and TURN servers for NAT traversal
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [
+    // Google STUN servers
     { urls: "stun:stun.l.google.com:19302" },
     { urls: "stun:stun1.l.google.com:19302" },
     { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    // Open Relay TURN servers (free tier)
+    {
+      urls: "turn:openrelay.metered.ca:80",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443?transport=tcp",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
   ],
+  iceCandidatePoolSize: 10,
 };
 
 export interface CallData {
@@ -120,31 +141,61 @@ export class WebRTCSignaling {
     opportunityId?: string,
     opportunityTitle?: string
   ): Promise<RTCSessionDescriptionInit> {
-    const callDocRef = doc(db, "calls", this.callId);
-    this.callDocRef = callDocRef;
-
-    // Create offer
-    const offer = await this._peerConnection!.createOffer();
-    await this._peerConnection!.setLocalDescription(offer);
-
-    // Save call data to Firestore
-    const callData: CallData = {
+    console.log('[WebRTC] Creating call:', {
+      callId: this.callId,
       callerId: this.userId,
       callerName,
       calleeId,
       calleeName,
       opportunityId,
-      opportunityTitle,
-      status: "ringing",
-      offer: {
-        type: offer.type,
-        sdp: offer.sdp,
-      },
-      createdAt: serverTimestamp() as Timestamp,
-    };
+    });
+    
+    try {
+      const callDocRef = doc(db, "calls", this.callId);
+      this.callDocRef = callDocRef;
 
-    await setDoc(callDocRef, callData);
-    return offer;
+      // STEP 1: Save initial call document FIRST (before WebRTC operations)
+      const initialCallData = {
+        callerId: this.userId,
+        callerName,
+        calleeId,
+        calleeName,
+        opportunityId,
+        opportunityTitle,
+        status: "ringing",
+        createdAt: serverTimestamp(),
+      };
+
+      console.log('[WebRTC] STEP 1: Saving initial call to Firestore...');
+      await setDoc(callDocRef, initialCallData);
+      console.log('[WebRTC] STEP 1 COMPLETE: Call saved to Firestore!');
+
+      // STEP 2: Create WebRTC offer
+      if (!this._peerConnection) {
+        throw new Error('Peer connection not initialized. Call initializePeerConnection first.');
+      }
+      
+      console.log('[WebRTC] STEP 2: Creating offer...');
+      const offer = await this._peerConnection.createOffer();
+      console.log('[WebRTC] STEP 2: Offer created, setting local description...');
+      await this._peerConnection.setLocalDescription(offer);
+      console.log('[WebRTC] STEP 2 COMPLETE: Local description set');
+
+      // STEP 3: Update call document with offer
+      console.log('[WebRTC] STEP 3: Updating call with offer...');
+      await updateDoc(callDocRef, {
+        offer: {
+          type: offer.type,
+          sdp: offer.sdp,
+        },
+      });
+      console.log('[WebRTC] STEP 3 COMPLETE: Call updated with offer');
+      
+      return offer;
+    } catch (error) {
+      console.error('[WebRTC] Error in createCall:', error);
+      throw error;
+    }
   }
 
   // Answer a call (callee side)
@@ -303,15 +354,35 @@ export function listenForIncomingCalls(
 ): () => void {
   const callsRef = collection(db, "calls");
   
+  console.log('[WebRTC] Setting up listener for incoming calls to user:', userId);
+  
   return onSnapshot(callsRef, (snapshot) => {
+    console.log('[WebRTC] Snapshot received, changes:', snapshot.docChanges().length);
+    
     snapshot.docChanges().forEach((change) => {
+      console.log('[WebRTC] Doc change:', {
+        type: change.type,
+        id: change.doc.id,
+        data: change.doc.data()
+      });
+      
       if (change.type === "added") {
         const data = change.doc.data() as CallData;
+        console.log('[WebRTC] Checking call:', {
+          calleeId: data.calleeId,
+          userId: userId,
+          status: data.status,
+          match: data.calleeId === userId && data.status === "ringing"
+        });
+        
         // Check if this user is the callee and call is ringing
         if (data.calleeId === userId && data.status === "ringing") {
+          console.log('[WebRTC] This is an incoming call for us!');
           onIncomingCall(change.doc.id, data);
         }
       }
     });
+  }, (error) => {
+    console.error('[WebRTC] Firestore listener error:', error);
   });
 }

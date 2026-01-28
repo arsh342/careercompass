@@ -65,38 +65,80 @@ export default function VideoCallPage() {
   const isEmployer = userProfile?.role === "employer";
   const backLink = isEmployer ? "/employer/postings" : "/applications";
 
-  // Request permissions explicitly
-  const requestPermissions = async () => {
+  // Initialize local preview on page load - this triggers browser permission prompt
+  const initializePreview = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
-      });
-      stream.getTracks().forEach(track => track.stop());
-      return true;
-    } catch (error) {
-      console.error("Permission denied:", error);
-      return false;
-    }
-  };
-
-  // Initialize local media
-  const initializeMedia = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: isVideoOn,
-        audio: isAudioOn,
       });
       setLocalStream(stream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
       return stream;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error accessing media devices:", error);
+      
+      // Provide specific error messages based on error type
+      let description = "Camera and microphone access is required for video calls.";
+      if (error.name === "NotAllowedError") {
+        description = "Please allow camera and microphone access when prompted by your browser.";
+      } else if (error.name === "NotFoundError") {
+        description = "No camera or microphone found. Please connect a device.";
+      } else if (error.name === "NotReadableError") {
+        description = "Camera or microphone is already in use by another application.";
+      }
+      
       toast({
-        title: "Media Error",
-        description: "Could not access camera/microphone",
+        title: "Media Access Required",
+        description,
+        variant: "destructive",
+      });
+      return null;
+    }
+  }, [toast]);
+
+  // Initialize local media - always request both, then disable based on toggle state
+  const initializeMedia = useCallback(async () => {
+    try {
+      // Always request both video and audio
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      
+      // Disable tracks based on current toggle state
+      stream.getVideoTracks().forEach(track => {
+        track.enabled = isVideoOn;
+      });
+      stream.getAudioTracks().forEach(track => {
+        track.enabled = isAudioOn;
+      });
+      
+      setLocalStream(stream);
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+      return stream;
+    } catch (error: any) {
+      console.error("Error accessing media devices:", error);
+      
+      // Provide specific error messages based on error type
+      let description = "Camera and microphone access is required for video calls.";
+      if (error.name === "NotAllowedError") {
+        description = "Permission denied. Please click the camera icon in your browser's address bar to allow access.";
+      } else if (error.name === "NotFoundError") {
+        description = "No camera or microphone found. Please connect a device.";
+      } else if (error.name === "NotReadableError") {
+        description = "Camera or microphone is already in use by another application.";
+      } else if (error.name === "OverconstrainedError") {
+        description = "Camera settings are not supported. Try refreshing the page.";
+      }
+      
+      toast({
+        title: "Media Access Required",
+        description,
         variant: "destructive",
       });
       return null;
@@ -140,51 +182,51 @@ export default function VideoCallPage() {
   const startCall = async () => {
     if (!user || !recipientId) return;
 
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      toast({
-        title: "Permission Required",
-        description: "Camera and microphone access is required for video calls.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsConnecting(true);
-    setCallStatus("calling");
-
-    // Initialize media
-    const stream = await initializeMedia();
-    if (!stream) {
-      setIsConnecting(false);
-      return;
-    }
-
-    // Generate call ID
-    const callId = generateCallId(user.uid, recipientId);
+    console.log('[VideoCall] Starting call...');
     
-    // Create signaling instance
-    const signaling = new WebRTCSignaling(callId, user.uid, true);
-    signalingRef.current = signaling;
+    try {
+      // Use existing stream or get a new one
+      let stream = localStream;
+      if (!stream) {
+        console.log('[VideoCall] Getting new media stream...');
+        stream = await initializeMedia();
+        if (!stream) return; // initializeMedia already shows error toast
+      }
 
-    // Initialize peer connection
-    signaling.initializePeerConnection(
-      handleRemoteStream,
-      handleIceCandidate,
-      handleConnectionStateChange
-    );
+      setIsConnecting(true);
+      setCallStatus("calling");
 
-    // Add local stream
-    signaling.addLocalStream(stream);
+      // Generate call ID
+      const callId = generateCallId(user.uid, recipientId);
+      console.log('[VideoCall] Generated call ID:', callId);
+      
+      // Create signaling instance
+      const signaling = new WebRTCSignaling(callId, user.uid, true);
+      signalingRef.current = signaling;
 
-    // Create and send offer
-    await signaling.createCall(
-      userProfile?.displayName || user.email || "Caller",
-      recipientId,
-      recipientName,
-      opportunityId,
-      opportunityTitle
-    );
+      // Initialize peer connection
+      console.log('[VideoCall] Initializing peer connection...');
+      signaling.initializePeerConnection(
+        handleRemoteStream,
+        handleIceCandidate,
+        handleConnectionStateChange
+      );
+      console.log('[VideoCall] Peer connection initialized:', signaling.peerConnection);
+
+      // Add local stream
+      console.log('[VideoCall] Adding local stream...');
+      signaling.addLocalStream(stream);
+
+      // Create and send offer
+      console.log('[VideoCall] Creating call...');
+      await signaling.createCall(
+        userProfile?.displayName || user.email || "Caller",
+        recipientId,
+        recipientName,
+        opportunityId,
+        opportunityTitle
+      );
+      console.log('[VideoCall] Call created successfully!');
 
     // Listen for answer and updates
     signaling.listenForCallUpdates(
@@ -209,31 +251,31 @@ export default function VideoCallPage() {
         console.error("Error adding ICE candidate:", error);
       }
     });
+    } catch (error) {
+      console.error('[VideoCall] Error in startCall:', error);
+      toast({
+        title: "Call Failed",
+        description: "Could not start the video call. Please try again.",
+        variant: "destructive",
+      });
+      setIsConnecting(false);
+      setCallStatus("ended");
+    }
   };
 
   // Answer call as callee
   const answerCall = useCallback(async () => {
     if (!user || !existingCallId) return;
 
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      toast({
-        title: "Permission Required",
-        description: "Camera and microphone access is required for video calls.",
-        variant: "destructive",
-      });
-      return;
+    // Use existing stream or get a new one
+    let stream = localStream;
+    if (!stream) {
+      stream = await initializeMedia();
+      if (!stream) return; // initializeMedia already shows error toast
     }
 
     setIsConnecting(true);
     setCallStatus("connecting");
-
-    // Initialize media
-    const stream = await initializeMedia();
-    if (!stream) {
-      setIsConnecting(false);
-      return;
-    }
 
     // Create signaling instance (as callee)
     const signaling = new WebRTCSignaling(existingCallId, user.uid, false);
@@ -277,7 +319,7 @@ export default function VideoCallPage() {
         console.error("Error adding ICE candidate:", error);
       }
     });
-  }, [user, existingCallId, initializeMedia, handleRemoteStream, handleIceCandidate, handleConnectionStateChange, toast]);
+  }, [user, existingCallId, localStream, initializeMedia, handleRemoteStream, handleIceCandidate, handleConnectionStateChange, toast]);
 
   // End call
   const endCall = useCallback(() => {
@@ -329,6 +371,8 @@ export default function VideoCallPage() {
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  // NOTE: Removed auto-preview - permissions will be requested only when user clicks "Start Call"
 
   // Auto-answer if joining as callee
   useEffect(() => {

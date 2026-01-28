@@ -29,6 +29,8 @@
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 ## 2. Motivation
 
 ### Why This Problem Matters
@@ -60,6 +62,8 @@ We believe **AI can democratize access to career opportunities** by:
 The emergence of powerful language models like **Google's Gemini** provides an unprecedented opportunity to reimagine career navigation with semantic understanding and intelligent automation.
 
 ---
+
+<div style="page-break-after: always;"></div>
 
 ## 3. Application
 
@@ -106,6 +110,8 @@ CareerCompass is a **dual-sided AI platform** serving two interconnected user ty
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 ## 4. Proposed Method
 
 ### GenAI Approach & Architecture
@@ -117,19 +123,19 @@ CareerCompass leverages **Google's Genkit framework** with **Gemini AI models** 
 │                         CareerCompass AI Engine                     │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐               │
-│  │ Gemini Pro  │   │Gemini Flash │   │   Genkit    │               │
-│  │  (Complex)  │   │   (Fast)    │   │  Framework  │               │
-│  └──────┬──────┘   └──────┬──────┘   └──────┬──────┘               │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                │
+│  │ Gemini Pro  │   │Gemini Flash │   │   Genkit    │                │
+│  │  (Complex)  │   │   (Fast)    │   │  Framework  │                │
+│  └──────┬──────┘   └──────┬──────┘   └──────┬──────┘                │
 │         │                 │                 │                       │
 │         └─────────────────┴─────────────────┘                       │
 │                           │                                         │
 │         ┌─────────────────┼─────────────────┐                       │
 │         ▼                 ▼                 ▼                       │
-│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐               │
-│  │  Matching   │   │   Content   │   │Communication│               │
-│  │   Flows     │   │   Flows     │   │   Flows     │               │
-│  └─────────────┘   └─────────────┘   └─────────────┘               │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                │
+│  │  Matching   │   │   Content   │   │Communication│                │
+│  │   Flows     │   │   Flows     │   │   Flows     │                │
+│  └─────────────┘   └─────────────┘   └─────────────┘                │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -187,6 +193,8 @@ Generates customized interview preparation:
 
 ---
 
+<div style="page-break-after: always;"></div>
+
 ## 5. Datasets / Data Sources
 
 ### Primary Data Sources
@@ -199,34 +207,6 @@ Generates customized interview preparation:
 | **Skill Taxonomies** | Industry standards (O*NET, LinkedIn Skills) | Publicly available |
 | **Company Information** | Employer profiles | User-generated |
 
-### Data Flow Architecture
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        Data Pipeline                             │
-├──────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  User Inputs          Processing              AI Enhancement     │
-│  ───────────────     ──────────────          ─────────────────   │
-│                                                                  │
-│  ┌─────────────┐     ┌─────────────┐         ┌─────────────┐    │
-│  │   Profile   │────▶│   Parse &   │────────▶│   Gemini    │    │
-│  │   Creation  │     │  Structure  │         │  Analysis   │    │
-│  └─────────────┘     └─────────────┘         └─────────────┘    │
-│                                                      │           │
-│  ┌─────────────┐     ┌─────────────┐               │           │
-│  │   Resume    │────▶│  AI Parse   │───────────────┘           │
-│  │   Upload    │     │   Flow      │                            │
-│  └─────────────┘     └─────────────┘                            │
-│                                                      │           │
-│  ┌─────────────┐     ┌─────────────┐               ▼           │
-│  │    Job      │────▶│  Optimize & │         ┌─────────────┐    │
-│  │   Posting   │     │   Enhance   │────────▶│  Firestore  │    │
-│  └─────────────┘     └─────────────┘         │  Database   │    │
-│                                               └─────────────┘    │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
-```
 
 ### Data Privacy & Security
 
@@ -236,6 +216,8 @@ Generates customized interview preparation:
 - **Encrypted Storage**: All sensitive data encrypted at rest
 
 ---
+
+<div style="page-break-after: always;"></div>
 
 ## 6. Experiments & Validation
 
@@ -282,6 +264,8 @@ Generates customized interview preparation:
 | Email delivery rate | 99.2% successful delivery |
 
 ---
+
+<div style="page-break-after: always;"></div>
 
 ## 7. Novelty & Scope to Scale
 
@@ -346,6 +330,8 @@ If scaled globally, CareerCompass could:
 - Provide career guidance to **underserved communities**
 
 ---
+
+<div style="page-break-after: always;"></div>
 
 ## Summary
 
