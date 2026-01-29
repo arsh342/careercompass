@@ -150,7 +150,7 @@ export default function ApplicantsPage() {
       applicationId: applicant.id,
     });
     
-    router.push(`/chat/video?${params.toString()}`);
+    router.push(`/video-call?${params.toString()}`);
   };
 
   useEffect(() => {
