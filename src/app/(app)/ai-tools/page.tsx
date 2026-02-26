@@ -14,6 +14,7 @@ import {
   Globe,
   Lock,
   Smartphone,
+  Route,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -251,6 +252,57 @@ function MoneyCounter() {
 }
 
 // ============================================
+// CAREER PATH ANIMATION
+// ============================================
+
+function CareerPathAnimation() {
+  const steps = [0, 1, 2, 3, 4];
+
+  return (
+    <div className="flex flex-col items-center justify-center h-full gap-3">
+      <div className="flex items-center gap-2">
+        {steps.map((step) => (
+          <React.Fragment key={step}>
+            <motion.div
+              className="w-4 h-4 rounded-full bg-indigo-500"
+              animate={{ scale: [1, 1.3, 1], opacity: [0.4, 1, 0.4] }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: step * 0.3,
+              }}
+            />
+            {step < steps.length - 1 && (
+              <motion.div
+                className="w-6 h-0.5 bg-indigo-500/30"
+                animate={{ opacity: [0.2, 0.6, 0.2] }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: step * 0.3 + 0.15,
+                }}
+              />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="flex gap-1 mt-2">
+        {["Jr", "Mid", "Sr", "Lead", "VP"].map((label, i) => (
+          <motion.span
+            key={label}
+            className="text-[10px] text-gray-400 w-6 text-center"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
+          >
+            {label}
+          </motion.span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // MAIN PAGE
 // ============================================
 
@@ -439,6 +491,29 @@ export default function AIToolsPage() {
                   Email Templates
                 </h3>
                 <p className="text-gray-400 text-sm mt-1">Professional follow-up emails.</p>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* 8. Career Path - Tall (2x2) */}
+          <motion.div
+            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.7 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            <Link href="/ai-tools/career-path" className="flex flex-col h-full">
+              <div className="flex-1 flex items-center justify-center">
+                <CareerPathAnimation />
+              </div>
+              <div className="mt-auto">
+                <h3 className="text-xl text-white flex items-center gap-2 font-medium">
+                  <Route className="w-5 h-5 text-indigo-400" />
+                  Career Path Visualizer
+                </h3>
+                <p className="text-gray-400 text-sm mt-1">AI-generated career roadmap with skill milestones.</p>
               </div>
             </Link>
           </motion.div>
