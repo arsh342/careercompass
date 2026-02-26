@@ -109,7 +109,7 @@ const GenerateFullResumeInputSchema = z.object({
   targetRole: z.string().optional(),
   targetCompany: z.string().optional(),
   jobDescription: z.string().optional(),
-  format: z.enum(['modern', 'classic', 'creative', 'executive']).default('modern'),
+  format: z.enum(['modern', 'classic', 'creative', 'executive', 'professional', 'minimal', 'elegant', 'tech']).default('modern'),
 });
 
 export type GenerateFullResumeInput = z.infer<typeof GenerateFullResumeInputSchema>;

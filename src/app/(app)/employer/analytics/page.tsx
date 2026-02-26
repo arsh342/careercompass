@@ -28,7 +28,11 @@ import {
   BarChart,
   PieChart as PieIcon,
   LineChart as LineIcon,
+  Clock,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   ChartConfig,
   ChartContainer,
@@ -62,8 +66,27 @@ interface Posting {
 interface Application {
   id: string;
   opportunityId: string;
+  opportunityTitle?: string;
+  status: string;
   submittedAt: Timestamp;
+  createdAt?: Timestamp;
 }
+
+interface TopPosting {
+  title: string;
+  applicants: number;
+  interviews: number;
+  hired: number;
+  conversionRate: number;
+}
+
+const FUNNEL_COLORS = [
+  "#6366f1", // Applied - indigo
+  "#8b5cf6", // Screening - violet
+  "#3b82f6", // Interview - blue
+  "#10b981", // Offer - emerald
+  "#059669", // Hired - green
+];
 
 const chartConfigBar = {
   applicants: {
@@ -104,6 +127,9 @@ export default function AnalyticsPage() {
   const [barChartData, setBarChartData] = useState<any[]>([]);
   const [pieChartData, setPieChartData] = useState<any[]>([]);
   const [lineChartData, setLineChartData] = useState<any[]>([]);
+  const [funnelData, setFunnelData] = useState<any[]>([]);
+  const [avgTimeToHire, setAvgTimeToHire] = useState<number>(0);
+  const [topPostings, setTopPostings] = useState<TopPosting[]>([]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -207,6 +233,76 @@ export default function AnalyticsPage() {
         } else {
           setLineChartData([]);
         }
+
+        // --- Fetch ALL applications for funnel + time-to-hire ---
+        const allAppsQuery = query(
+          collection(db, "applications"),
+          where("opportunityId", "in", opportunityIds.length > 0 ? opportunityIds.slice(0, 10) : ["__none__"])
+        );
+        const allAppsSnap = await getDocs(allAppsQuery);
+        const allApps: Application[] = allAppsSnap.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() } as Application)
+        );
+
+        // Conversion Funnel
+        const statusCounts = {
+          Applied: 0,
+          Screening: 0,
+          Interview: 0,
+          Offer: 0,
+          Hired: 0,
+        };
+        allApps.forEach((app) => {
+          const s = app.status;
+          if (s === "Pending" || s === "Submitted") statusCounts.Applied++;
+          else if (s === "Screening") { statusCounts.Applied++; statusCounts.Screening++; }
+          else if (s === "Interview") { statusCounts.Applied++; statusCounts.Screening++; statusCounts.Interview++; }
+          else if (s === "Offer") { statusCounts.Applied++; statusCounts.Screening++; statusCounts.Interview++; statusCounts.Offer++; }
+          else if (s === "Hired" || s === "Approved") { statusCounts.Applied++; statusCounts.Screening++; statusCounts.Interview++; statusCounts.Offer++; statusCounts.Hired++; }
+          else { statusCounts.Applied++; }
+        });
+        setFunnelData(
+          Object.entries(statusCounts).map(([stage, count], i) => ({
+            stage,
+            count,
+            fill: FUNNEL_COLORS[i],
+          }))
+        );
+
+        // Time to Hire
+        const hiredApps = allApps.filter((a) => a.status === "Hired" || a.status === "Approved");
+        if (hiredApps.length > 0) {
+          const totalDays = hiredApps.reduce((sum, app) => {
+            const submitted = app.submittedAt?.toDate?.() || new Date();
+            const diffDays = Math.max(1, Math.floor((Date.now() - submitted.getTime()) / (1000 * 60 * 60 * 24)));
+            return sum + diffDays;
+          }, 0);
+          setAvgTimeToHire(Math.round(totalDays / hiredApps.length));
+        }
+
+        // Top Performing Postings
+        const postingAppMap: Record<string, Application[]> = {};
+        allApps.forEach((app) => {
+          if (!postingAppMap[app.opportunityId]) postingAppMap[app.opportunityId] = [];
+          postingAppMap[app.opportunityId].push(app);
+        });
+        const topPostingsData: TopPosting[] = postingsData
+          .map((p) => {
+            const apps = postingAppMap[p.id] || [];
+            const interviews = apps.filter((a) => ["Interview", "Offer", "Hired", "Approved"].includes(a.status)).length;
+            const hired = apps.filter((a) => a.status === "Hired" || a.status === "Approved").length;
+            return {
+              title: p.title,
+              applicants: apps.length,
+              interviews,
+              hired,
+              conversionRate: apps.length > 0 ? Math.round((hired / apps.length) * 100) : 0,
+            };
+          })
+          .sort((a, b) => b.applicants - a.applicants)
+          .slice(0, 5);
+        setTopPostings(topPostingsData);
+
       } catch (error) {
         console.error("Error fetching analytics data:", error);
         toast({
@@ -421,6 +517,96 @@ export default function AnalyticsPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* NEW: Conversion Funnel + Time to Hire */}
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Hiring Funnel</CardTitle>
+                <CardDescription>Candidate progression through hiring stages</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {funnelData.length > 0 && funnelData[0].count > 0 ? (
+                  <div className="space-y-3">
+                    {funnelData.map((stage, i) => {
+                      const maxCount = funnelData[0].count || 1;
+                      const pct = Math.round((stage.count / maxCount) * 100);
+                      return (
+                        <div key={stage.stage} className="flex items-center gap-3">
+                          <span className="text-sm font-medium w-20 shrink-0">{stage.stage}</span>
+                          <div className="flex-1 bg-muted rounded-full h-8 overflow-hidden">
+                            <div
+                              className="h-full rounded-full flex items-center px-3 transition-all duration-500"
+                              style={{ width: `${Math.max(pct, 8)}%`, backgroundColor: stage.fill }}
+                            >
+                              <span className="text-xs font-medium text-white">{stage.count}</span>
+                            </div>
+                          </div>
+                          <span className="text-xs text-muted-foreground w-10 text-right">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <TrendingUp className="h-10 w-10 mx-auto mb-3 opacity-50" />
+                    <p>No applications yet to build the funnel.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Clock className="h-4 w-4" /> Time to Hire</CardTitle>
+                <CardDescription>Average days from application to hire</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <div className="text-5xl font-bold text-primary">{avgTimeToHire || "—"}</div>
+                <p className="text-sm text-muted-foreground mt-2">days average</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* NEW: Top Performing Postings */}
+          {topPostings.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Performing Postings</CardTitle>
+                <CardDescription>Ranked by applicant volume and conversion</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 font-medium">Job Title</th>
+                        <th className="text-center py-3 font-medium">Applicants</th>
+                        <th className="text-center py-3 font-medium">Interviews</th>
+                        <th className="text-center py-3 font-medium">Hired</th>
+                        <th className="text-center py-3 font-medium">Conversion</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topPostings.map((posting, i) => (
+                        <tr key={i} className="border-b last:border-0">
+                          <td className="py-3 font-medium">{posting.title}</td>
+                          <td className="text-center py-3">{posting.applicants}</td>
+                          <td className="text-center py-3">{posting.interviews}</td>
+                          <td className="text-center py-3">{posting.hired}</td>
+                          <td className="text-center py-3">
+                            <Badge variant={posting.conversionRate >= 20 ? "default" : "secondary"} className="rounded-full">
+                              {posting.conversionRate}%
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

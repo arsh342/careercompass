@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useMemo } from "react";
+import { useState, useEffect, Suspense, useMemo, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -22,6 +22,7 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
+  ArrowUpDown,
 } from "lucide-react";
 import Link from "next/link";
 import { useSavedOpportunities } from "@/context/SavedOpportunitiesContext";
@@ -96,6 +97,7 @@ function OpportunitiesContent() {
   const [selectedSkills, setSelectedSkills] = useState<Set<string>>(new Set());
   const [locationFilter, setLocationFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
+  const [sortBy, setSortBy] = useState<'newest' | 'relevance' | 'az' | 'za'>('newest');
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -270,8 +272,29 @@ function OpportunitiesContent() {
       });
     }
 
-    return filtered;
-  }, [searchParams, opportunities, locationFilter, typeFilter, selectedSkills]);
+    // Apply sorting
+    const sorted = [...filtered];
+    switch (sortBy) {
+      case 'newest':
+        sorted.sort((a, b) => {
+          const dateA = a.createdAt?.toDate?.() || a.createdAt || 0;
+          const dateB = b.createdAt?.toDate?.() || b.createdAt || 0;
+          return new Date(dateB).getTime() - new Date(dateA).getTime();
+        });
+        break;
+      case 'relevance':
+        sorted.sort((a, b) => calculateMatch(b) - calculateMatch(a));
+        break;
+      case 'az':
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'za':
+        sorted.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+    }
+
+    return sorted;
+  }, [searchParams, opportunities, locationFilter, typeFilter, selectedSkills, sortBy, userProfile]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredOpportunities.length / itemsPerPage);
@@ -471,6 +494,18 @@ function OpportunitiesContent() {
                 <SelectItem className="rounded-full" value="Full-time">Full-time</SelectItem>
                 <SelectItem className="rounded-full" value="Part-time">Part-time</SelectItem>
                 <SelectItem className="rounded-full" value="Contract">Contract</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="rounded-full">
+                <ArrowUpDown className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent className="rounded-3xl">
+                <SelectItem className="rounded-full" value="newest">Newest First</SelectItem>
+                <SelectItem className="rounded-full" value="relevance">Best Match</SelectItem>
+                <SelectItem className="rounded-full" value="az">A → Z</SelectItem>
+                <SelectItem className="rounded-full" value="za">Z → A</SelectItem>
               </SelectContent>
             </Select>
             <Popover>

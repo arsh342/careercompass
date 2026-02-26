@@ -35,6 +35,7 @@ import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { optimizeLinkedIn, type OptimizeLinkedInOutput } from "@/ai/flows/linkedin-optimizer";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
+import { PremiumGate } from "@/components/premium-gate";
 
 export default function LinkedInOptimizerPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -147,6 +148,7 @@ export default function LinkedInOptimizerPage() {
   }
 
   return (
+    <PremiumGate featureName="LinkedIn Optimizer" requiredPlan="pro">
     <div className="container mx-auto py-8 max-w-4xl relative">
       {isOptimizing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -445,5 +447,6 @@ export default function LinkedInOptimizerPage() {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 }
