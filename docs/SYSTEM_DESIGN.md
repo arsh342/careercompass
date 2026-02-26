@@ -20,6 +20,8 @@ CareerCompass is a full-stack career management platform connecting **job seeker
 
 ## 2. High-Level Architecture
 
+![System Architecture](diagrams/architecture.png)
+
 ```mermaid
 graph TB
     subgraph Client["Client (Next.js App)"]
@@ -120,6 +122,8 @@ src/app/
 
 ## 4. Data Model (Firestore)
 
+![Database Schema](diagrams/database_schema.png)
+
 ```mermaid
 erDiagram
     USERS {
@@ -211,6 +215,8 @@ erDiagram
 ---
 
 ## 5. Authentication & Authorization
+
+![Job Application Flow](diagrams/application_flow.png)
 
 ```mermaid
 sequenceDiagram
@@ -378,6 +384,8 @@ flowchart LR
 ---
 
 ## 10. Context Architecture
+
+![Use Case Diagram](diagrams/usecase.png)
 
 The app uses 5 React Contexts for global state management:
 
