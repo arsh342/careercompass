@@ -51,6 +51,7 @@ import {
   type EvaluateAnswerOutput,
 } from "@/ai/flows/interview-prep";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
+import { PremiumGate } from "@/components/premium-gate";
 
 type ExperienceLevel = "entry" | "mid" | "senior" | "executive";
 type QuestionType = "behavioral" | "technical" | "situational" | "all";
@@ -219,6 +220,7 @@ export default function InterviewPrepPage() {
   }
 
   return (
+    <PremiumGate featureName="Interview Prep Coach" requiredPlan="pro">
     <div className="container mx-auto py-8 max-w-4xl relative">
       {/* Loading Overlay */}
       {(isGenerating || isEvaluating) && (
@@ -530,5 +532,6 @@ export default function InterviewPrepPage() {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 }

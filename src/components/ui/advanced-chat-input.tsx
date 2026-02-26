@@ -16,7 +16,7 @@ interface FileAttachment {
 }
 
 // Main component props interface
-interface AdvancedChatInputProps extends React.HTMLAttributes<HTMLDivElement> {
+interface AdvancedChatInputProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   textareaProps?: TextareaProps;
   sendButtonProps?: ButtonProps;
   files?: FileAttachment[];

@@ -8,8 +8,11 @@ import '@/ai/flows/send-application-status-email';
 import '@/ai/flows/enhance-text';
 import '@/ai/flows/parse-resume';
 
-
+import { NextRequest, NextResponse } from "next/server";
 import { appRoute } from "@genkit-ai/next";
 
-// This creates a catch-all route handler for Genkit
-export const POST = appRoute;
+// Genkit's appRoute doesn't exactly match Next.js route handler types,
+// but it works correctly at runtime. Cast to satisfy the type checker.
+export const POST = appRoute as unknown as (
+  req: NextRequest
+) => Promise<NextResponse>;

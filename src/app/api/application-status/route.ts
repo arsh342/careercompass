@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AutomatedEmailService } from "@/lib/automated-email-service";
+import { handleApplicationStatusChange } from "@/lib/automated-email-service";
 import { withRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { requireAuth, validateBody, validators, validationErrorResponse } from "@/lib/api-auth";
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Trigger automated email based on status
-    await AutomatedEmailService.handleApplicationStatusChange({
+    await handleApplicationStatusChange({
       applicationId,
       jobId,
       userId,

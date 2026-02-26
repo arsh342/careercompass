@@ -10,6 +10,7 @@ import {
   Clock,
   GraduationCap,
   DollarSign,
+  Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -38,6 +39,7 @@ export interface OpportunityCardProps {
   };
   isSaved?: boolean;
   onToggleSave?: () => void;
+  isBoosted?: boolean;
   className?: string;
 }
 
@@ -60,6 +62,7 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
       createdAt,
       isSaved,
       onToggleSave,
+      isBoosted,
       className,
     },
     ref
@@ -95,7 +98,10 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
       <motion.div
         ref={ref}
         className={cn(
-          "w-full rounded-3xl border border-border bg-card p-5 text-card-foreground shadow-sm font-sans flex flex-col",
+          "w-full rounded-3xl border bg-card p-5 text-card-foreground shadow-sm font-sans flex flex-col",
+          isBoosted
+            ? "border-amber-300 dark:border-amber-700 ring-1 ring-amber-200/50 dark:ring-amber-800/50"
+            : "border-border",
           className
         )}
         variants={cardVariants}
@@ -113,6 +119,12 @@ const OpportunityCard = React.forwardRef<HTMLDivElement, OpportunityCardProps>(
               >
                 {type}
               </Badge>
+              {isBoosted && (
+                <Badge className="shrink-0 bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-700 gap-1">
+                  <Zap className="h-3 w-3" />
+                  Promoted
+                </Badge>
+              )}
               {match && match > 0 && (
                 <Badge
                   variant="outline"

@@ -66,6 +66,9 @@ const profileSchema = z.object({
   supportEmail: z.string().email().optional().or(z.literal("")),
   portfolioLink: z.string().url().optional().or(z.literal("")),
   linkedinLink: z.string().url().optional().or(z.literal("")),
+  githubLink: z.string().url().optional().or(z.literal("")),
+  twitterLink: z.string().url().optional().or(z.literal("")),
+  websiteLink: z.string().url().optional().or(z.literal("")),
   employability: z.string().optional(),
   education: z.string().min(1, "Education is required."),
   skills: z.string().min(1, "Skills are required."),
@@ -557,6 +560,9 @@ export default function ProfilePage() {
       references: "",
       portfolioLink: "",
       linkedinLink: "",
+      githubLink: "",
+      twitterLink: "",
+      websiteLink: "",
       employability: "",
     },
   });
@@ -593,6 +599,9 @@ export default function ProfilePage() {
         references,
         portfolioLink,
         linkedinLink,
+        githubLink: userProfile.githubLink || "",
+        twitterLink: userProfile.twitterLink || "",
+        websiteLink: userProfile.websiteLink || "",
         employability,
       });
     }
@@ -1085,6 +1094,54 @@ export default function ProfilePage() {
                           <FormControl>
                             <Input
                               placeholder="https://linkedin.com/in/your-profile"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="githubLink"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>GitHub (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="https://github.com/your-username"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="twitterLink"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Twitter / X (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="https://twitter.com/your-handle"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="websiteLink"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Personal Website (Optional)</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="https://your-website.com"
                               {...field}
                             />
                           </FormControl>

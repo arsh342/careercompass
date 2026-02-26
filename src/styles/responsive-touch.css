@@ -1,0 +1,142 @@
+/* =======================================
+   RESPONSIVE UTILITIES
+   Mobile-first responsive helpers for
+   consistent breakpoint-aware layouts.
+   ======================================= */
+
+/* Mobile-first container adjustments */
+@media (max-width: 640px) {
+  /* Tighter padding on mobile for all card-like elements */
+  .responsive-card {
+    padding: 1rem;
+    border-radius: 1.25rem;
+  }
+
+  /* Stack grid layouts on mobile */
+  .responsive-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reduce heading sizes on mobile */
+  .responsive-heading {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+
+  /* Full-width buttons on mobile */
+  .responsive-btn {
+    width: 100%;
+  }
+
+  /* Hide elements on mobile */
+  .hide-mobile {
+    display: none;
+  }
+
+  /* Better tap targets — minimum 44px */
+  .tap-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Reduce page padding on tablets */
+  .responsive-page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Show only on mobile */
+@media (min-width: 641px) {
+  .show-mobile-only {
+    display: none;
+  }
+}
+
+/* =======================================
+   TOUCH INTERACTIONS
+   Swipe & gesture-friendly UI patterns.
+   ======================================= */
+
+/* Smooth momentum scrolling for horizontal scrollable areas */
+.touch-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.touch-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-scroll-x > * {
+  scroll-snap-align: start;
+}
+
+/* Bottom sheet base (slides up from bottom on mobile) */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  border-radius: 1.5rem 1.5rem 0 0;
+  max-height: 85vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.bottom-sheet.open {
+  transform: translateY(0);
+}
+
+/* Drag handle indicator */
+.bottom-sheet-handle {
+  width: 2rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  margin: 0.5rem auto 1rem;
+}
+
+/* Pull-to-refresh indicator area */
+.pull-refresh {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Swipeable card (horizontal gesture) */
+.swipeable {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Larger tap zones for interactive elements on mobile */
+@media (pointer: coarse) {
+  .interactive {
+    min-height: 44px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Increase spacing between tappable items */
+  .interactive-list > * + * {
+    margin-top: 0.25rem;
+  }
+}
+
+/* Haptic-style press feedback */
+.press-feedback {
+  transition: transform 0.1s ease;
+}
+
+.press-feedback:active {
+  transform: scale(0.97);
+}

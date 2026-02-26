@@ -19,6 +19,7 @@ import {
   Eye,
   MessageSquare,
   Video,
+  Kanban,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -41,6 +42,7 @@ import {
 } from "@/ai/flows/find-and-rank-candidates";
 import { ComprehensiveATSScorer } from "@/lib/comprehensiveAtsScorer";
 import { sendApplicationStatusEmailDirect } from "@/lib/email-utils";
+import { createNotification } from "@/lib/notifications";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -150,7 +152,7 @@ export default function ApplicantsPage() {
       applicationId: applicant.id,
     });
     
-    router.push(`/chat/video?${params.toString()}`);
+    router.push(`/video-call?${params.toString()}`);
   };
 
   useEffect(() => {
@@ -314,6 +316,16 @@ export default function ApplicantsPage() {
       toast({
         title: `Application ${status}`,
         description: `The candidate has been notified of their application status.`,
+      });
+
+      // Send in-app notification to applicant
+      createNotification({
+        userId: applicant.userId,
+        type: 'application_update',
+        title: `Application ${status}`,
+        message: `Your application for ${opportunity?.title || 'a position'} has been ${status.toLowerCase()}.`,
+        link: '/applications',
+        actorName: opportunity?.employerName,
       });
 
       // Send email notification
@@ -692,11 +704,19 @@ export default function ApplicantsPage() {
           </CardContent>
         </Card>
         <Card className="rounded-3xl">
-          <CardHeader>
-            <CardTitle>Applicants</CardTitle>
-            <CardDescription>
-              People who have applied for this posting.
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Applicants</CardTitle>
+              <CardDescription>
+                People who have applied for this posting.
+              </CardDescription>
+            </div>
+            <Link href={`/employer/postings/${params.id}/pipeline`}>
+              <Button variant="outline" size="sm" className="rounded-full gap-1.5">
+                <Kanban className="h-3.5 w-3.5" />
+                Pipeline View
+              </Button>
+            </Link>
           </CardHeader>
           <CardContent>
             <div className="mb-4">

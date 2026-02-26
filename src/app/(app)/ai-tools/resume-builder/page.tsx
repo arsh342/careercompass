@@ -84,7 +84,7 @@ export default function ResumeBuilderPage() {
         newResume.header.email = user.email || '';
         newResume.header.linkedin = userProfile.linkedinLink || '';
         if (userProfile.skills) {
-          newResume.skills.technical = userProfile.skills.split(',').map(s => s.trim()).filter(Boolean);
+          newResume.skills.technical = userProfile.skills.split(',').map((s: string) => s.trim()).filter(Boolean);
         }
       }
       setResume(newResume);
