@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { listenForIncomingCalls, CallData } from "@/lib/webrtc-signaling";
+import { listenForIncomingCalls, CallData } from "@/lib/webrtc-service";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -29,38 +29,33 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for incoming calls
   useEffect(() => {
-    if (!user?.uid) {
-      console.log('[CallContext] No user, not listening for calls');
-      return;
-    }
+    if (!user?.uid) return;
 
-    console.log('[CallContext] Setting up incoming call listener for user:', user.uid);
-    
-    const unsubscribe = listenForIncomingCalls(user.uid, (callId, callData) => {
-      console.log('[CallContext] Received incoming call:', { callId, callData });
+    const unsubscribe = listenForIncomingCalls(user.uid, (callDataWithId) => {
       
       // Don't show incoming call if already in a call
-      if (isInCall) {
-        console.log('[CallContext] Already in call, ignoring');
+      if (isInCall) return;
+      
+      // Don't show if already on the video page for this call
+      if (typeof window !== 'undefined' && window.location.pathname.includes('/video-call')) {
         return;
       }
       
-      setIncomingCall({ callId, callData });
+      setIncomingCall({ callId: callDataWithId.callId, callData: callDataWithId });
       
       // Play ringtone
       if (audioRef.current) {
-        audioRef.current.play().catch((e) => console.log('[CallContext] Ringtone play failed:', e));
+        audioRef.current.play().catch(() => {});
       }
     });
 
     return () => {
-      console.log('[CallContext] Cleaning up call listener');
       unsubscribe();
     };
   }, [user?.uid, isInCall]);
 
   // Accept the incoming call
-  const acceptCall = useCallback(() => {
+  const acceptCall = useCallback(async () => {
     if (!incomingCall) return;
     
     // Stop ringtone
@@ -68,6 +63,14 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
+    
+    // Mark as in call BEFORE navigating to prevent listener from firing again
+    setIsInCall(true);
+    
+    // Update call status in Firestore to "answering" BEFORE navigation
+    // This prevents the listener on the video page from showing the modal
+    const callRef = doc(db, "calls", incomingCall.callId);
+    await updateDoc(callRef, { status: "answering" });
     
     // Navigate to video call page
     const { callId, callData } = incomingCall;
@@ -78,8 +81,10 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       isCallee: "true",
     });
     
-    window.location.href = `/chat/video?${params.toString()}`;
+    // Clear incoming call state
     setIncomingCall(null);
+    
+    window.location.href = `/video-call?${params.toString()}`;
   }, [incomingCall]);
 
   // Reject the incoming call

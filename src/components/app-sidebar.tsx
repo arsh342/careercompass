@@ -19,6 +19,8 @@ import {
   Rocket,
   Kanban,
   MessageSquare,
+  Bell,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -46,6 +48,13 @@ const employeeLinks = [
     href: "/opportunities",
     icon: (
       <Briefcase className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "Employers",
+    href: "/employers",
+    icon: (
+      <Building2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
   {
@@ -81,6 +90,13 @@ const employeeLinks = [
     href: "/inbox",
     icon: (
       <MessageSquare className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+  {
+    label: "Insights",
+    href: "/insights",
+    icon: (
+      <BarChart3 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
 ];

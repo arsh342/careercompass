@@ -3,51 +3,257 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Users Collection
+
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+
+    // Check if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the authenticated user is the owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Get the user role from their profile
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Prevent a field from being changed on update
+    function fieldUnchanged(field) {
+      return !(field in request.resource.data)
+             || request.resource.data[field] == resource.data[field];
+    }
+
+    // Validate string length
+    function isValidString(value, maxLen) {
+      return value is string && value.size() <= maxLen;
+    }
+
+    // ============================================
+    // USERS
+    // ============================================
     match /users/{userId} {
       // Any authenticated user can read public profile data.
-      allow read: if request.auth != null;
-      
-      // A user can create their own profile document.
-      allow create: if request.auth.uid == userId;
-      
+      allow read: if isAuthenticated();
+
+      // A user can create their own profile document with required fields.
+      allow create: if isOwner(userId)
+                    && request.resource.data.role in ['employee', 'employer']
+                    && request.resource.data.keys().hasAll(['email', 'role']);
+
       // A user can only update their own profile document.
-      allow update: if request.auth.uid == userId;
-      
+      // Critical fields (uid, email, role) cannot be changed by the user.
+      allow update: if isOwner(userId)
+                    && fieldUnchanged('role')
+                    && fieldUnchanged('email')
+                    && fieldUnchanged('uid')
+                    // Allow plan/subscription fields to be updated by webhooks (server-side)
+                    // but prevent client-side plan escalation
+                    && fieldUnchanged('plan')
+                    && fieldUnchanged('subscriptionId')
+                    && fieldUnchanged('subscriptionStatus');
+
       // Users cannot delete their own accounts through the app.
       allow delete: if false;
     }
 
-    // Opportunities Collection
+    // ============================================
+    // OPPORTUNITIES
+    // ============================================
     match /opportunities/{opportunityId} {
       // Any authenticated user can read job opportunities.
-      allow read: if request.auth != null;
-      
-      // An authenticated user who is an 'employer' can create an opportunity.
-      allow create: if request.auth != null 
-                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employer'
-                    && request.resource.data.employerId == request.auth.uid;
-                    
-      // Only the employer who created the opportunity can update or delete it.
-      allow update, delete: if request.auth != null && get(/databases/$(database)/documents/opportunities/$(opportunityId)).data.employerId == request.auth.uid;
+      allow read: if isAuthenticated();
+
+      // An authenticated employer can create an opportunity.
+      allow create: if isAuthenticated()
+                    && getUserRole() == 'employer'
+                    && request.resource.data.employerId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['title', 'employerId'])
+                    && isValidString(request.resource.data.title, 200)
+                    && (!('description' in request.resource.data)
+                        || isValidString(request.resource.data.description, 10000));
+
+      // Only the employer who created the opportunity can update it.
+      // employerId cannot be changed.
+      allow update: if isAuthenticated()
+                    && resource.data.employerId == request.auth.uid
+                    && fieldUnchanged('employerId');
+
+      // Only the employer who created the opportunity can delete it.
+      allow delete: if isAuthenticated()
+                    && resource.data.employerId == request.auth.uid;
     }
 
-    // Applications Collection
+    // ============================================
+    // APPLICATIONS
+    // ============================================
     match /applications/{applicationId} {
-      // An employee can create an application.
-      allow create: if request.auth != null 
-                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employee'
-                    && request.resource.data.userId == request.auth.uid;
+      // An employee can create an application with required fields.
+      allow create: if isAuthenticated()
+                    && getUserRole() == 'employee'
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['userId', 'opportunityId', 'status'])
+                    && request.resource.data.status == 'pending';
 
-      // Users can read their own application. Employers can read applications for their jobs.
-      allow read: if request.auth != null && (
-                    request.resource.data.userId == request.auth.uid ||
-                    get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.employerId == request.auth.uid
+      // Users can read their own applications.
+      // Employers can read applications for their jobs.
+      allow read: if isAuthenticated() && (
+                    resource.data.userId == request.auth.uid ||
+                    get(/databases/$(database)/documents/opportunities/$(resource.data.opportunityId)).data.employerId == request.auth.uid
                   );
-                  
-      // Users cannot update or delete applications once submitted.
-      allow update, delete: if false;
+
+      // The employer of the related opportunity can update application status.
+      // The applicant can withdraw (set status to 'withdrawn') but cannot change other fields.
+      allow update: if isAuthenticated() && (
+                    // Employer can update status
+                    (get(/databases/$(database)/documents/opportunities/$(resource.data.opportunityId)).data.employerId == request.auth.uid
+                     && fieldUnchanged('userId')
+                     && fieldUnchanged('opportunityId'))
+                    ||
+                    // Applicant can withdraw
+                    (resource.data.userId == request.auth.uid
+                     && request.resource.data.status == 'withdrawn'
+                     && fieldUnchanged('userId')
+                     && fieldUnchanged('opportunityId'))
+                  );
+
+      // Applications cannot be deleted.
+      allow delete: if false;
+    }
+
+    // ============================================
+    // CHATS
+    // ============================================
+    match /chats/{chatId} {
+      // Only participants can read the chat.
+      allow read: if isAuthenticated()
+                  && request.auth.uid in resource.data.participants;
+
+      // Authenticated users can create a chat if they are a participant.
+      // Must have exactly 2 participants.
+      allow create: if isAuthenticated()
+                    && request.auth.uid in request.resource.data.participants
+                    && request.resource.data.participants.size() == 2;
+
+      // Only participants can update chat metadata (e.g., lastMessage).
+      allow update: if isAuthenticated()
+                    && request.auth.uid in resource.data.participants
+                    && fieldUnchanged('participants');
+
+      // Chats cannot be deleted.
+      allow delete: if false;
+
+      // ---- MESSAGES (subcollection) ----
+      match /messages/{messageId} {
+        // Only participants of the parent chat can read messages.
+        allow read: if isAuthenticated()
+                    && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+
+        // Only participants can send messages, and senderId must match auth.
+        // Message content is limited to 10KB (E2E encrypted blobs).
+        allow create: if isAuthenticated()
+                      && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
+                      && request.resource.data.senderId == request.auth.uid
+                      && (!('text' in request.resource.data)
+                          || request.resource.data.text.size() <= 10000);
+
+        // Participants can update messages (e.g., mark as read).
+        // senderId cannot be changed after creation.
+        allow update: if isAuthenticated()
+                      && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
+                      && fieldUnchanged('senderId');
+
+        // Messages cannot be deleted.
+        allow delete: if false;
+      }
+    }
+
+    // ============================================
+    // CALLS
+    // ============================================
+    match /calls/{callId} {
+      // Caller or callee can read a call document.
+      allow read: if isAuthenticated()
+                  && (resource.data.callerId == request.auth.uid
+                      || resource.data.calleeId == request.auth.uid);
+
+      // Authenticated users can create a call if they are the caller.
+      // Must specify both callerId and calleeId.
+      allow create: if isAuthenticated()
+                    && request.resource.data.callerId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['callerId', 'calleeId']);
+
+      // Caller or callee can update call state (answer, ICE candidates, status).
+      // callerId and calleeId cannot be changed.
+      allow update: if isAuthenticated()
+                    && (resource.data.callerId == request.auth.uid
+                        || resource.data.calleeId == request.auth.uid)
+                    && fieldUnchanged('callerId')
+                    && fieldUnchanged('calleeId');
+
+      // Calls cannot be deleted through the app.
+      allow delete: if false;
+
+      // ---- ICE CANDIDATES (subcollections) ----
+      match /callerCandidates/{candidateId} {
+        allow read: if isAuthenticated()
+                    && (get(/databases/$(database)/documents/calls/$(callId)).data.callerId == request.auth.uid
+                        || get(/databases/$(database)/documents/calls/$(callId)).data.calleeId == request.auth.uid);
+        allow create: if isAuthenticated()
+                      && get(/databases/$(database)/documents/calls/$(callId)).data.callerId == request.auth.uid;
+        allow delete: if false;
+      }
+
+      match /calleeCandidates/{candidateId} {
+        allow read: if isAuthenticated()
+                    && (get(/databases/$(database)/documents/calls/$(callId)).data.callerId == request.auth.uid
+                        || get(/databases/$(database)/documents/calls/$(callId)).data.calleeId == request.auth.uid);
+        allow create: if isAuthenticated()
+                      && get(/databases/$(database)/documents/calls/$(callId)).data.calleeId == request.auth.uid;
+        allow delete: if false;
+      }
+    }
+
+    // ============================================
+    // NOTIFICATIONS
+    // ============================================
+    match /notifications/{notificationId} {
+      // Users can only read their own notifications.
+      allow read: if isAuthenticated()
+                  && resource.data.userId == request.auth.uid;
+
+      // Any authenticated user can create a notification for another user.
+      // This allows follow, application status, and message notifications.
+      allow create: if isAuthenticated()
+                    && request.resource.data.keys().hasAll(['userId', 'type', 'title', 'message', 'read'])
+                    && request.resource.data.read == false
+                    && isValidString(request.resource.data.title, 200)
+                    && isValidString(request.resource.data.message, 500);
+
+      // Users can only update their own notifications (mark as read).
+      allow update: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid
+                    && fieldUnchanged('userId')
+                    && fieldUnchanged('type')
+                    && fieldUnchanged('title')
+                    && fieldUnchanged('message')
+                    && fieldUnchanged('createdAt');
+
+      // Users can delete their own notifications.
+      allow delete: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid;
+    }
+
+    // ============================================
+    // CATCH-ALL: Deny access to any other collections
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

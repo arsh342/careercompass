@@ -20,6 +20,7 @@ import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useToast } from "@/hooks/use-toast";
+import { createNotification } from "@/lib/notifications";
 import {
   Loader2,
   ArrowLeft,
@@ -45,6 +46,12 @@ import {
   MoreHorizontal,
   Pin,
   Camera,
+  Github,
+  Twitter,
+  Globe,
+  FolderOpen,
+  ExternalLink,
+  Activity,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -77,6 +84,15 @@ interface UserProfile {
   employmentHistory?: string;
   portfolioLink?: string;
   linkedinLink?: string;
+  githubLink?: string;
+  twitterLink?: string;
+  websiteLink?: string;
+  portfolioProjects?: {
+    title: string;
+    description: string;
+    url: string;
+    imageUrl?: string;
+  }[];
   followers?: string[];
   following?: string[];
   coverPhoto?: string;
@@ -211,6 +227,18 @@ export default function UserProfilePage() {
         setIsFollowing(true);
         setFollowersCount((prev) => prev + 1);
         toast({ title: "Following!" });
+
+        // Send notification to the followed user
+        createNotification({
+          userId: id as string,
+          type: 'new_follower',
+          title: 'New Follower',
+          message: `${user.displayName || user.email} started following you.`,
+          link: `/users/${user.uid}`,
+          actorId: user.uid,
+          actorName: user.displayName || user.email || undefined,
+          actorPhotoURL: user.photoURL || undefined,
+        });
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
@@ -561,8 +589,8 @@ export default function UserProfilePage() {
           )}
 
           {/* Links */}
-          {(profile.portfolioLink || profile.linkedinLink) && (
-            <div className="flex gap-4 mt-4">
+          {(profile.portfolioLink || profile.linkedinLink || profile.githubLink || profile.twitterLink || profile.websiteLink) && (
+            <div className="flex flex-wrap gap-3 mt-4">
               {profile.portfolioLink && (
                 <a
                   href={profile.portfolioLink}
@@ -585,6 +613,39 @@ export default function UserProfilePage() {
                   LinkedIn
                 </a>
               )}
+              {profile.githubLink && (
+                <a
+                  href={profile.githubLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub
+                </a>
+              )}
+              {profile.twitterLink && (
+                <a
+                  href={profile.twitterLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  <Twitter className="h-4 w-4" />
+                  Twitter
+                </a>
+              )}
+              {profile.websiteLink && (
+                <a
+                  href={profile.websiteLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  <Globe className="h-4 w-4" />
+                  Website
+                </a>
+              )}
             </div>
           )}
         </CardContent>
@@ -596,6 +657,14 @@ export default function UserProfilePage() {
           <TabsTrigger value="posts" className="rounded-full gap-2">
             <Grid3X3 className="h-4 w-4" />
             Posts
+          </TabsTrigger>
+          <TabsTrigger value="portfolio" className="rounded-full gap-2">
+            <FolderOpen className="h-4 w-4" />
+            Portfolio
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="rounded-full gap-2">
+            <Activity className="h-4 w-4" />
+            Activity
           </TabsTrigger>
           <TabsTrigger value="about" className="rounded-full gap-2">
             <Users className="h-4 w-4" />
@@ -660,6 +729,106 @@ export default function UserProfilePage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Portfolio Tab */}
+        <TabsContent value="portfolio" className="mt-0">
+          {profile.portfolioProjects && profile.portfolioProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {profile.portfolioProjects.map((project, index) => (
+                <Card
+                  key={index}
+                  className="group overflow-hidden rounded-2xl transition-all hover:shadow-lg hover:-translate-y-1"
+                >
+                  {project.imageUrl && (
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={project.imageUrl}
+                        alt={project.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
+                  <CardContent className={project.imageUrl ? "pt-4" : "pt-6"}>
+                    <h3 className="font-semibold text-lg mb-1">{project.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                      {project.description}
+                    </p>
+                    <a
+                      href={project.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      View Project
+                    </a>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">No portfolio items yet</p>
+              <p className="text-sm">
+                {isOwnProfile
+                  ? "Add projects to your profile to showcase your work!"
+                  : "This user hasn't added any portfolio items yet."}
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Activity Tab */}
+        <TabsContent value="activity" className="mt-0">
+          {posts.length > 0 ? (
+            <div className="space-y-3">
+              {posts.slice(0, 20).map((post) => (
+                <Card key={post.id} className="rounded-2xl">
+                  <CardContent className="py-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                        <Grid3X3 className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          <span className="font-medium">
+                            {profile.displayName || "User"}
+                          </span>{" "}
+                          shared a post
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          {post.content}
+                        </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                          <span className="flex items-center gap-1">
+                            <Star className="h-3 w-3" />
+                            {post.likes.length}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MessageCircle className="h-3 w-3" />
+                            {post.comments.length}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">No activity yet</p>
+              <p className="text-sm">
+                {isOwnProfile
+                  ? "Your recent activity will show up here."
+                  : "This user hasn't had any activity yet."}
+              </p>
             </div>
           )}
         </TabsContent>

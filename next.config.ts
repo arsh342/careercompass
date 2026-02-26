@@ -40,7 +40,7 @@ const securityHeaders = [
       // Styles: self and inline for component libraries
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Images: self and allowed image hosts
-      "img-src 'self' data: blob: https://res.cloudinary.com https://placehold.co https://i.postimg.cc https://*.googleusercontent.com https://*.google.com",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://placehold.co https://i.postimg.cc https://*.googleusercontent.com https://*.google.com https://firebasestorage.googleapis.com",
       // Fonts: self and Google Fonts
       "font-src 'self' https://fonts.gstatic.com",
       // Connect: API endpoints
@@ -68,7 +68,14 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-icons",
+      "date-fns",
+      "framer-motion",
+      "recharts",
+      "react-icons",
+    ],
   },
   compiler: {
     removeConsole:
@@ -95,6 +102,18 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
         port: "",
         pathname: "/**",
       },

@@ -3,21 +3,15 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
+import { useNotifications } from "@/context/NotificationContext";
 import { useRouter, useSearchParams } from "next/navigation";
-import { collection, query, where, orderBy, onSnapshot, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { 
   MessageSquare, 
   Loader2, 
-  CheckCircle, 
-  XCircle, 
-  Calendar,
-  UserCheck,
-  Mail,
   Bell,
-  ArrowLeft
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,26 +19,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { ChatList } from "@/components/chat/ChatList";
 import { ChatWindow } from "@/components/chat/ChatWindow";
-
-interface StatusUpdate {
-  id: string;
-  type: "status_change" | "interview" | "message";
-  opportunityId: string;
-  opportunityTitle: string;
-  employerName: string;
-  status: string;
-  message?: string;
-  timestamp: Timestamp;
-  read: boolean;
-}
+import { getNotificationIcon, getNotificationColor } from "@/types/notification-types";
 
 export default function InboxPage() {
   const { user, loading: authLoading } = useAuth();
   const { chats, loading: chatsLoading, activeChat, setActiveChat, unreadCount } = useChat();
+  const { notifications, unreadCount: notifUnreadCount, markAsRead, markAllRead } = useNotifications();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [notifications, setNotifications] = useState<StatusUpdate[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("messages");
 
   // Handle chat query parameter to open specific chat
@@ -65,103 +47,7 @@ export default function InboxPage() {
     }
   }, [user, authLoading, router]);
 
-  // Listen for application status changes
-  useEffect(() => {
-    if (!user?.uid) {
-      setLoading(false);
-      return;
-    }
-
-    const applicationsQuery = query(
-      collection(db, "applications"),
-      where("userId", "==", user.uid),
-      orderBy("updatedAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(
-      applicationsQuery,
-      async (snapshot) => {
-        const updates: StatusUpdate[] = [];
-        
-        for (const doc of snapshot.docs) {
-          const data = doc.data();
-          
-          // Only show applications with meaningful status updates
-          if (data.status && data.status !== "Submitted") {
-            updates.push({
-              id: doc.id,
-              type: data.status === "Interview" ? "interview" : "status_change",
-              opportunityId: data.opportunityId,
-              opportunityTitle: data.opportunityTitle || "Job Application",
-              employerName: data.employerName || "Employer",
-              status: data.status,
-              message: getStatusMessage(data.status),
-              timestamp: data.updatedAt || data.submittedAt,
-              read: data.read || false,
-            });
-          }
-        }
-        
-        setNotifications(updates);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching notifications:", error);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [user?.uid]);
-
-  const getStatusMessage = (status: string): string => {
-    switch (status.toLowerCase()) {
-      case "approved":
-        return "Congratulations! Your application has been approved.";
-      case "rejected":
-        return "Unfortunately, your application was not selected.";
-      case "interview":
-        return "You've been invited for an interview!";
-      case "invited":
-        return "You've been invited to apply for this position.";
-      case "hired":
-        return "Congratulations! You've been hired!";
-      default:
-        return `Your application status has been updated to: ${status}`;
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "approved":
-      case "hired":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "rejected":
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      case "interview":
-        return <Calendar className="h-5 w-5 text-blue-500" />;
-      case "invited":
-        return <UserCheck className="h-5 w-5 text-amber-500" />;
-      default:
-        return <Mail className="h-5 w-5 text-muted-foreground" />;
-    }
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "approved":
-      case "hired":
-        return "default";
-      case "rejected":
-        return "destructive";
-      case "interview":
-        return "secondary";
-      default:
-        return "outline";
-    }
-  };
-
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -200,9 +86,9 @@ export default function InboxPage() {
           <TabsTrigger value="notifications" className="gap-2 rounded-3xl">
             <Bell className="h-4 w-4" />
             Notifications
-            {notifications.filter(n => !n.read).length > 0 && (
+            {notifUnreadCount > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                {notifications.filter(n => !n.read).length}
+                {notifUnreadCount}
               </Badge>
             )}
           </TabsTrigger>
@@ -240,54 +126,79 @@ export default function InboxPage() {
 
         {/* Notifications Tab */}
         <TabsContent value="notifications" className="flex-1 mt-4 min-h-0 overflow-y-auto">
+          {/* Mark all read button */}
+          {notifUnreadCount > 0 && (
+            <div className="flex justify-end mb-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => markAllRead()}
+                className="text-xs"
+              >
+                Mark all as read
+              </Button>
+            </div>
+          )}
+
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
               <Bell className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium">No updates yet</p>
+              <p className="text-lg font-medium">No notifications yet</p>
               <p className="text-sm">
-                You&apos;ll see important updates about your applications here
+                You&apos;ll see updates about applications, followers, and more here
               </p>
             </div>
           ) : (
-            <div className="space-y-3 pr-2">
-              {notifications.map((notification) => (
-                <Link 
-                  key={notification.id}
-                  href={`/opportunities/${notification.opportunityId}`}
-                  className={cn(
-                    "block p-4 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors",
-                    !notification.read && "border-l-4 border-l-primary"
-                  )}
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="shrink-0 mt-1">
-                      {getStatusIcon(notification.status)}
+            <div className="space-y-2 pr-2">
+              {notifications.map((notification) => {
+                const Icon = getNotificationIcon(notification.type);
+                const color = getNotificationColor(notification.type);
+
+                return (
+                  <div
+                    key={notification.id}
+                    onClick={() => {
+                      if (!notification.read) {
+                        markAsRead(notification.id);
+                      }
+                      if (notification.link) {
+                        router.push(notification.link);
+                      }
+                    }}
+                    className={cn(
+                      "flex items-start gap-3 p-4 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors cursor-pointer",
+                      !notification.read && "border-l-4 border-l-primary bg-primary/5"
+                    )}
+                  >
+                    <div className={cn("shrink-0 mt-0.5 p-1.5 rounded-full", color)}>
+                      <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium text-foreground truncate">
-                          {notification.opportunityTitle}
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className={cn(
+                          "text-sm truncate",
+                          !notification.read ? "font-semibold" : "font-medium"
+                        )}>
+                          {notification.title}
                         </p>
-                        <Badge variant={getStatusBadgeVariant(notification.status)}>
-                          {notification.status}
-                        </Badge>
+                        {!notification.read && (
+                          <div className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {notification.employerName}
-                      </p>
-                      <p className="text-sm text-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {notification.timestamp?.toDate 
-                          ? formatDistanceToNow(notification.timestamp.toDate(), { addSuffix: true })
-                          : "Recently"
-                        }
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {(() => {
+                          const ts = notification.createdAt as any;
+                          const date = ts?.toDate ? ts.toDate() : new Date(ts);
+                          return formatDistanceToNow(date, { addSuffix: true });
+                        })()}
                       </p>
                     </div>
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </TabsContent>

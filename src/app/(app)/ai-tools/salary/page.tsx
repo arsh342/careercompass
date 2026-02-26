@@ -40,6 +40,7 @@ import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { getSalaryNegotiationAdvice, type SalaryNegotiationOutput } from "@/ai/flows/salary-negotiation";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
+import { PremiumGate } from "@/components/premium-gate";
 
 type NegotiationType = "new-offer" | "raise" | "counter-offer" | "research";
 
@@ -144,6 +145,7 @@ export default function SalaryNegotiatorPage() {
   }
 
   return (
+    <PremiumGate featureName="Salary Negotiator" requiredPlan="pro">
     <div className="container mx-auto py-8 max-w-4xl relative">
       {isAnalyzing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -435,5 +437,6 @@ export default function SalaryNegotiatorPage() {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 }

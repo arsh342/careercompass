@@ -237,7 +237,7 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
       applicationId: activeChat.applicationId || "",
     });
     
-    router.push(`/chat/video?${params.toString()}`);
+    router.push(`/video-call?${params.toString()}`);
   };
 
   const scrollToBottom = () => {

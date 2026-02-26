@@ -45,6 +45,7 @@ import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { generateEmail, type GenerateEmailOutput, type GenerateEmailInput } from "@/ai/flows/email-templates";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
+import { PremiumGate } from "@/components/premium-gate";
 
 type TemplateType = GenerateEmailInput['templateType'];
 
@@ -167,6 +168,7 @@ export default function EmailTemplatesPage() {
   }
 
   return (
+    <PremiumGate featureName="Email Templates" requiredPlan="pro">
     <div className="container mx-auto py-8 max-w-4xl relative">
       {isGenerating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -404,5 +406,6 @@ export default function EmailTemplatesPage() {
         </div>
       )}
     </div>
+    </PremiumGate>
   );
 }
