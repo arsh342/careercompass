@@ -325,7 +325,7 @@ sequenceDiagram
     FS-->>Caller: Read answer
     Caller->>Caller: setRemoteDescription(answer)
     Note over Caller,Callee: ICE candidates exchanged via Firestore
-    Caller<-->Callee: P2P media stream established
+    Caller<<-->>Callee: P2P media stream established
 ```
 
 - **Signaling**: Firestore `calls` collection (offer/answer/ICE candidates)
