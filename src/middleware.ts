@@ -9,12 +9,12 @@ const PUBLIC_ROUTES = [
   "/signup",
   "/forgot-password",
   "/pricing",
+  "/privacy-policy", // allow public access to privacy policy
+  "/terms", // allow public access to terms of service
 ];
 
 // API routes that don't require authentication
-const PUBLIC_API_ROUTES = [
-  "/api/webhooks",
-];
+const PUBLIC_API_ROUTES = ["/api/webhooks"];
 
 // Static file extensions to skip
 const STATIC_EXTENSIONS = [
@@ -39,7 +39,8 @@ function isPublicRoute(pathname: string): boolean {
   if (PUBLIC_ROUTES.includes(pathname)) return true;
 
   // Prefix match for public API routes
-  if (PUBLIC_API_ROUTES.some((route) => pathname.startsWith(route))) return true;
+  if (PUBLIC_API_ROUTES.some((route) => pathname.startsWith(route)))
+    return true;
 
   // Skip Next.js internals and static files
   if (pathname.startsWith("/_next")) return true;
@@ -53,7 +54,9 @@ function isPublicRoute(pathname: string): boolean {
 
 const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const firebaseJwks = createRemoteJWKSet(
-  new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
+  new URL(
+    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
+  ),
 );
 
 async function verifySessionToken(token: string): Promise<boolean> {
