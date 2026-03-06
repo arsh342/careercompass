@@ -19,6 +19,7 @@ import {
   increment,
   runTransaction,
 } from "firebase/firestore";
+import { requireServerRole } from "@/lib/server-auth";
 
 // Lazy initialization to avoid client-side errors
 let resend: Resend | null = null;
@@ -32,6 +33,7 @@ function getResend(): Resend {
 export async function sendApplicationStatusEmail(
   input: SendApplicationStatusEmailInput
 ): Promise<void> {
+  await requireServerRole(["employer", "admin"]);
   return sendApplicationStatusEmailFlow(input);
 }
 

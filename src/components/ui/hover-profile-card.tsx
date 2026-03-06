@@ -45,7 +45,7 @@ export function HoverProfileCard({
       setLoading(true)
       const fetchProfile = async () => {
         try {
-          const userDoc = await getDoc(doc(db, "users", userId))
+          const userDoc = await getDoc(doc(db, "publicProfiles", userId))
           if (userDoc.exists()) {
             setProfile(userDoc.data() as UserProfile)
           }
@@ -108,7 +108,6 @@ export function HoverProfileCard({
             title={profile?.headline}
             avatarUrl={profile?.photoURL || userPhoto}
             location={profile?.location}
-            email={profile?.email}
             skills={skillsArray}
             role={profile?.role || userRole}
             company={profile?.company}

@@ -7,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const AnalyzeSkillGapInputSchema = z.object({
   userSkills: z.array(z.string()).describe('Skills the user currently has'),
@@ -133,5 +135,11 @@ const analyzeSkillGapFlow = ai.defineFlow(
 export async function analyzeSkillGap(
   input: AnalyzeSkillGapInput
 ): Promise<AnalyzeSkillGapOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'skillGap',
+  });
   return analyzeSkillGapFlow(input);
 }

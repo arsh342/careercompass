@@ -118,10 +118,12 @@ export default function ResumeBuilderPage() {
     
     setIsGenerating(true);
     try {
-      // Import the AI flow dynamically
-      const { generateFullResume } = await import("@/ai/flows/generate-resume");
-      
-      const result = await generateFullResume({
+      const response = await fetch("/api/ai/resume-builder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
         userInfo: {
           name: resume.header.fullName,
           email: resume.header.email,
@@ -144,7 +146,14 @@ export default function ResumeBuilderPage() {
         targetCompany: resume.targetCompany,
         jobDescription: resume.jobDescription,
         format: resume.templateId,
+        }),
       });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to enhance resume. Please try again.");
+      }
       
       // Update resume with AI-generated content
       updateResume('summary', result.summary);

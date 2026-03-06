@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase-admin";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 export interface AuthenticatedUser {
   uid: string;
@@ -26,38 +26,32 @@ export async function verifyAuthToken(
 ): Promise<AuthResult> {
   try {
     const authHeader = request.headers.get("authorization");
-    
-    if (!authHeader) {
-      return {
-        authenticated: false,
-        error: "No authorization header",
-      };
-    }
-    
+    const cookieToken = request.cookies.get("__session")?.value;
+
     // Extract token from "Bearer <token>"
-    const token = authHeader.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : authHeader;
-    
+    const token = authHeader
+      ? authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7)
+        : authHeader
+      : cookieToken;
+
     if (!token) {
       return {
         authenticated: false,
         error: "No token provided",
       };
     }
-    
+
     // Verify with Firebase Admin
     if (!adminAuth) {
-      console.warn("Firebase Admin not initialized, skipping auth verification");
-      // In development without admin credentials, allow pass-through
       return {
-        authenticated: true,
-        user: { uid: "dev-user" },
+        authenticated: false,
+        error: "Authentication service unavailable",
       };
     }
-    
+
     const decodedToken = await adminAuth.verifyIdToken(token);
-    
+
     return {
       authenticated: true,
       user: {
@@ -73,6 +67,41 @@ export async function verifyAuthToken(
       error: "Invalid or expired token",
     };
   }
+}
+
+export async function getUserRole(uid: string): Promise<string | null> {
+  if (!adminDb) {
+    return null;
+  }
+
+  const userDoc = await adminDb.collection("users").doc(uid).get();
+  if (!userDoc.exists) {
+    return null;
+  }
+
+  const userData = userDoc.data() as Record<string, any>;
+  return typeof userData.role === "string" ? userData.role : null;
+}
+
+export async function requireRole(
+  request: NextRequest,
+  roles: string | string[]
+): Promise<{ response: NextResponse | null; user?: AuthenticatedUser; role?: string }> {
+  const { response, user } = await requireAuth(request);
+  if (response || !user) {
+    return { response };
+  }
+
+  const allowedRoles = Array.isArray(roles) ? roles : [roles];
+  const role = await getUserRole(user.uid);
+
+  if (!role || !allowedRoles.includes(role)) {
+    return {
+      response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+    };
+  }
+
+  return { response: null, user, role };
 }
 
 /**

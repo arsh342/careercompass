@@ -15,6 +15,7 @@ import {
   increment,
   runTransaction,
 } from "firebase/firestore";
+import { requireServerAuthenticatedUser } from "@/lib/server-auth";
 
 // Lazy initialization to avoid client-side errors
 let resend: Resend | null = null;
@@ -34,6 +35,7 @@ export type SendWelcomeEmailInput = z.infer<typeof SendWelcomeEmailInputSchema>;
 export async function sendWelcomeEmail(
   input: SendWelcomeEmailInput
 ): Promise<void> {
+  await requireServerAuthenticatedUser();
   return sendWelcomeEmailFlow(input);
 }
 

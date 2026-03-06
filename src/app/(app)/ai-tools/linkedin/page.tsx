@@ -33,9 +33,10 @@ import { useToast } from "@/hooks/use-toast";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
-import { optimizeLinkedIn, type OptimizeLinkedInOutput } from "@/ai/flows/linkedin-optimizer";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 import { PremiumGate } from "@/components/premium-gate";
+import { postAiJson } from "@/lib/ai-api-client";
+import type { OptimizeLinkedInOutput } from "@/lib/ai-tool-contracts";
 
 export default function LinkedInOptimizerPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -92,7 +93,7 @@ export default function LinkedInOptimizerPage() {
 
     setIsOptimizing(true);
     try {
-      const optimization = await optimizeLinkedIn({
+      const optimization = await postAiJson<OptimizeLinkedInOutput>("/api/ai/linkedin", {
         role,
         industry,
         skills,

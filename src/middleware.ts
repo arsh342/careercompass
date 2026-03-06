@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 // Routes that don't require authentication
 const PUBLIC_ROUTES = [
@@ -13,7 +14,6 @@ const PUBLIC_ROUTES = [
 // API routes that don't require authentication
 const PUBLIC_API_ROUTES = [
   "/api/webhooks",
-  "/api/genkit",
 ];
 
 // Static file extensions to skip
@@ -25,6 +25,7 @@ const STATIC_EXTENSIONS = [
   ".svg",
   ".gif",
   ".webp",
+  ".webmanifest",
   ".css",
   ".js",
   ".map",
@@ -50,7 +51,29 @@ function isPublicRoute(pathname: string): boolean {
   return false;
 }
 
-export function middleware(request: NextRequest) {
+const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const firebaseJwks = createRemoteJWKSet(
+  new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
+);
+
+async function verifySessionToken(token: string): Promise<boolean> {
+  if (!firebaseProjectId) {
+    return false;
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, firebaseJwks, {
+      issuer: `https://securetoken.google.com/${firebaseProjectId}`,
+      audience: firebaseProjectId,
+    });
+
+    return typeof payload.sub === "string" && payload.sub.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes through without auth check
@@ -69,10 +92,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Token exists — allow request through
-  // Full token verification happens client-side via Firebase Auth SDK
-  // For server-side verification, Firebase Admin SDK would be needed
-  // but middleware runs on the Edge runtime which has limited Node.js APIs
+  const isValidToken = await verifySessionToken(authToken);
+  if (!isValidToken) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.delete("__session");
+    return response;
+  }
+
   return NextResponse.next();
 }
 

@@ -7,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const GenerateEmailInputSchema = z.object({
   templateType: z.enum([
@@ -108,5 +110,11 @@ const generateEmailFlow = ai.defineFlow(
 export async function generateEmail(
   input: GenerateEmailInput
 ): Promise<GenerateEmailOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'emailTemplates',
+  });
   return generateEmailFlow(input);
 }

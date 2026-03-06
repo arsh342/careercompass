@@ -10,6 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const GenerateProfileSummaryInputSchema = z.object({
   education: z.string().describe('The user\'s education history.'),
@@ -31,6 +33,12 @@ export type GenerateProfileSummaryOutput = z.infer<
 export async function generateProfileSummary(
   input: GenerateProfileSummaryInput
 ): Promise<GenerateProfileSummaryOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'profileSummary',
+  });
   return generateProfileSummaryFlow(input);
 }
 

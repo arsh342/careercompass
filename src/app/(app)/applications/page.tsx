@@ -42,6 +42,7 @@ import {
   getDocs,
   setDoc,
   deleteDoc,
+  updateDoc,
   query,
   where,
   onSnapshot,
@@ -118,7 +119,9 @@ export default function ApplicationsPage() {
         const snapshot = await getDocs(q);
         
         const applied: CardType[] = await Promise.all(
-          snapshot.docs.map(async (docSnap) => {
+          snapshot.docs
+            .filter((docSnap) => (docSnap.data().status || "").toLowerCase() !== "withdrawn")
+            .map(async (docSnap) => {
             const data = docSnap.data();
             let opportunityDetails: { title: string; employerName: string; location: string; employerId?: string } = { 
               title: "Unknown Job", 
@@ -235,7 +238,11 @@ export default function ApplicationsPage() {
     if (!user || !card.isApplied) return;
     
     try {
-      await deleteDoc(doc(db, "applications", card.id));
+      await updateDoc(doc(db, "applications", card.id), {
+        status: "withdrawn",
+        withdrawnAt: new Date(),
+        updatedAt: new Date(),
+      });
       setAppliedJobs(prev => prev.filter(j => j.id !== card.id));
       toast({ title: "Application withdrawn" });
     } catch (error) {

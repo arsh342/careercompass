@@ -19,6 +19,7 @@ import { db } from "@/lib/firebase";
 export interface Chat {
   id: string;
   participants: string[];
+  hiddenFor?: Record<string, boolean>;
   participantDetails: {
     [userId: string]: {
       displayName: string;
@@ -72,7 +73,10 @@ export function useChatList(userId: string | undefined) {
       (snapshot) => {
         const chatData: Chat[] = [];
         snapshot.forEach((doc) => {
-          chatData.push({ id: doc.id, ...doc.data() } as Chat);
+          const chat = { id: doc.id, ...doc.data() } as Chat;
+          if (!chat.hiddenFor?.[userId]) {
+            chatData.push(chat);
+          }
         });
         setChats(chatData);
         setLoading(false);

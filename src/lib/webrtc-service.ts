@@ -8,9 +8,11 @@ import {
   updateDoc,
   collection,
   addDoc,
+  query,
   serverTimestamp,
   Timestamp,
   Unsubscribe,
+  where,
 } from "firebase/firestore";
 
 // ICE servers for NAT traversal
@@ -355,8 +357,13 @@ export function listenForIncomingCalls(
 ): Unsubscribe {
   // Track calls we've already notified about to avoid duplicates
   const notifiedCalls = new Set<string>();
-  
-  return onSnapshot(collection(db, "calls"), (snapshot) => {
+
+  const incomingCallsQuery = query(
+    collection(db, "calls"),
+    where("calleeId", "==", userId)
+  );
+
+  return onSnapshot(incomingCallsQuery, (snapshot) => {
     
     snapshot.docChanges().forEach((change) => {
       const data = change.doc.data() as CallData;

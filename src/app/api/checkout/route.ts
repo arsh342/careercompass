@@ -9,8 +9,12 @@ export async function POST(request: NextRequest) {
     const rateLimitResponse = withRateLimit(request, RATE_LIMITS.checkout);
     if (rateLimitResponse) return rateLimitResponse;
 
-    // Authentication (optional for checkout - user might not be logged in yet)
-    const { user } = await requireAuth(request);
+    // Authentication required for checkout.
+    const { response: authError, user } = await requireAuth(request);
+    if (authError) return authError;
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     
     const body = await request.json();
     
@@ -24,7 +28,7 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse(validation.errors);
     }
 
-    const { planId, frequency, userId, userEmail } = body;
+    const { planId, frequency } = body;
 
     const plan = PLAN_DETAILS[planId];
     if (!plan) {
@@ -59,15 +63,15 @@ export async function POST(request: NextRequest) {
       mode: "subscription",
       success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/pricing`,
-      customer_email: userEmail,
+      customer_email: user.email,
       metadata: {
-        userId: userId || "",
+        userId: user.uid,
         planId,
         frequency,
       },
       subscription_data: {
         metadata: {
-          userId: userId || "",
+          userId: user.uid,
           planId,
           frequency,
         },

@@ -51,6 +51,7 @@ firestore.rules
 
 #security audit
 SECURITY_AUDIT.md
+docs/plans/
 
 #hosting
 firebase-hosting.json

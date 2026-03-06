@@ -25,6 +25,7 @@ import { sendWelcomeEmailDirect } from "@/lib/email-utils";
 import { handleFirstLogin } from "@/lib/automated-email-service";
 import { AnimatedCharacters } from "@/components/ui/animated-characters";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import { toPublicProfile } from "@/lib/public-profile";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -71,17 +72,17 @@ export default function LoginPage() {
       // Handle first login automation
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
+        await setDoc(
+          doc(db, "publicProfiles", user.uid),
+          toPublicProfile({ uid: user.uid, ...userData }),
+          { merge: true }
+        );
         await handleFirstLogin(
           user.uid,
           user.email!,
           userData.displayName || user.email!
         );
       }
-
-      toast({
-        title: "Login Successful",
-        description: "Welcome back! You're being redirected to your dashboard.",
-      });
 
       if (userDocSnap.exists() && userDocSnap.data().role === "employer") {
         router.push("/employer/dashboard");
@@ -118,7 +119,7 @@ export default function LoginPage() {
         const firstName = nameParts[0] || "";
         const lastName = nameParts.slice(1).join(" ") || "";
 
-        await setDoc(userDocRef, {
+        const userData = {
           uid: user.uid,
           displayName: user.displayName,
           email: user.email,
@@ -127,7 +128,14 @@ export default function LoginPage() {
           firstName: firstName,
           lastName: lastName,
           ...(role === "employer" && { companyName: user.displayName }),
-        });
+        };
+
+        await setDoc(userDocRef, userData);
+        await setDoc(
+          doc(db, "publicProfiles", user.uid),
+          toPublicProfile(userData as any),
+          { merge: true }
+        );
 
         const emailSent = await sendWelcomeEmailDirect(
           user.email!,
@@ -153,10 +161,11 @@ export default function LoginPage() {
         }
       } else {
         // Existing user logic
-        toast({
-          title: "Login Successful",
-          description: "Welcome back! You're being redirected.",
-        });
+        await setDoc(
+          doc(db, "publicProfiles", user.uid),
+          toPublicProfile({ uid: user.uid, ...userDocSnap.data() }),
+          { merge: true }
+        );
         const userData = userDocSnap.data();
         if (userData.role === "employer") {
           router.push("/employer/dashboard");
