@@ -38,9 +38,10 @@ import { useToast } from "@/hooks/use-toast";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
-import { getSalaryNegotiationAdvice, type SalaryNegotiationOutput } from "@/ai/flows/salary-negotiation";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 import { PremiumGate } from "@/components/premium-gate";
+import { postAiJson } from "@/lib/ai-api-client";
+import type { SalaryNegotiationOutput } from "@/lib/ai-tool-contracts";
 
 type NegotiationType = "new-offer" | "raise" | "counter-offer" | "research";
 
@@ -86,7 +87,7 @@ export default function SalaryNegotiatorPage() {
 
     setIsAnalyzing(true);
     try {
-      const advice = await getSalaryNegotiationAdvice({
+      const advice = await postAiJson<SalaryNegotiationOutput>("/api/ai/salary", {
         role,
         company: company || undefined,
         location,

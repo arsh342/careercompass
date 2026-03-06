@@ -1,7 +1,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, enableMultiTabIndexedDbPersistence } from "firebase/firestore";
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -20,21 +25,20 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const db = getFirestore(app);
 const storage = getStorage(app);
-
-// Enable offline persistence for Firestore
-// This allows the app to work with cached data when offline
-if (typeof window !== "undefined") {
-  enableMultiTabIndexedDbPersistence(db).catch((err) => {
-    if (err.code === "failed-precondition") {
-      // Multiple tabs open — persistence can only be enabled in one tab at a time
-      console.warn("Firestore persistence unavailable: multiple tabs open");
-    } else if (err.code === "unimplemented") {
-      // Browser doesn't support persistence
-      console.warn("Firestore persistence unavailable: browser not supported");
-    }
-  });
-}
+const db =
+  typeof window === "undefined"
+    ? getFirestore(app)
+    : (() => {
+        try {
+          return initializeFirestore(app, {
+            localCache: persistentLocalCache({
+              tabManager: persistentMultipleTabManager(),
+            }),
+          });
+        } catch {
+          return getFirestore(app);
+        }
+      })();
 
 export { app, auth, db, storage };

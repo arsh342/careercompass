@@ -44,14 +44,10 @@ import { useToast } from "@/hooks/use-toast";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
-import {
-  generateInterviewQuestions,
-  evaluateInterviewAnswer,
-  type GenerateQuestionsOutput,
-  type EvaluateAnswerOutput,
-} from "@/ai/flows/interview-prep";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 import { PremiumGate } from "@/components/premium-gate";
+import { postAiJson } from "@/lib/ai-api-client";
+import type { GenerateQuestionsOutput, EvaluateAnswerOutput } from "@/lib/ai-tool-contracts";
 
 type ExperienceLevel = "entry" | "mid" | "senior" | "executive";
 type QuestionType = "behavioral" | "technical" | "situational" | "all";
@@ -116,12 +112,15 @@ export default function InterviewPrepPage() {
 
     setIsGenerating(true);
     try {
-      const result = await generateInterviewQuestions({
+      const result = await postAiJson<GenerateQuestionsOutput>("/api/ai/interview-prep", {
+        action: "generateQuestions",
+        payload: {
         role,
         company: company || undefined,
         experienceLevel,
         questionType,
         count: questionCount,
+        },
       });
 
       setQuestions(result.questions.map(q => ({ ...q })));
@@ -148,12 +147,15 @@ export default function InterviewPrepPage() {
     setIsEvaluating(true);
     try {
       const currentQuestion = questions[currentQuestionIndex];
-      const evaluation = await evaluateInterviewAnswer({
-        question: currentQuestion.question,
-        questionType: currentQuestion.type,
-        userAnswer: currentAnswer,
-        role,
-        experienceLevel,
+      const evaluation = await postAiJson<EvaluateAnswerOutput>("/api/ai/interview-prep", {
+        action: "evaluateAnswer",
+        payload: {
+          question: currentQuestion.question,
+          questionType: currentQuestion.type,
+          userAnswer: currentAnswer,
+          role,
+          experienceLevel,
+        },
       });
 
       // Update question with answer and evaluation

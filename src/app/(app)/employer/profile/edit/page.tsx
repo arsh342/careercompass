@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Edit, Eye, Save, X } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toPublicProfile } from "@/lib/public-profile";
 
 const profileSchema = z.object({
   companyName: z.string().min(1, "Company name is required."),
@@ -92,6 +93,18 @@ export default function EmployerProfilePage() {
         },
         { merge: true }
       );
+      await setDoc(
+        doc(db, "publicProfiles", user.uid),
+        toPublicProfile({
+          uid: user.uid,
+          ...userProfile,
+          ...values,
+          displayName: values.companyName,
+          photoURL: user.photoURL,
+          role: "employer",
+        }),
+        { merge: true }
+      );
 
       setIsEditMode(false); // Exit edit mode after successful save
       toast({
@@ -147,6 +160,17 @@ export default function EmployerProfilePage() {
       await setDoc(
         doc(db, "users", user.uid),
         { photoURL: url },
+        { merge: true }
+      );
+      await setDoc(
+        doc(db, "publicProfiles", user.uid),
+        toPublicProfile({
+          uid: user.uid,
+          ...userProfile,
+          displayName: user.displayName || userProfile?.displayName,
+          photoURL: url,
+          role: "employer",
+        }),
         { merge: true }
       );
 

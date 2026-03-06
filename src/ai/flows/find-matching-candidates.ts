@@ -10,15 +10,8 @@
 
 import { ai } from "@/ai/genkit";
 import { z } from "genkit";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
+import { requireServerRole } from "@/lib/server-auth";
 
 const FindMatchingCandidatesInputSchema = z.object({
   opportunityId: z
@@ -53,6 +46,7 @@ export type FindMatchingCandidatesOutput = z.infer<
 export async function findMatchingCandidates(
   input: FindMatchingCandidatesInput
 ): Promise<FindMatchingCandidatesOutput> {
+  await requireServerRole("employer");
   return findMatchingCandidatesFlow(input);
 }
 
@@ -63,15 +57,22 @@ const findMatchingCandidatesFlow = ai.defineFlow(
     outputSchema: FindMatchingCandidatesOutputSchema,
   },
   async ({ opportunityId }) => {
-    // 1. Fetch the opportunity details
-    const oppDocRef = doc(db, "opportunities", opportunityId);
-    const oppDocSnap = await getDoc(oppDocRef);
+    const user = await requireServerRole("employer");
+    if (!adminDb) {
+      throw new Error("Authentication service unavailable");
+    }
 
-    if (!oppDocSnap.exists()) {
+    // 1. Fetch the opportunity details
+    const oppDocSnap = await adminDb.collection("opportunities").doc(opportunityId).get();
+
+    if (!oppDocSnap.exists) {
       throw new Error(`Opportunity with ID ${opportunityId} not found.`);
     }
 
-    const opportunity = oppDocSnap.data();
+    const opportunity = oppDocSnap.data() as Record<string, any>;
+    if (opportunity.employerId !== user.uid) {
+      throw new Error("Forbidden");
+    }
     const requiredSkills = new Set(
       (opportunity.skills || "")
         .split(",")
@@ -84,11 +85,10 @@ const findMatchingCandidatesFlow = ai.defineFlow(
     }
 
     // 2. Fetch all employees
-    const usersQuery = query(
-      collection(db, "users"),
-      where("role", "==", "employee")
-    );
-    const usersSnapshot = await getDocs(usersQuery);
+    const usersSnapshot = await adminDb
+      .collection("users")
+      .where("role", "==", "employee")
+      .get();
 
     const matchingCandidates: z.infer<typeof CandidateSchema>[] = [];
 

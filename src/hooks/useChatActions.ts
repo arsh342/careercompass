@@ -11,7 +11,7 @@ import {
   getDocs,
   doc,
   serverTimestamp,
-  Timestamp,
+  deleteField,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "@/lib/firebase";
@@ -98,6 +98,7 @@ export function useChatActions(userId: string | undefined, userEmail: string | u
           senderId: userId,
           timestamp: serverTimestamp(),
         },
+        [`hiddenFor.${userId}`]: deleteField(),
       });
     },
     [userId, uploadAttachments]
@@ -117,6 +118,17 @@ export function useChatActions(userId: string | undefined, userEmail: string | u
       const snapshot = await getDocs(unreadQuery);
       const updates = snapshot.docs.map((d) => updateDoc(d.ref, { read: true }));
       await Promise.all(updates);
+    },
+    [userId]
+  );
+
+  const deleteChat = useCallback(
+    async (chatId: string) => {
+      if (!userId) return;
+
+      await updateDoc(doc(db, "chats", chatId), {
+        [`hiddenFor.${userId}`]: true,
+      });
     },
     [userId]
   );
@@ -145,7 +157,12 @@ export function useChatActions(userId: string | undefined, userEmail: string | u
 
       const existingSnapshot = await getDocs(existingQuery);
       if (!existingSnapshot.empty) {
-        return existingSnapshot.docs[0].id;
+        const existingChat = existingSnapshot.docs[0];
+        await updateDoc(existingChat.ref, {
+          [`hiddenFor.${userId}`]: deleteField(),
+          [`hiddenFor.${otherUserId}`]: deleteField(),
+        });
+        return existingChat.id;
       }
 
       // Get current user details
@@ -221,6 +238,10 @@ export function useChatActions(userId: string | undefined, userEmail: string | u
       });
 
       if (existingChat) {
+        await updateDoc(existingChat.ref, {
+          [`hiddenFor.${userId}`]: deleteField(),
+          [`hiddenFor.${otherUserId}`]: deleteField(),
+        });
         return existingChat.id;
       }
 
@@ -271,6 +292,7 @@ export function useChatActions(userId: string | undefined, userEmail: string | u
   return {
     sendMessage,
     markAsRead,
+    deleteChat,
     createOrGetChat,
     startDirectMessage,
   };

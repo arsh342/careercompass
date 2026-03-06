@@ -10,6 +10,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const ParseResumeInputSchema = z.object({
   resumeDataUri: z
@@ -33,6 +35,12 @@ export type ParseResumeOutput = z.infer<typeof ParseResumeOutputSchema>;
 export async function parseResume(
   input: ParseResumeInput
 ): Promise<ParseResumeOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'resumeParser',
+  });
   return parseResumeFlow(input);
 }
 

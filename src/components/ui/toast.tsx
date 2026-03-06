@@ -31,7 +31,7 @@ const toastVariants = cva(
       variant: {
         default: "border bg-background text-foreground",
         destructive:
-          "destructive group border-destructive bg-destructive text-destructive-foreground",
+          "destructive group w-auto max-w-[min(92vw,560px)] rounded-full border-red-500/80 bg-red-600 px-5 py-3 pr-10 text-white shadow-[0_16px_40px_rgba(220,38,38,0.35)] data-[state=closed]:slide-out-to-top-full data-[state=open]:slide-in-from-top-3",
       },
     },
     defaultVariants: {
@@ -77,7 +77,7 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
+      "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:right-3 group-[.destructive]:top-1/2 group-[.destructive]:-translate-y-1/2 group-[.destructive]:text-red-100 group-[.destructive]:opacity-100 group-[.destructive]:hover:text-white group-[.destructive]:focus:ring-red-200 group-[.destructive]:focus:ring-offset-red-600",
       className
     )}
     toast-close=""
@@ -106,7 +106,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn("text-sm opacity-90 group-[.destructive]:text-red-50/90", className)}
     {...props}
   />
 ))

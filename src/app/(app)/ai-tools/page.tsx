@@ -15,6 +15,7 @@ import {
   Lock,
   Smartphone,
   Route,
+  ScanSearch,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -302,6 +303,54 @@ function CareerPathAnimation() {
   );
 }
 
+function MatchSignal() {
+  const [value, setValue] = useState(72);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setValue((current) => (current >= 94 ? 72 : current + 6));
+    }, 1300);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4">
+      <div className="relative flex h-32 w-32 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/5">
+        <motion.div
+          className="absolute inset-0 rounded-full border border-emerald-400/30"
+          animate={{ scale: [0.92, 1.08, 0.92], opacity: [0.5, 0.95, 0.5] }}
+          transition={{ duration: 2.4, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute inset-4 rounded-full border border-emerald-400/30"
+          animate={{ scale: [1.08, 0.92, 1.08], opacity: [0.2, 0.7, 0.2] }}
+          transition={{ duration: 2.4, repeat: Infinity, delay: 0.3 }}
+        />
+        <motion.span
+          key={value}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-4xl font-semibold text-white"
+        >
+          {value}%
+        </motion.span>
+      </div>
+      <div className="flex gap-2">
+        {["Resume", "JD", "Fit"].map((label, index) => (
+          <motion.div
+            key={label}
+            className="rounded-full border border-emerald-500/20 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-emerald-200"
+            animate={{ opacity: [0.35, 1, 0.35] }}
+            transition={{ duration: 1.8, repeat: Infinity, delay: index * 0.25 }}
+          >
+            {label}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ============================================
 // MAIN PAGE
 // ============================================
@@ -335,7 +384,7 @@ export default function AIToolsPage() {
         {/* Bento Grid - 6 columns */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 auto-rows-[200px]">
           
-          {/* 1. Resume Builder - Tall (2x2) */}
+          {/* 1. Resume Match Analyzer - Tall (2x2) */}
           <motion.div
             className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-8 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
@@ -343,39 +392,41 @@ export default function AIToolsPage() {
             viewport={{ once: true }}
             whileHover={{ scale: 1.02 }}
           >
-            <Link href="/ai-tools/resume-builder" className="flex flex-col h-full">
+            <Link href="/ai-tools/resume-match" className="flex flex-col h-full">
               <div className="flex-1">
-                <TypeTester />
+                <MatchSignal />
               </div>
               <div className="mt-4">
                 <h3 className="text-xl text-white font-medium flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Resume Builder
+                  <ScanSearch className="w-5 h-5 text-emerald-400" />
+                  Resume Match Analyzer
                 </h3>
-                <p className="text-gray-400 text-sm mt-1">Create an ATS-optimized, professional resume.</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Compare your resume to a JD, revise text, and keep the original PDF layout.
+                </p>
               </div>
             </Link>
           </motion.div>
 
-          {/* 2. Cover Letter - Standard (2x1) */}
+          {/* 2. Career Path - Tall (2x2) */}
           <motion.div
-            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            whileHover={{ scale: 0.98 }}
+            whileHover={{ scale: 1.02 }}
           >
-            <Link href="/ai-tools/cover-letter" className="flex flex-col h-full">
-              <div className="flex-1">
-                <LayoutAnimation />
+            <Link href="/ai-tools/career-path" className="flex flex-col h-full">
+              <div className="flex-1 flex items-center justify-center">
+                <CareerPathAnimation />
               </div>
-              <div className="mt-4">
-                <h3 className="text-xl text-white font-medium flex items-center gap-2">
-                  <Mail className="w-5 h-5" />
-                  Cover Letter
+              <div className="mt-auto">
+                <h3 className="text-xl text-white flex items-center gap-2 font-medium">
+                  <Route className="w-5 h-5 text-indigo-400" />
+                  Career Path Visualizer
                 </h3>
-                <p className="text-gray-400 text-sm mt-1">Generate compelling cover letters.</p>
+                <p className="text-gray-400 text-sm mt-1">AI-generated career roadmap with skill milestones.</p>
               </div>
             </Link>
           </motion.div>
@@ -403,13 +454,59 @@ export default function AIToolsPage() {
             </Link>
           </motion.div>
 
-          {/* 4. Interview Prep - Standard (2x1) */}
+          {/* 4. Resume Builder - Standard (2x1) */}
           <motion.div
             className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
+            whileHover={{ scale: 0.98 }}
+          >
+            <Link href="/ai-tools/resume-builder" className="flex flex-col h-full">
+              <div className="flex-1">
+                <TypeTester />
+              </div>
+              <div className="mt-4">
+                <h3 className="text-xl text-white font-medium flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Resume Builder
+                </h3>
+                <p className="text-gray-400 text-sm mt-1">Create an ATS-optimized, professional resume.</p>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* 5. Cover Letter - Standard (2x1) */}
+          <motion.div
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            whileHover={{ scale: 0.98 }}
+          >
+            <Link href="/ai-tools/cover-letter" className="flex flex-col h-full">
+              <div className="flex-1">
+                <LayoutAnimation />
+              </div>
+              <div className="mt-4">
+                <h3 className="text-xl text-white font-medium flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Cover Letter
+                </h3>
+                <p className="text-gray-400 text-sm mt-1">Generate compelling cover letters.</p>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* 6. Interview Prep - Standard (2x1) */}
+          <motion.div
+            className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
             whileHover={{ scale: 0.98 }}
           >
             <Link href="/ai-tools/interview-prep" className="flex flex-col h-full">
@@ -426,13 +523,13 @@ export default function AIToolsPage() {
             </Link>
           </motion.div>
 
-          {/* 5. Skill Gap - Standard (2x1) */}
+          {/* 7. Skill Gap - Standard (2x1) */}
           <motion.div
             className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.6 }}
             whileHover={{ scale: 0.98 }}
           >
             <Link href="/ai-tools/skill-gap" className="flex flex-col h-full">
@@ -449,13 +546,13 @@ export default function AIToolsPage() {
             </Link>
           </motion.div>
 
-          {/* 6. Salary - Standard (2x1) */}
+          {/* 8. Salary - Standard (2x1) */}
           <motion.div
             className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.7 }}
             whileHover={{ scale: 0.98 }}
           >
             <Link href="/ai-tools/salary" className="flex flex-col h-full">
@@ -472,13 +569,13 @@ export default function AIToolsPage() {
             </Link>
           </motion.div>
 
-          {/* 7. Email Templates - Standard (2x1) */}
+          {/* 9. Email Templates - Standard (2x1) */}
           <motion.div
             className="md:col-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.8 }}
             whileHover={{ scale: 0.98 }}
           >
             <Link href="/ai-tools/email-templates" className="flex flex-col h-full">
@@ -491,29 +588,6 @@ export default function AIToolsPage() {
                   Email Templates
                 </h3>
                 <p className="text-gray-400 text-sm mt-1">Professional follow-up emails.</p>
-              </div>
-            </Link>
-          </motion.div>
-
-          {/* 8. Career Path - Tall (2x2) */}
-          <motion.div
-            className="md:col-span-2 md:row-span-2 bg-zinc-900 border border-zinc-800 rounded-3xl p-6 flex flex-col hover:border-zinc-700 transition-colors cursor-pointer overflow-hidden"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.7 }}
-            whileHover={{ scale: 1.02 }}
-          >
-            <Link href="/ai-tools/career-path" className="flex flex-col h-full">
-              <div className="flex-1 flex items-center justify-center">
-                <CareerPathAnimation />
-              </div>
-              <div className="mt-auto">
-                <h3 className="text-xl text-white flex items-center gap-2 font-medium">
-                  <Route className="w-5 h-5 text-indigo-400" />
-                  Career Path Visualizer
-                </h3>
-                <p className="text-gray-400 text-sm mt-1">AI-generated career roadmap with skill milestones.</p>
               </div>
             </Link>
           </motion.div>

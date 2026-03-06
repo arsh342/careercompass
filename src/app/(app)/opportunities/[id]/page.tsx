@@ -172,7 +172,11 @@ export default function OpportunityDetailPage() {
             where("opportunityId", "==", id)
         );
         const querySnapshot = await getDocs(q);
-        setHasApplied(!querySnapshot.empty);
+        setHasApplied(
+          querySnapshot.docs.some(
+            (docSnap) => (docSnap.data().status || "").toLowerCase() !== "withdrawn"
+          )
+        );
     }
 
     const fetchOpportunity = async () => {
@@ -470,7 +474,7 @@ export default function OpportunityDetailPage() {
                         {atsSuggestions && (
                             <div className="text-left text-sm text-muted-foreground mt-2 whitespace-pre-line">
                                 <div><b>Suggestions:</b></div>
-                                <div dangerouslySetInnerHTML={{ __html: atsSuggestions.replace(/\n/g, '<br/>') }} />
+                                <div className="whitespace-pre-line">{atsSuggestions}</div>
                             </div>
                         )}
                     </div>

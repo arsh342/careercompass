@@ -6,6 +6,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const GenerateCoverLetterInputSchema = z.object({
   userInfo: z.object({
@@ -41,6 +43,12 @@ export type GenerateCoverLetterOutput = z.infer<typeof GenerateCoverLetterOutput
 export async function generateCoverLetter(
   input: GenerateCoverLetterInput
 ): Promise<GenerateCoverLetterOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'coverLetter',
+  });
   return generateCoverLetterFlow(input);
 }
 
@@ -134,4 +142,3 @@ const generateCoverLetterFlow = ai.defineFlow(
     return output!;
   }
 );
-

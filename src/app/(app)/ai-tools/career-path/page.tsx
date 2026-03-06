@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { generateCareerPath, type CareerPathOutput } from "@/ai/flows/career-path";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +30,8 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { PremiumGate } from "@/components/premium-gate";
+import { postAiJson } from "@/lib/ai-api-client";
+import type { CareerPathOutput } from "@/lib/ai-tool-contracts";
 
 export default function CareerPathPage() {
   const [currentRole, setCurrentRole] = useState("");
@@ -50,7 +51,7 @@ export default function CareerPathPage() {
     setResult(null);
 
     try {
-      const output = await generateCareerPath({
+      const output = await postAiJson<CareerPathOutput>("/api/ai/career-path", {
         currentRole: currentRole.trim(),
         targetRole: targetRole.trim(),
         currentSkills: skills

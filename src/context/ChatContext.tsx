@@ -30,6 +30,7 @@ interface ChatContextType {
     encryption?: { ciphertext: string; iv: string }
   ) => Promise<void>;
   markAsRead: (chatId: string) => Promise<void>;
+  deleteChat: (chatId: string) => Promise<void>;
   createOrGetChat: (
     otherUserId: string,
     opportunityId: string,
@@ -64,7 +65,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // Compose the focused hooks
   const { chats, loading, unreadCount } = useChatList(user?.uid);
   const { messages, messagesLoading } = useChatMessages(activeChat?.id ?? null, user?.uid);
-  const { sendMessage, markAsRead, createOrGetChat, startDirectMessage } =
+  const { sendMessage, markAsRead, deleteChat, createOrGetChat, startDirectMessage } =
     useChatActions(user?.uid, user?.email ?? undefined);
 
   return (
@@ -79,6 +80,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setActiveChat,
         sendMessage,
         markAsRead,
+        deleteChat,
         createOrGetChat,
         startDirectMessage,
       }}

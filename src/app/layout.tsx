@@ -4,7 +4,6 @@ import '@/styles/responsive-touch.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/components/theme-provider';
-import { InstallPromptWrapper } from '@/components/pwa/InstallPromptWrapper';
 
 export const metadata: Metadata = {
   title: 'CareerCompass',
@@ -47,11 +46,9 @@ export default function RootLayout({
             <AuthProvider>
               {children}
               <Toaster />
-              <InstallPromptWrapper />
             </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
   );
 }
-

@@ -65,7 +65,7 @@ export function FollowersModal({
 
       for (const uid of userIds) {
         try {
-          const userDoc = await getDoc(doc(db, "users", uid));
+          const userDoc = await getDoc(doc(db, "publicProfiles", uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
             userData.push({

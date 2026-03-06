@@ -25,7 +25,55 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const { user, userProfile } = useAuth();
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
   const [isInCall, setIsInCall] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const ringtoneIntervalRef = useRef<number | null>(null);
+
+  const stopRingtone = useCallback(() => {
+    if (ringtoneIntervalRef.current !== null) {
+      window.clearInterval(ringtoneIntervalRef.current);
+      ringtoneIntervalRef.current = null;
+    }
+  }, []);
+
+  const playRingtoneBurst = useCallback(() => {
+    if (typeof window === "undefined" || typeof window.AudioContext === "undefined") {
+      return;
+    }
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new window.AudioContext();
+    }
+
+    const context = audioContextRef.current;
+    if (context.state === "suspended") {
+      void context.resume();
+    }
+
+    const now = context.currentTime;
+    const gainNode = context.createGain();
+    gainNode.connect(context.destination);
+    gainNode.gain.setValueAtTime(0.0001, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.04, now + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(880, now);
+    oscillator.connect(gainNode);
+    oscillator.start(now);
+    oscillator.stop(now + 0.4);
+  }, []);
+
+  const startRingtone = useCallback(() => {
+    if (ringtoneIntervalRef.current !== null) {
+      return;
+    }
+
+    playRingtoneBurst();
+    ringtoneIntervalRef.current = window.setInterval(() => {
+      playRingtoneBurst();
+    }, 1500);
+  }, [playRingtoneBurst]);
 
   // Listen for incoming calls
   useEffect(() => {
@@ -42,27 +90,20 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       }
       
       setIncomingCall({ callId: callDataWithId.callId, callData: callDataWithId });
-      
-      // Play ringtone
-      if (audioRef.current) {
-        audioRef.current.play().catch(() => {});
-      }
+      startRingtone();
     });
 
     return () => {
+      stopRingtone();
       unsubscribe();
     };
-  }, [user?.uid, isInCall]);
+  }, [user?.uid, isInCall, startRingtone, stopRingtone]);
 
   // Accept the incoming call
   const acceptCall = useCallback(async () => {
     if (!incomingCall) return;
     
-    // Stop ringtone
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
+    stopRingtone();
     
     // Mark as in call BEFORE navigating to prevent listener from firing again
     setIsInCall(true);
@@ -85,24 +126,20 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     setIncomingCall(null);
     
     window.location.href = `/video-call?${params.toString()}`;
-  }, [incomingCall]);
+  }, [incomingCall, stopRingtone]);
 
   // Reject the incoming call
   const rejectCall = useCallback(async () => {
     if (!incomingCall) return;
     
-    // Stop ringtone
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
+    stopRingtone();
     
     // Update call status in Firebase
     const callRef = doc(db, "calls", incomingCall.callId);
     await updateDoc(callRef, { status: "rejected" });
     
     setIncomingCall(null);
-  }, [incomingCall]);
+  }, [incomingCall, stopRingtone]);
 
   return (
     <CallContext.Provider
@@ -115,13 +152,6 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
-      {/* Hidden audio element for ringtone */}
-      <audio
-        ref={audioRef}
-        src="/sounds/ringtone.mp3"
-        loop
-        preload="auto"
-      />
     </CallContext.Provider>
   );
 }

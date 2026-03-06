@@ -46,11 +46,21 @@ export type Env = z.infer<typeof envSchema>;
  */
 export function validateEnv(): Env {
   const result = envSchema.safeParse(process.env);
+  const productionAdminVarsMissing =
+    process.env.NODE_ENV === "production" &&
+    (!process.env.FIREBASE_PROJECT_ID ||
+      !process.env.FIREBASE_CLIENT_EMAIL ||
+      !process.env.FIREBASE_PRIVATE_KEY);
 
-  if (!result.success) {
-    const errors = result.error.flatten().fieldErrors;
+  if (!result.success || productionAdminVarsMissing) {
+    const errors = result.success ? {} : result.error.flatten().fieldErrors;
     const errorMessages = Object.entries(errors)
       .map(([key, msgs]) => `  ${key}: ${msgs?.join(", ")}`)
+      .concat(
+        productionAdminVarsMissing
+          ? ["  FIREBASE_ADMIN: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY are required in production"]
+          : []
+      )
       .join("\n");
 
     console.error(
