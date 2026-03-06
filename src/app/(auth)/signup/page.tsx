@@ -20,6 +20,7 @@ import { sendWelcomeEmailDirect } from "@/lib/email-utils";
 import { AnimatedCharacters } from "@/components/ui/animated-characters";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { toPublicProfile } from "@/lib/public-profile";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: "Please enter your full name." }),
@@ -57,7 +58,7 @@ export default function SignupPage() {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
-        values.password
+        values.password,
       );
       const user = userCredential.user;
 
@@ -83,12 +84,15 @@ export default function SignupPage() {
       };
 
       await setDoc(doc(db, "users", user.uid), userData);
-      await setDoc(doc(db, "publicProfiles", user.uid), toPublicProfile(userData));
+      await setDoc(
+        doc(db, "publicProfiles", user.uid),
+        toPublicProfile(userData),
+      );
 
       // Send welcome email
       const emailSent = await sendWelcomeEmailDirect(
         values.email,
-        values.fullName
+        values.fullName,
       );
 
       toast({
@@ -114,7 +118,10 @@ export default function SignupPage() {
       {/* Left Content Section with Animated Characters */}
       <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 dark:from-white/90 dark:via-white/80 dark:to-white/70 p-12 text-white dark:text-gray-900">
         <div className="relative z-20">
-          <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold"
+          >
             <Image
               src="https://i.postimg.cc/nLrDYrHW/icon.png"
               alt="CareerCompass logo"
@@ -135,14 +142,17 @@ export default function SignupPage() {
         </div>
 
         <div className="relative z-20 flex items-center gap-8 text-sm text-gray-600 dark:text-gray-700">
-          <a href="#" className="hover:text-gray-900 dark:hover:text-black transition-colors">
+          <a
+            href="/privacy-policy"
+            className="hover:text-gray-900 dark:hover:text-black transition-colors"
+          >
             Privacy Policy
           </a>
-          <a href="#" className="hover:text-gray-900 dark:hover:text-black transition-colors">
+          <a
+            href="/terms"
+            className="hover:text-gray-900 dark:hover:text-black transition-colors"
+          >
             Terms of Service
-          </a>
-          <a href="#" className="hover:text-gray-900 dark:hover:text-black transition-colors">
-            Contact
           </a>
         </div>
 
@@ -169,14 +179,20 @@ export default function SignupPage() {
 
           {/* Header */}
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Create an account</h1>
-            <p className="text-muted-foreground text-sm">Join CareerCompass to find your next opportunity</p>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Create an account
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Join CareerCompass to find your next opportunity
+            </p>
           </div>
 
           {/* Signup Form */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-sm font-medium">Full Name or Company Name</Label>
+              <Label htmlFor="fullName" className="text-sm font-medium">
+                Full Name or Company Name
+              </Label>
               <Input
                 id="fullName"
                 type="text"
@@ -188,12 +204,16 @@ export default function SignupPage() {
                 className="h-12 bg-background border-border/60 focus:border-primary"
               />
               {form.formState.errors.fullName && (
-                <p className="text-sm text-destructive">{form.formState.errors.fullName.message}</p>
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.fullName.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -205,12 +225,16 @@ export default function SignupPage() {
                 className="h-12 bg-background border-border/60 focus:border-primary"
               />
               {form.formState.errors.email && (
-                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.email.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -232,8 +256,30 @@ export default function SignupPage() {
                 </button>
               </div>
               {form.formState.errors.password && (
-                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.password.message}
+                </p>
               )}
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox id="privacy-terms" required />
+              <Label
+                htmlFor="privacy-terms"
+                className="text-sm font-normal cursor-pointer"
+              >
+                I agree to the
+                <Link
+                  href="/privacy-policy"
+                  className="text-primary underline mx-1"
+                >
+                  Privacy Policy
+                </Link>
+                and
+                <Link href="/terms" className="text-primary underline mx-1">
+                  Terms of Service
+                </Link>
+              </Label>
             </div>
 
             {error && (
@@ -242,8 +288,8 @@ export default function SignupPage() {
               </div>
             )}
 
-            <InteractiveHoverButton 
-              type="submit" 
+            <InteractiveHoverButton
+              type="submit"
               text={isLoading ? "Creating account..." : "Create Account"}
               className="w-full h-12 text-base font-medium"
               disabled={isLoading}
@@ -253,7 +299,10 @@ export default function SignupPage() {
           {/* Sign In Link */}
           <div className="text-center text-sm text-muted-foreground mt-8">
             Already have an account?{" "}
-            <Link href="/login" className="text-foreground font-medium hover:underline">
+            <Link
+              href="/login"
+              className="text-foreground font-medium hover:underline"
+            >
               Sign in
             </Link>
           </div>
