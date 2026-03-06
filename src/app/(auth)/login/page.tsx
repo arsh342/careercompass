@@ -62,7 +62,7 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         values.email,
-        values.password
+        values.password,
       );
       const user = userCredential.user;
 
@@ -75,12 +75,12 @@ export default function LoginPage() {
         await setDoc(
           doc(db, "publicProfiles", user.uid),
           toPublicProfile({ uid: user.uid, ...userData }),
-          { merge: true }
+          { merge: true },
         );
         await handleFirstLogin(
           user.uid,
           user.email!,
-          userData.displayName || user.email!
+          userData.displayName || user.email!,
         );
       }
 
@@ -134,20 +134,16 @@ export default function LoginPage() {
         await setDoc(
           doc(db, "publicProfiles", user.uid),
           toPublicProfile(userData as any),
-          { merge: true }
+          { merge: true },
         );
 
         const emailSent = await sendWelcomeEmailDirect(
           user.email!,
-          user.displayName!
+          user.displayName!,
         );
 
         // Handle first login for new Google users
-        await handleFirstLogin(
-          user.uid,
-          user.email!,
-          user.displayName!
-        );
+        await handleFirstLogin(user.uid, user.email!, user.displayName!);
 
         toast({
           title: "Account Created",
@@ -164,7 +160,7 @@ export default function LoginPage() {
         await setDoc(
           doc(db, "publicProfiles", user.uid),
           toPublicProfile({ uid: user.uid, ...userDocSnap.data() }),
-          { merge: true }
+          { merge: true },
         );
         const userData = userDocSnap.data();
         if (userData.role === "employer") {
@@ -187,7 +183,10 @@ export default function LoginPage() {
       {/* Left Content Section with Animated Characters */}
       <div className="relative hidden lg:flex flex-col justify-between bg-gradient-to-br from-gray-400 via-gray-500 to-gray-600 dark:from-white/90 dark:via-white/80 dark:to-white/70 p-12 text-white dark:text-gray-900">
         <div className="relative z-20">
-          <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold"
+          >
             <Image
               src="https://i.postimg.cc/nLrDYrHW/icon.png"
               alt="CareerCompass logo"
@@ -208,14 +207,17 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-20 flex items-center gap-8 text-sm text-gray-600 dark:text-gray-700">
-          <a href="#" className="hover:text-gray-900 dark:hover:text-black transition-colors">
+          <a
+            href="/privacy-policy"
+            className="hover:text-gray-900 dark:hover:text-black transition-colors"
+          >
             Privacy Policy
           </a>
-          <a href="#" className="hover:text-gray-900 dark:hover:text-black transition-colors">
+          <a
+            href="/terms"
+            className="hover:text-gray-900 dark:hover:text-black transition-colors"
+          >
             Terms of Service
-          </a>
-          <a href="#" className="hover:text-gray-900 dark:hover:text-black transition-colors">
-            Contact
           </a>
         </div>
 
@@ -242,14 +244,20 @@ export default function LoginPage() {
 
           {/* Header */}
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back!</h1>
-            <p className="text-muted-foreground text-sm">Please enter your details</p>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">
+              Welcome back!
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Please enter your details
+            </p>
           </div>
 
           {/* Login Form */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -261,12 +269,16 @@ export default function LoginPage() {
                 className="h-12 bg-background border-border/60 focus:border-primary"
               />
               {form.formState.errors.email && (
-                <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.email.message}
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium">
+                Password
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -288,7 +300,9 @@ export default function LoginPage() {
                 </button>
               </div>
               {form.formState.errors.password && (
-                <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.password.message}
+                </p>
               )}
             </div>
 
@@ -316,8 +330,8 @@ export default function LoginPage() {
               </div>
             )}
 
-            <InteractiveHoverButton 
-              type="submit" 
+            <InteractiveHoverButton
+              type="submit"
               text={isLoading ? "Signing in..." : "Log in"}
               className="w-full h-12 text-base font-medium"
               disabled={isLoading}
@@ -326,7 +340,7 @@ export default function LoginPage() {
 
           {/* Social Login */}
           <div className="mt-6">
-            <InteractiveHoverButton 
+            <InteractiveHoverButton
               type="button"
               text="Log in with Google"
               className="w-full h-12 border-border/60"
@@ -351,7 +365,10 @@ export default function LoginPage() {
           {/* Sign Up Link */}
           <div className="text-center text-sm text-muted-foreground mt-8">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-foreground font-medium hover:underline">
+            <Link
+              href="/signup"
+              className="text-foreground font-medium hover:underline"
+            >
               Sign Up
             </Link>
           </div>
