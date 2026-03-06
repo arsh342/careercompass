@@ -7,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const SalaryNegotiationInputSchema = z.object({
   role: z.string().describe('Job title'),
@@ -133,5 +135,11 @@ const salaryNegotiationFlow = ai.defineFlow(
 export async function getSalaryNegotiationAdvice(
   input: SalaryNegotiationInput
 ): Promise<SalaryNegotiationOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'salaryNegotiation',
+  });
   return salaryNegotiationFlow(input);
 }

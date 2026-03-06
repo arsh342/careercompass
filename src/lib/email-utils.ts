@@ -7,6 +7,7 @@ import {
   increment,
   runTransaction,
 } from "firebase/firestore";
+import { requireServerAuthenticatedUser, requireServerRole } from "@/lib/server-auth";
 
 // Lazy initialization to avoid client-side errors
 let resend: Resend | null = null;
@@ -32,6 +33,8 @@ export interface EmailDeliveryStatus {
 export async function sendEmailDirect(
   input: EmailInput
 ): Promise<{ success: boolean; messageId?: string }> {
+  await requireServerAuthenticatedUser();
+
   const { to, subject, body } = input;
 
   // Rate Limiting Logic
@@ -69,10 +72,6 @@ export async function sendEmailDirect(
     console.error("Missing RESEND_API_KEY in .env file");
     return { success: false };
   }
-
-  console.log("[sendEmailDirect] Attempting to send email to:", to);
-  console.log("[sendEmailDirect] RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
-  console.log("[sendEmailDirect] RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL);
 
   try {
     const { data, error } = await getResend().emails.send({
@@ -120,6 +119,7 @@ export async function sendApplicationStatusEmailDirect(
   subject: string,
   body: string
 ): Promise<boolean> {
+  await requireServerRole("employer");
   const result = await sendEmailDirect({ to, subject, body });
   return result.success;
 }

@@ -69,8 +69,6 @@ async function sendEmailWithResend(
   subject: string,
   html: string
 ): Promise<{ success: boolean; messageId?: string }> {
-  console.log("[sendEmailWithResend] Attempting to send email to:", to);
-  
   if (!process.env.RESEND_API_KEY) {
     console.error("[sendEmailWithResend] Missing RESEND_API_KEY in .env file");
     return { success: false };
@@ -89,7 +87,7 @@ async function sendEmailWithResend(
       return { success: false };
     }
 
-    console.log("[sendEmailWithResend] Email sent successfully! ID:", data?.id);
+    console.log("[sendEmailWithResend] Email sent successfully. ID:", data?.id);
     return { success: true, messageId: data?.id };
   } catch (error) {
     console.error("[sendEmailWithResend] Error sending email:", error);
@@ -103,7 +101,6 @@ export async function handleFirstLogin(
   userEmail: string,
   userName: string
 ): Promise<void> {
-  console.log("[handleFirstLogin] Called for user:", userEmail);
   try {
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
@@ -139,7 +136,6 @@ async function sendFirstLoginEmail(
   name: string,
   role: string
 ): Promise<void> {
-  console.log("[sendFirstLoginEmail] Sending to:", email);
   const welcomeBackContent = `
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">

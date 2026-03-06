@@ -117,6 +117,14 @@ export function EncryptionProvider({ children }: { children: ReactNode }) {
           encryptionPublicKey: exportedPublic,
         }, { merge: true });
       });
+      await setDoc(
+        doc(db, "publicProfiles", user.uid),
+        {
+          encryptionPublicKey: exportedPublic,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
 
       setPrivateKey(keyPair.privateKey);
       setPublicKey(exportedPublic);
@@ -139,7 +147,7 @@ export function EncryptionProvider({ children }: { children: ReactNode }) {
 
     try {
       // Get other user's public key from Firestore
-      const otherUserDoc = await getDoc(doc(db, "users", otherUserId));
+      const otherUserDoc = await getDoc(doc(db, "publicProfiles", otherUserId));
       const otherUserData = otherUserDoc.data();
       
       if (!otherUserData?.encryptionPublicKey) {

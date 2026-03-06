@@ -64,7 +64,7 @@ export default function EmployersPage() {
       try {
         // Fetch all employer users
         const q = query(
-          collection(db, "users"),
+          collection(db, "publicProfiles"),
           where("role", "==", "employer")
         );
         const snapshot = await getDocs(q);

@@ -23,10 +23,19 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
     // Prevent a field from being changed on update
     function fieldUnchanged(field) {
       return !(field in request.resource.data)
              || request.resource.data[field] == resource.data[field];
+    }
+
+    // Allow updates only when the changed fields are explicitly allowed.
+    function onlyChangesAllowed(fields) {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(fields);
     }
 
     // Validate string length
@@ -38,8 +47,7 @@ service cloud.firestore {
     // USERS
     // ============================================
     match /users/{userId} {
-      // Any authenticated user can read public profile data.
-      allow read: if isAuthenticated();
+      allow read: if isOwner(userId) || isAdmin();
 
       // A user can create their own profile document with required fields.
       allow create: if isOwner(userId)
@@ -48,7 +56,7 @@ service cloud.firestore {
 
       // A user can only update their own profile document.
       // Critical fields (uid, email, role) cannot be changed by the user.
-      allow update: if isOwner(userId)
+      allow update: if (isOwner(userId) || isAdmin())
                     && fieldUnchanged('role')
                     && fieldUnchanged('email')
                     && fieldUnchanged('uid')
@@ -60,6 +68,50 @@ service cloud.firestore {
 
       // Users cannot delete their own accounts through the app.
       allow delete: if false;
+
+      match /savedOpportunities/{opportunityId} {
+        allow read, create, update, delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /applications/{applicationId} {
+        allow read, create, update, delete: if isOwner(userId) || isAdmin();
+      }
+
+      match /savedJobDescriptions/{jobDescriptionId} {
+        allow read, create, update, delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    match /publicProfiles/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if false;
+    }
+
+    // ============================================
+    // POSTS
+    // ============================================
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.keys().hasAll(['userId', 'content', 'createdAt']);
+
+      allow update: if isAuthenticated() && (
+                    (resource.data.userId == request.auth.uid
+                     && fieldUnchanged('userId')
+                     && onlyChangesAllowed(['content', 'imageUrl', 'updatedAt', 'likes', 'comments', 'shares']))
+                    ||
+                    (resource.data.userId != request.auth.uid
+                     && fieldUnchanged('userId')
+                     && fieldUnchanged('content')
+                     && fieldUnchanged('imageUrl')
+                     && onlyChangesAllowed(['likes', 'comments', 'shares']))
+                  );
+
+      allow delete: if isAuthenticated()
+                    && resource.data.userId == request.auth.uid;
     }
 
     // ============================================
@@ -93,12 +145,19 @@ service cloud.firestore {
     // APPLICATIONS
     // ============================================
     match /applications/{applicationId} {
-      // An employee can create an application with required fields.
+      // Employees can submit their own applications.
+      // Employers can create invitation records for their own opportunities.
       allow create: if isAuthenticated()
-                    && getUserRole() == 'employee'
-                    && request.resource.data.userId == request.auth.uid
                     && request.resource.data.keys().hasAll(['userId', 'opportunityId', 'status'])
-                    && request.resource.data.status == 'pending';
+                    && (
+                      (getUserRole() == 'employee'
+                        && request.resource.data.userId == request.auth.uid
+                        && request.resource.data.status in ['pending', 'Pending', 'Submitted'])
+                      ||
+                      (getUserRole() == 'employer'
+                        && request.resource.data.status == 'Invited'
+                        && get(/databases/$(database)/documents/opportunities/$(request.resource.data.opportunityId)).data.employerId == request.auth.uid)
+                    );
 
       // Users can read their own applications.
       // Employers can read applications for their jobs.
@@ -107,19 +166,19 @@ service cloud.firestore {
                     get(/databases/$(database)/documents/opportunities/$(resource.data.opportunityId)).data.employerId == request.auth.uid
                   );
 
-      // The employer of the related opportunity can update application status.
-      // The applicant can withdraw (set status to 'withdrawn') but cannot change other fields.
+      // Employers can only update review metadata/status.
+      // Applicants can only withdraw their own application.
       allow update: if isAuthenticated() && (
-                    // Employer can update status
                     (get(/databases/$(database)/documents/opportunities/$(resource.data.opportunityId)).data.employerId == request.auth.uid
                      && fieldUnchanged('userId')
-                     && fieldUnchanged('opportunityId'))
+                     && fieldUnchanged('opportunityId')
+                     && onlyChangesAllowed(['status', 'updatedAt', 'reviewedAt', 'notes', 'invitedAt']))
                     ||
-                    // Applicant can withdraw
                     (resource.data.userId == request.auth.uid
                      && request.resource.data.status == 'withdrawn'
                      && fieldUnchanged('userId')
-                     && fieldUnchanged('opportunityId'))
+                     && fieldUnchanged('opportunityId')
+                     && onlyChangesAllowed(['status', 'updatedAt', 'withdrawnAt']))
                   );
 
       // Applications cannot be deleted.
@@ -140,10 +199,10 @@ service cloud.firestore {
                     && request.auth.uid in request.resource.data.participants
                     && request.resource.data.participants.size() == 2;
 
-      // Only participants can update chat metadata (e.g., lastMessage).
+      // Only the derived lastMessage preview can be updated by participants.
       allow update: if isAuthenticated()
                     && request.auth.uid in resource.data.participants
-                    && fieldUnchanged('participants');
+                    && onlyChangesAllowed(['lastMessage', 'hiddenFor']);
 
       // Chats cannot be deleted.
       allow delete: if false;
@@ -162,11 +221,11 @@ service cloud.firestore {
                       && (!('text' in request.resource.data)
                           || request.resource.data.text.size() <= 10000);
 
-        // Participants can update messages (e.g., mark as read).
-        // senderId cannot be changed after creation.
+        // Participants can only mark messages as read.
         allow update: if isAuthenticated()
                       && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
-                      && fieldUnchanged('senderId');
+                      && request.resource.data.read == true
+                      && onlyChangesAllowed(['read']);
 
         // Messages cannot be deleted.
         allow delete: if false;
@@ -227,13 +286,8 @@ service cloud.firestore {
       allow read: if isAuthenticated()
                   && resource.data.userId == request.auth.uid;
 
-      // Any authenticated user can create a notification for another user.
-      // This allows follow, application status, and message notifications.
-      allow create: if isAuthenticated()
-                    && request.resource.data.keys().hasAll(['userId', 'type', 'title', 'message', 'read'])
-                    && request.resource.data.read == false
-                    && isValidString(request.resource.data.title, 200)
-                    && isValidString(request.resource.data.message, 500);
+      // Notifications are created server-side after authorization checks.
+      allow create: if false;
 
       // Users can only update their own notifications (mark as read).
       allow update: if isAuthenticated()

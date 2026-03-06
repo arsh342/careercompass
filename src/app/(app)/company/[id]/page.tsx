@@ -72,7 +72,7 @@ export default function CompanyPage() {
     const fetchCompanyData = async () => {
       try {
         // Fetch company profile
-        const userDoc = await getDoc(doc(db, "users", companyId));
+        const userDoc = await getDoc(doc(db, "publicProfiles", companyId));
         if (userDoc.exists()) {
           setProfile({ uid: userDoc.id, ...userDoc.data() } as CompanyProfile);
         }

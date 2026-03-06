@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { sendWelcomeEmailDirect } from "@/lib/email-utils";
 import { AnimatedCharacters } from "@/components/ui/animated-characters";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import { toPublicProfile } from "@/lib/public-profile";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: "Please enter your full name." }),
@@ -71,7 +72,7 @@ export default function SignupPage() {
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
 
-      await setDoc(doc(db, "users", user.uid), {
+      const userData = {
         uid: user.uid,
         displayName: values.fullName,
         email: values.email,
@@ -79,7 +80,10 @@ export default function SignupPage() {
         firstName: firstName,
         lastName: lastName,
         ...(role === "employer" && { companyName: values.fullName }),
-      });
+      };
+
+      await setDoc(doc(db, "users", user.uid), userData);
+      await setDoc(doc(db, "publicProfiles", user.uid), toPublicProfile(userData));
 
       // Send welcome email
       const emailSent = await sendWelcomeEmailDirect(

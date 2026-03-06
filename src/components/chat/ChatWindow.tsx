@@ -91,6 +91,10 @@ function StatusBadge({ status }: { status: StatusType }) {
 
 // User actions menu (header)
 function UserActionsMenu() {
+  return null;
+}
+
+function UserActionsMenuWithActions({ onDelete }: { onDelete: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -116,6 +120,7 @@ function UserActionsMenu() {
             <span className="font-medium text-xs">Block User</span>
           </Button>
           <Button
+            onClick={onDelete}
             className="w-full justify-start gap-2 rounded bg-transparent text-destructive hover:bg-accent"
             size="sm"
             type="button"
@@ -210,7 +215,7 @@ function MessageActions({ isMe, onCopy, onReply }: { isMe: boolean; onCopy: () =
 
 
 export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
-  const { activeChat, messages, messagesLoading, sendMessage, markAsRead } = useChat();
+  const { activeChat, messages, messagesLoading, sendMessage, markAsRead, deleteChat, setActiveChat } = useChat();
   const { user, userProfile } = useAuth();
   const { isReady: encryptionReady, isSupported: encryptionSupported, encrypt, decrypt, ensureKeys } = useEncryption();
   const { toast } = useToast();
@@ -322,6 +327,26 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
   const handleReplyMessage = useCallback((messageText: string) => {
     setReplyingTo(messageText);
   }, []);
+
+  const handleDeleteConversation = useCallback(async () => {
+    if (!activeChat) return;
+
+    try {
+      await deleteChat(activeChat.id);
+      setActiveChat(null);
+      toast({ title: "Conversation removed" });
+      if (onBack) {
+        onBack();
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast({
+        title: "Delete failed",
+        description: "Could not remove the conversation.",
+        variant: "destructive",
+      });
+    }
+  }, [activeChat, deleteChat, onBack, setActiveChat, toast]);
 
   const handleSend = async () => {
     if (!activeChat || (!inputValue.trim() && attachments.length === 0)) return;
@@ -486,7 +511,7 @@ export function ChatWindow({ onBack, showBackButton }: ChatWindowProps) {
               <Video className="h-4 w-4" />
             </Button>
           )}
-          <UserActionsMenu />
+                <UserActionsMenuWithActions onDelete={handleDeleteConversation} />
         </div>
       </div>
 

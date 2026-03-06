@@ -71,10 +71,6 @@ export function UserNav() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out.',
-      });
       router.push('/login');
     } catch (error) {
       toast({
@@ -181,4 +177,3 @@ export function UserNav() {
     </div>
   );
 }
-

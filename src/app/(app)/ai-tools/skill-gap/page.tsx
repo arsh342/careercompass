@@ -36,8 +36,9 @@ import { useToast } from "@/hooks/use-toast";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
-import { analyzeSkillGap, type AnalyzeSkillGapOutput } from "@/ai/flows/skill-gap";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
+import { postAiJson } from "@/lib/ai-api-client";
+import type { AnalyzeSkillGapOutput } from "@/lib/ai-tool-contracts";
 
 export default function SkillGapPage() {
   const { user, userProfile, loading: authLoading } = useAuth();
@@ -95,7 +96,7 @@ export default function SkillGapPage() {
 
     setIsAnalyzing(true);
     try {
-      const analysis = await analyzeSkillGap({
+      const analysis = await postAiJson<AnalyzeSkillGapOutput>("/api/ai/skill-gap", {
         userSkills: skills,
         userExperience: experience || undefined,
         jobTitle,

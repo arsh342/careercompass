@@ -35,12 +35,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { generateCoverLetter } from "@/ai/flows/generate-cover-letter";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoaderInline } from "@/components/ui/ai-loader";
 import Link from "next/link";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { postAiJson } from "@/lib/ai-api-client";
 
 type Tone = "professional" | "enthusiastic" | "confident" | "conversational";
 type Length = "short" | "medium" | "long";
@@ -125,7 +125,7 @@ export default function CoverLetterGeneratorPage() {
 
     setIsGenerating(true);
     try {
-      const result = await generateCoverLetter({
+      const result = await postAiJson<GeneratedCoverLetter>("/api/ai/cover-letter", {
         userInfo: {
           name: formData.name,
           email: formData.email,

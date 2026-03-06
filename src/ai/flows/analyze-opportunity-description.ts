@@ -10,6 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const AnalyzeOpportunityDescriptionInputSchema = z.object({
   description: z.string().describe('The opportunity description to analyze.'),
@@ -29,6 +31,12 @@ export type AnalyzeOpportunityDescriptionOutput = z.infer<typeof AnalyzeOpportun
 export async function analyzeOpportunityDescription(
   input: AnalyzeOpportunityDescriptionInput
 ): Promise<AnalyzeOpportunityDescriptionOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'opportunityAnalysis',
+  });
   return analyzeOpportunityDescriptionFlow(input);
 }
 

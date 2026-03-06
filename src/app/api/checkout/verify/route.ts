@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, PLAN_DETAILS } from "@/lib/stripe";
+import { requireAuth } from "@/lib/api-auth";
 
 export async function GET(request: NextRequest) {
   try {
+    const { response: authError, user } = await requireAuth(request);
+    if (authError) return authError;
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get("session_id");
 
@@ -35,6 +42,13 @@ export async function GET(request: NextRequest) {
     const planId = session.metadata?.planId;
     const userId = session.metadata?.userId;
     const frequency = session.metadata?.frequency;
+
+    if (!userId || userId !== user.uid) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      );
+    }
 
     // Get plan name from our config
     const planName = planId ? PLAN_DETAILS[planId]?.name : null;

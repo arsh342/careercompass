@@ -9,8 +9,6 @@ import Link from "next/link";
 import { triggerFireworks } from "@/components/ui/confetti";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { useAuth } from "@/context/AuthContext";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export default function CheckoutSuccessPage() {
   const searchParams = useSearchParams();
@@ -38,13 +36,6 @@ export default function CheckoutSuccessPage() {
         }
 
         if (data.planId && data.userId === user.uid) {
-          // Update user's plan in Firestore
-          await updateDoc(doc(db, "users", user.uid), {
-            plan: data.planId,
-            subscriptionId: data.subscriptionId,
-            planUpdatedAt: new Date().toISOString(),
-          });
-          
           setPlanInfo({ name: data.planName || data.planId, id: data.planId });
           setPlanUpdated(true);
           
@@ -130,4 +121,3 @@ export default function CheckoutSuccessPage() {
     </div>
   );
 }
-

@@ -43,11 +43,10 @@ import { useToast } from "@/hooks/use-toast";
 import { LumaSpin } from "@/components/ui/luma-spin";
 import { AILoader } from "@/components/ui/ai-loader";
 import Link from "next/link";
-import { generateEmail, type GenerateEmailOutput, type GenerateEmailInput } from "@/ai/flows/email-templates";
 import { useRateLimit, AI_RATE_LIMITS, formatTimeUntilReset } from "@/hooks/useRateLimit";
 import { PremiumGate } from "@/components/premium-gate";
-
-type TemplateType = GenerateEmailInput['templateType'];
+import { postAiJson } from "@/lib/ai-api-client";
+import type { GenerateEmailOutput, TemplateType } from "@/lib/ai-tool-contracts";
 
 const TEMPLATE_TYPES: { value: TemplateType; label: string; icon: React.ElementType; description: string }[] = [
   { value: 'follow-up', label: 'Follow-up', icon: Send, description: 'After application or interview' },
@@ -103,7 +102,7 @@ export default function EmailTemplatesPage() {
 
     setIsGenerating(true);
     try {
-      const email = await generateEmail({
+      const email = await postAiJson<GenerateEmailOutput>("/api/ai/email-templates", {
         templateType,
         companyName,
         jobTitle: jobTitle || undefined,

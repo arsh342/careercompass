@@ -10,6 +10,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const GenerateResumeSectionInputSchema = z.object({
   sectionType: z.enum([
@@ -47,6 +49,12 @@ export type GenerateResumeSectionOutput = z.infer<typeof GenerateResumeSectionOu
 export async function generateResumeSection(
   input: GenerateResumeSectionInput
 ): Promise<GenerateResumeSectionOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'resumeBuilder',
+  });
   return generateResumeSectionFlow(input);
 }
 
@@ -140,6 +148,12 @@ export type GenerateFullResumeOutput = z.infer<typeof GenerateFullResumeOutputSc
 export async function generateFullResume(
   input: GenerateFullResumeInput
 ): Promise<GenerateFullResumeOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'resumeBuilder',
+  });
   return generateFullResumeFlow(input);
 }
 
@@ -227,4 +241,3 @@ const generateFullResumeFlow = ai.defineFlow(
     return output!;
   }
 );
-
