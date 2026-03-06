@@ -48,6 +48,7 @@ import {
 import { SkillsInput } from "@/components/skills-input";
 import { AvatarUploader } from "@/components/ui/avatar-uploader";
 import { LumaSpin } from "@/components/ui/luma-spin";
+import { toPublicProfile } from "@/lib/public-profile";
 
 const employabilityOptions = [
   { value: "open_to_work", label: "Open to Work" },
@@ -634,6 +635,16 @@ export default function ProfilePage() {
       };
 
       await setDoc(doc(db, "users", user.uid), profileData, { merge: true });
+      await setDoc(
+        doc(db, "publicProfiles", user.uid),
+        toPublicProfile({
+          uid: user.uid,
+          ...profileData,
+          photoURL: user.photoURL,
+          role: "employee",
+        }),
+        { merge: true }
+      );
 
       toast({
         title: "Profile Updated",
@@ -715,6 +726,17 @@ export default function ProfilePage() {
       await setDoc(
         doc(db, "users", user.uid),
         { photoURL: url },
+        { merge: true }
+      );
+      await setDoc(
+        doc(db, "publicProfiles", user.uid),
+        toPublicProfile({
+          uid: user.uid,
+          ...userProfile,
+          displayName: user.displayName || userProfile?.displayName,
+          photoURL: url,
+          role: "employee",
+        }),
         { merge: true }
       );
 
@@ -2199,11 +2221,7 @@ export default function ProfilePage() {
                     <div>
                       <b>Suggestions:</b>
                     </div>
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: atsSuggestions.replace(/\n/g, "<br/>"),
-                      }}
-                    />
+                    <div className="whitespace-pre-line">{atsSuggestions}</div>
                   </div>
                 )}
               </div>

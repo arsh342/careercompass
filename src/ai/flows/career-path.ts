@@ -7,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 // ============================================
 // GENERATE CAREER PATH
@@ -124,5 +126,11 @@ const careerPathFlow = ai.defineFlow(
 export async function generateCareerPath(
   input: CareerPathInput
 ): Promise<CareerPathOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'careerPath',
+  });
   return careerPathFlow(input);
 }

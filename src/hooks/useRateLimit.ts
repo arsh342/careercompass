@@ -115,6 +115,11 @@ export function useRateLimit(
 // ============================================
 
 export const AI_RATE_LIMITS = {
+  resumeMatch: {
+    maxRequests: 5,
+    windowMs: 60 * 60 * 1000,
+    premiumMaxRequests: 20,
+  },
   resumeBuilder: {
     maxRequests: 5,
     windowMs: 60 * 60 * 1000, // 1 hour

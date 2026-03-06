@@ -36,7 +36,11 @@ const securityHeaders = [
       // Default to self
       "default-src 'self'",
       // Scripts: self, inline for Next.js, and specific CDNs
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://apis.google.com https://*.firebaseapp.com",
+      [
+        "script-src 'self' 'unsafe-inline'",
+        process.env.NODE_ENV !== "production" ? "'unsafe-eval'" : "",
+        "https://js.stripe.com https://apis.google.com https://*.firebaseapp.com",
+      ].filter(Boolean).join(" "),
       // Styles: self and inline for component libraries
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Images: self and allowed image hosts
@@ -134,4 +138,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import {
@@ -39,10 +39,6 @@ import {
   Cell,
 } from "recharts";
 
-const ADMIN_UIDS = [
-  // Add admin UIDs here. For now, check if user role or a custom claim.
-];
-
 const PLAN_COLORS: Record<string, string> = {
   free: "#94a3b8",
   starter: "#94a3b8",
@@ -72,10 +68,12 @@ export default function AdminDashboardPage() {
       router.push("/login");
       return;
     }
-    // Allow any authenticated user to view admin for demo purposes
-    // In production, check: if (userProfile?.role !== "admin") router.push("/")
+    if (userProfile?.role !== "admin") {
+      router.push("/dashboard");
+      return;
+    }
     fetchPlatformData();
-  }, [user, authLoading]);
+  }, [user, userProfile, authLoading]);
 
   const fetchPlatformData = async () => {
     try {

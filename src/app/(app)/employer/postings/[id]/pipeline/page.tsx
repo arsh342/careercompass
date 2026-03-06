@@ -319,6 +319,10 @@ export default function PipelinePage() {
           message: `Your application for ${opportunity?.title || "a position"} has been moved to ${targetStage}.`,
           link: "/applications",
           actorId: user?.uid,
+          metadata: {
+            applicationId: applicantId,
+            opportunityId: postingId,
+          },
         });
 
         toast({

@@ -129,7 +129,8 @@ export default function UserProfilePage() {
     if (!id) return;
     const fetchProfile = async () => {
       try {
-        const docRef = doc(db, "users", id as string);
+        const collectionName = isOwnProfile ? "users" : "publicProfiles";
+        const docRef = doc(db, collectionName, id as string);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const profileData = docSnap.data() as UserProfile;

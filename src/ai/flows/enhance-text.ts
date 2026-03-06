@@ -10,6 +10,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const EnhanceTextInputSchema = z.object({
   text: z.string().describe('The text to be enhanced.'),
@@ -29,6 +31,12 @@ export type EnhanceTextOutput = z.infer<typeof EnhanceTextOutputSchema>;
 export async function enhanceText(
   input: EnhanceTextInput
 ): Promise<EnhanceTextOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'textEnhancement',
+  });
   return enhanceTextFlow(input);
 }
 

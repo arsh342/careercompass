@@ -325,7 +325,12 @@ export default function ApplicantsPage() {
         title: `Application ${status}`,
         message: `Your application for ${opportunity?.title || 'a position'} has been ${status.toLowerCase()}.`,
         link: '/applications',
+        actorId: user?.uid,
         actorName: opportunity?.employerName,
+        metadata: {
+          applicationId: applicant.id,
+          opportunityId: id as string,
+        },
       });
 
       // Send email notification

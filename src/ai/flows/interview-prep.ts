@@ -7,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 // ============================================
 // GENERATE INTERVIEW QUESTIONS
@@ -109,6 +111,12 @@ const generateQuestionsFlow = ai.defineFlow(
 export async function generateInterviewQuestions(
   input: GenerateQuestionsInput
 ): Promise<GenerateQuestionsOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'interviewPrep',
+  });
   return generateQuestionsFlow(input);
 }
 
@@ -190,5 +198,11 @@ const evaluateAnswerFlow = ai.defineFlow(
 export async function evaluateInterviewAnswer(
   input: EvaluateAnswerInput
 ): Promise<EvaluateAnswerOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'interviewPrep',
+  });
   return evaluateAnswerFlow(input);
 }

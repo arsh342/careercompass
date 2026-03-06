@@ -12,6 +12,8 @@ import { ai } from "@/ai/genkit";
 import { sendApplicationStatusEmail } from "./send-application-status-email";
 import { z } from "zod";
 import { adminDb } from "@/lib/firebase-admin";
+import { requireServerRole } from "@/lib/server-auth";
+import { enforceAiRateLimit } from "@/lib/ai-rate-limit";
 
 // Helper to get Firestore collection reference using Admin SDK
 function getCollection(collectionName: string) {
@@ -61,6 +63,15 @@ export type FindAndRankCandidatesOutput = z.infer<
 export async function findAndRankCandidates(
   input: FindAndRankCandidatesInput
 ): Promise<FindAndRankCandidatesOutput> {
+  const user = await requireServerRole("employer");
+  if (user.uid !== input.employerId) {
+    throw new Error("Forbidden");
+  }
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: "genkit",
+  });
   return findAndRankCandidatesFlow(input);
 }
 

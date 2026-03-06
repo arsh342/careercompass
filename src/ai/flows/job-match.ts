@@ -7,6 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { requireServerAuthenticatedUser } from '@/lib/server-auth';
+import { enforceAiRateLimit } from '@/lib/ai-rate-limit';
 
 const ScoreJobMatchInputSchema = z.object({
   userSkills: z.array(z.string()),
@@ -132,5 +134,11 @@ const scoreJobMatchFlow = ai.defineFlow(
 export async function scoreJobMatch(
   input: ScoreJobMatchInput
 ): Promise<ScoreJobMatchOutput> {
+  const user = await requireServerAuthenticatedUser();
+  await enforceAiRateLimit({
+    userId: user.uid,
+    plan: user.profile?.plan as string | undefined,
+    tool: 'jobMatch',
+  });
   return scoreJobMatchFlow(input);
 }
