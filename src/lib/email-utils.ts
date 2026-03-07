@@ -73,25 +73,24 @@ export async function sendEmailDirect(
     return { success: false };
   }
 
-  try {
-    const { data, error } = await getResend().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
-      to: [to],
-      subject: subject,
-      html: body,
-    });
+  console.log("[sendEmailDirect] Attempting to send email to:", to);
+  console.log("[sendEmailDirect] RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
+  console.log("[sendEmailDirect] RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL);
 
-    if (error) {
-      console.error("[sendEmailDirect] Resend error:", error);
-      return { success: false };
-    }
+  const { data, error } = await getResend().emails.send({
+    from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+    to: [to],
+    subject: subject,
+    html: body,
+  });
 
-    console.log("[sendEmailDirect] Email sent successfully! ID:", data?.id);
-    return { success: true, messageId: data?.id };
-  } catch (error) {
-    console.error("[sendEmailDirect] Error sending email:", error);
+  if (error) {
+    console.error("[sendEmailDirect] Resend error:", error);
     return { success: false };
   }
+
+  console.log("[sendEmailDirect] Email sent successfully! ID:", data?.id);
+  return { success: true, messageId: data?.id };
 }
 
 export async function sendWelcomeEmailDirect(

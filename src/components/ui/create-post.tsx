@@ -66,7 +66,7 @@ export function CreatePost({ onPost }: CreatePostProps) {
     <Card className="w-full rounded-2xl border border-border/50 bg-card p-4 shadow-sm">
       <div className="flex gap-3">
         <Avatar className="h-12 w-12 flex-shrink-0">
-          <AvatarImage src={user?.photoURL || userProfile?.photoURL} />
+          <AvatarImage src={user?.photoURL || userProfile?.photoURL} referrerPolicy="no-referrer" />
           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-semibold">
             {userProfile?.displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
           </AvatarFallback>

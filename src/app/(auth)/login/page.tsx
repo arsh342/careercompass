@@ -26,6 +26,7 @@ import { handleFirstLogin } from "@/lib/automated-email-service";
 import { AnimatedCharacters } from "@/components/ui/animated-characters";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { toPublicProfile } from "@/lib/public-profile";
+import { getAdminEmails } from "./actions";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -84,8 +85,15 @@ export default function LoginPage() {
         );
       }
 
-      if (userDocSnap.exists() && userDocSnap.data().role === "employer") {
-        router.push("/employer/dashboard");
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        if (userData.role === "admin") {
+          router.push("/admin");
+        } else if (userData.role === "employer") {
+          router.push("/employer/dashboard");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         router.push("/dashboard");
       }
@@ -112,8 +120,11 @@ export default function LoginPage() {
 
       if (!userDocSnap.exists()) {
         // New user logic
+        const adminEmails = await getAdminEmails();
+        const isAdmin = user.email ? adminEmails.includes(user.email.toLowerCase()) : false;
+
         const emailDomain = user.email?.split("@")[1];
-        const role = emailDomain === "gmail.com" ? "employee" : "employer";
+        const role = isAdmin ? "admin" : (emailDomain === "gmail.com" ? "employee" : "employer");
 
         const nameParts = user.displayName?.split(" ") || [];
         const firstName = nameParts[0] || "";
@@ -150,7 +161,9 @@ export default function LoginPage() {
           description: "Welcome! Your account has been set up.",
         });
 
-        if (role === "employer") {
+        if (role === "admin") {
+          router.push("/admin");
+        } else if (role === "employer") {
           router.push("/employer/dashboard");
         } else {
           router.push("/dashboard");
@@ -163,7 +176,9 @@ export default function LoginPage() {
           { merge: true },
         );
         const userData = userDocSnap.data();
-        if (userData.role === "employer") {
+        if (userData.role === "admin") {
+          router.push("/admin");
+        } else if (userData.role === "employer") {
           router.push("/employer/dashboard");
         } else {
           router.push("/dashboard");

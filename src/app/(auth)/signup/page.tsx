@@ -21,6 +21,7 @@ import { AnimatedCharacters } from "@/components/ui/animated-characters";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { toPublicProfile } from "@/lib/public-profile";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: "Please enter your full name." }),
@@ -28,6 +29,7 @@ const signupSchema = z.object({
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters." }),
+  role: z.enum(["employee", "employer"]).default("employee"),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -46,6 +48,7 @@ export default function SignupPage() {
       fullName: "",
       email: "",
       password: "",
+      role: "employee",
     },
   });
 
@@ -66,8 +69,7 @@ export default function SignupPage() {
         displayName: values.fullName,
       });
 
-      const emailDomain = values.email.split("@")[1];
-      const role = emailDomain === "gmail.com" ? "employee" : "employer";
+      const role = values.role;
 
       const nameParts = values.fullName.split(" ");
       const firstName = nameParts[0] || "";
@@ -189,6 +191,24 @@ export default function SignupPage() {
 
           {/* Signup Form */}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">I am a...</Label>
+              <RadioGroup
+                defaultValue={form.getValues("role")}
+                onValueChange={(val) => form.setValue("role", val as "employee" | "employer")}
+                className="flex gap-4"
+              >
+                <div className="flex items-center space-x-2 border rounded-xl px-4 py-3 flex-1 cursor-pointer hover:bg-muted/50 transition-colors [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
+                  <RadioGroupItem value="employee" id="employee" className="sr-only" />
+                  <Label htmlFor="employee" className="cursor-pointer flex-1 font-medium">Job Seeker</Label>
+                </div>
+                <div className="flex items-center space-x-2 border rounded-xl px-4 py-3 flex-1 cursor-pointer hover:bg-muted/50 transition-colors [&:has([data-state=checked])]:border-primary [&:has([data-state=checked])]:bg-primary/5">
+                  <RadioGroupItem value="employer" id="employer" className="sr-only" />
+                  <Label htmlFor="employer" className="cursor-pointer flex-1 font-medium">Employer</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-sm font-medium">
                 Full Name or Company Name
