@@ -51,7 +51,7 @@ service cloud.firestore {
 
       // A user can create their own profile document with required fields.
       allow create: if isOwner(userId)
-                    && request.resource.data.role in ['employee', 'employer']
+                    && request.resource.data.role in ['employee', 'employer', 'admin']
                     && request.resource.data.keys().hasAll(['email', 'role']);
 
       // A user can only update their own profile document.
@@ -161,7 +161,9 @@ service cloud.firestore {
 
       // Users can read their own applications.
       // Employers can read applications for their jobs.
+      // Admins can read all applications.
       allow read: if isAuthenticated() && (
+                    isAdmin() ||
                     resource.data.userId == request.auth.uid ||
                     get(/databases/$(database)/documents/opportunities/$(resource.data.opportunityId)).data.employerId == request.auth.uid
                   );

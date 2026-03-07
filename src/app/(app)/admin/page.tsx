@@ -38,6 +38,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { AdminEmailForm } from "./AdminEmailForm";
 
 const PLAN_COLORS: Record<string, string> = {
   free: "#94a3b8",
@@ -180,6 +181,11 @@ export default function AdminDashboardPage() {
               </motion.div>
             );
           })}
+        </div>
+
+        {/* Email Sender Widget */}
+        <div className="mb-8">
+          <AdminEmailForm />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

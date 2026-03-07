@@ -64,3 +64,5 @@ apphosting.yaml
 .agents
 .codex
 .cursor
+
+scripts/

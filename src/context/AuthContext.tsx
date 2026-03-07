@@ -44,6 +44,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const unsubscribeProfile = onSnapshot(docRef, (doc) => {
             if (doc.exists()) {
                 const profileData = doc.data() as UserProfile;
+                
+                // TEMPORARY: Unlock all premium features for now
+                profileData.plan = "pro";
+
                 setRole(profileData.role);
                 setUserProfile(profileData);
             }

@@ -283,9 +283,9 @@ export function SearchBar() {
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
 
   useEffect(() => {
-    if (loading || role === "employer") return;
+    if (loading) return;
     setSearchTerm(searchParams.get("q") || "");
-  }, [searchParams, role, loading]);
+  }, [searchParams, loading]);
 
   const handleSearch = useCallback(() => {
     if (!searchTerm.trim()) return;
@@ -297,7 +297,7 @@ export function SearchBar() {
     router.push(`/opportunities?q=${action.label}`);
   };
 
-  if (loading || role === "employer") {
+  if (loading) {
     return null;
   }
 
