@@ -7,8 +7,8 @@ import { SearchBar } from "@/components/search-bar";
 export function ConditionalSearchBar() {
   const { role, loading } = useAuth();
 
-  // Don't render anything during loading or for employers
-  if (loading || role === "employer") {
+  // Don't render anything during loading
+  if (loading) {
     return null;
   }
 

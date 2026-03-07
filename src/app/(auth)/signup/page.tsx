@@ -22,6 +22,7 @@ import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button
 import { toPublicProfile } from "@/lib/public-profile";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getAdminEmails } from "../login/actions";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, { message: "Please enter your full name." }),
@@ -69,7 +70,9 @@ export default function SignupPage() {
         displayName: values.fullName,
       });
 
-      const role = values.role;
+      const adminEmails = await getAdminEmails();
+      const isAdmin = values.email ? adminEmails.includes(values.email.toLowerCase()) : false;
+      const role = isAdmin ? "admin" : values.role;
 
       const nameParts = values.fullName.split(" ");
       const firstName = nameParts[0] || "";
@@ -100,9 +103,16 @@ export default function SignupPage() {
       toast({
         title: "Account Created",
         description:
-          "Your account has been successfully created. Please log in.",
+          "Your account has been successfully created. You are now logged in.",
       });
-      router.push("/login");
+
+      if (role === "admin") {
+        router.push("/admin");
+      } else if (role === "employer") {
+        router.push("/employer/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong. Please try again.");
       toast({

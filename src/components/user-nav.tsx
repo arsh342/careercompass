@@ -119,12 +119,9 @@ export function UserNav() {
                 <AvatarFallback className={gradientClass} />
               </Avatar>
             </div>
-            <span className={`flex items-center gap-1 pr-3 ${planInfo.color}`}>
-              {planInfo.label}
-            </span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-64" align="end">
+        <PopoverContent className="w-64 rounded-3xl overflow-hidden" align="end">
           <PopoverHeader>
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
@@ -146,12 +143,6 @@ export function UserNav() {
                 View Profile
               </Link>
             </Button>
-            <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
-              <Link href="/pricing">
-                <Crown className="mr-2 h-4 w-4 text-amber-500" />
-                {currentPlan === 'free' ? 'Upgrade Plan' : 'Manage Plan'}
-              </Link>
-            </Button>
             {role === 'employer' && (
               <Button variant="ghost" className="w-full justify-start" size="sm" asChild>
                 <Link href="/employer/settings">
@@ -164,7 +155,7 @@ export function UserNav() {
           <PopoverFooter>
             <Button 
               variant="outline" 
-              className="w-full bg-transparent" 
+              className="w-full bg-transparent rounded-full" 
               size="sm"
               onClick={handleLogout}
             >

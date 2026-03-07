@@ -21,6 +21,7 @@ import {
   MessageSquare,
   Bell,
   BarChart3,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -139,13 +140,23 @@ const employerLinks = [
   },
 ];
 
+const adminLinks = [
+  {
+    label: "Admin Dashboard",
+    href: "/admin",
+    icon: (
+      <Shield className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    ),
+  },
+];
+
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const { role, user, loading } = useAuth();
   const pathname = usePathname();
 
-  const links = role === "employer" ? employerLinks : employeeLinks;
-  const dashboardHref = role === "employer" ? "/employer/dashboard" : "/dashboard";
+  const links = role === "admin" ? adminLinks : role === "employer" ? employerLinks : employeeLinks;
+  const dashboardHref = role === "admin" ? "/admin" : role === "employer" ? "/employer/dashboard" : "/dashboard";
 
   if (loading) {
     return (
@@ -195,13 +206,6 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
             <ConditionalSearchBar />
           </div>
           <div className="flex-1 flex items-center justify-end gap-4">
-            <HeaderQuickActions />
-            <Link 
-              href="/pricing"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent text-sm hover:from-amber-600 hover:to-yellow-600 transition-all border border-amber-600 dark:border-amber-600 rounded-full"
-            >
-              <span className="hidden sm:inline">Pricing</span>
-            </Link>
             <NotificationsDropdown />
             <ThemeToggle />
             <UserNav />

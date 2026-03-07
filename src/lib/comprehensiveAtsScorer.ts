@@ -500,7 +500,4 @@ export function demonstrateComprehensiveScoring(): void {
   });
 }
 
-// Run demonstration if this file is executed directly
-if (require.main === module) {
-  demonstrateComprehensiveScoring();
-}
+// Demonstration function is exported but no longer run on file load to support Next.js environments
