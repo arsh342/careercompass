@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { LumaSpin } from "@/components/ui/luma-spin";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 interface Employer {
   uid: string;
@@ -36,21 +37,24 @@ interface Employer {
   openPositions?: number;
 }
 
-const CARD_GRADIENTS = [
-  "from-blue-500/10 to-indigo-500/10",
-  "from-violet-500/10 to-purple-500/10",
-  "from-pink-500/10 to-rose-500/10",
-  "from-emerald-500/10 to-teal-500/10",
-  "from-amber-500/10 to-orange-500/10",
-  "from-cyan-500/10 to-sky-500/10",
+const AVATAR_GRADIENTS = [
+  "from-blue-400 via-indigo-500 to-purple-500",
+  "from-violet-400 via-purple-500 to-fuchsia-500",
+  "from-pink-400 via-rose-400 to-red-400",
+  "from-emerald-400 via-teal-500 to-cyan-500",
+  "from-amber-400 via-orange-400 to-red-400",
+  "from-yellow-300 via-amber-400 to-orange-400",
+  "from-cyan-400 via-sky-400 to-blue-400",
+  "from-slate-500 via-gray-600 to-zinc-700",
 ];
 
 function getGradient(identifier: string) {
   let hash = 0;
+  if (!identifier) return AVATAR_GRADIENTS[0];
   for (let i = 0; i < identifier.length; i++) {
     hash = identifier.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return CARD_GRADIENTS[Math.abs(hash) % CARD_GRADIENTS.length];
+  return AVATAR_GRADIENTS[Math.abs(hash) % AVATAR_GRADIENTS.length];
 }
 
 export default function EmployersPage() {
@@ -173,15 +177,15 @@ export default function EmployersPage() {
             return (
               <Card
                 key={employer.uid}
-                className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1"
+                className="group flex flex-col overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1 rounded-3xl border border-border bg-card shadow-sm"
               >
-                {/* Gradient header band */}
+                {/* Header band */}
                 <div
-                  className={`h-20 bg-gradient-to-r ${gradient} relative`}
+                  className="h-20 bg-muted/60 dark:bg-muted/20 relative w-full"
                 >
-                  <Avatar className="absolute -bottom-6 left-6 h-14 w-14 border-4 border-background shadow-md">
-                    <AvatarImage src={employer.photoURL} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
+                  <Avatar className="absolute -bottom-6 left-6 h-16 w-16 border-4 border-background shadow-md">
+                    <AvatarImage src={employer.photoURL} className="bg-background object-cover" />
+                    <AvatarFallback className={`bg-gradient-to-br ${gradient} text-white text-xl font-bold`}>
                       {(employer.company || employer.displayName || "E")
                         .charAt(0)
                         .toUpperCase()}
@@ -220,16 +224,9 @@ export default function EmployersPage() {
                     </span>
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-2 mt-auto">
                     <Link href={`/company/${employer.uid}`}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                      >
-                        View Profile
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
+                      <InteractiveHoverButton text="View Profile" className="w-full" />
                     </Link>
                   </div>
                 </CardContent>

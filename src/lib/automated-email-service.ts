@@ -74,25 +74,20 @@ async function sendEmailWithResend(
     return { success: false };
   }
 
-  try {
-    const { data, error } = await getResend().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
-      to: [to],
-      subject: subject,
-      html: html,
-    });
+  const { data, error } = await getResend().emails.send({
+    from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+    to: [to],
+    subject: subject,
+    html: html,
+  });
 
-    if (error) {
-      console.error("[sendEmailWithResend] Resend error:", error);
-      return { success: false };
-    }
-
-    console.log("[sendEmailWithResend] Email sent successfully. ID:", data?.id);
-    return { success: true, messageId: data?.id };
-  } catch (error) {
-    console.error("[sendEmailWithResend] Error sending email:", error);
+  if (error) {
+    console.error("[sendEmailWithResend] Resend error:", error);
     return { success: false };
   }
+
+  console.log("[sendEmailWithResend] Email sent successfully. ID:", data?.id);
+  return { success: true, messageId: data?.id };
 }
 
 // Track first login and send welcome back email

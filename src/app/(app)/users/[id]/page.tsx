@@ -15,6 +15,7 @@ import {
   arrayUnion,
   arrayRemove,
   getDocs,
+  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
@@ -139,12 +140,41 @@ export default function UserProfilePage() {
           setFollowingCount(profileData.following?.length || 0);
           setIsFollowing(profileData.followers?.includes(user?.uid || "") || false);
         } else {
-          toast({
-            title: "Error",
-            description: "User not found.",
-            variant: "destructive",
-          });
-          router.push("/dashboard");
+          // Fallback: If public profile doesn't exist (due to security migration and they haven't logged in recently),
+          // try to infer their basic profile info from their most recent post
+          const postsQuery = query(
+            collection(db, "posts"),
+            where("userId", "==", id),
+            limit(1)
+          );
+          const postSnap = await getDocs(postsQuery);
+          
+          if (!postSnap.empty) {
+            const postData = postSnap.docs[0].data();
+            setProfile({
+              uid: id as string,
+              displayName: postData.userName || "User",
+              email: `${postData.userName?.replace(/\s+/g, '').toLowerCase() || 'user'}@example.com`,
+              photoURL: postData.userPhoto || "",
+              role: postData.userRole || "employee",
+              headline: postData.userTitle || "",
+              title: postData.userTitle || "",
+              description: "",
+              url: "",
+              followers: [],
+              following: []
+            });
+            setFollowersCount(0);
+            setFollowingCount(0);
+            setIsFollowing(false);
+          } else {
+            toast({
+              title: "Error",
+              description: "User not found.",
+              variant: "destructive",
+            });
+            router.push("/dashboard");
+          }
         }
       } catch (error) {
         toast({

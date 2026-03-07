@@ -94,22 +94,18 @@ const sendWelcomeEmailFlow = ai.defineFlow(
       </div>
     `;
 
-    try {
-      const { data, error } = await getResend().emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
-        to: [to],
-        subject: subject,
-        html: body,
-      });
+    const { data, error } = await getResend().emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+      to: [to],
+      subject: subject,
+      html: body,
+    });
 
-      if (error) {
-        console.error("Resend error:", error);
-        return;
-      }
-
-      console.log("Welcome email sent successfully:", data?.id);
-    } catch (error) {
-      console.error("Error sending welcome email:", error);
+    if (error) {
+      console.error("Resend error:", error);
+      return;
     }
+
+    console.log("Welcome email sent successfully:", data?.id);
   }
 );

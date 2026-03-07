@@ -62,24 +62,19 @@ async function sendEmailWithResend(
     return { success: false, error: "Missing API key" };
   }
 
-  try {
-    const { data, error } = await getResend().emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
-      to: [to],
-      subject: subject,
-      html: html,
-    });
+  const { data, error } = await getResend().emails.send({
+    from: process.env.RESEND_FROM_EMAIL || "CareerCompass <onboarding@resend.dev>",
+    to: [to],
+    subject: subject,
+    html: html,
+  });
 
-    if (error) {
-      console.error("Resend error:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, messageId: data?.id };
-  } catch (error) {
-    console.error("Error sending email:", error);
-    return { success: false, error: "Send failed" };
+  if (error) {
+    console.error("Resend error:", error);
+    return { success: false, error: error.message };
   }
+
+  return { success: true, messageId: data?.id };
 }
 
 export async function automateWelcomeCampaign(

@@ -108,9 +108,9 @@ export function PostCard({
           >
             <Link href={`/users/${post.userId}`}>
               <Avatar className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity">
-                <AvatarImage src={post.userPhoto} alt={post.userName} />
-                <AvatarFallback className="bg-muted">
-                  <User className="h-6 w-6 text-muted-foreground" />
+                <AvatarImage src={post.userPhoto} alt={post.userName} referrerPolicy="no-referrer" />
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  {post.userName ? post.userName.charAt(0).toUpperCase() : <User className="h-6 w-6 text-muted-foreground" />}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -273,7 +273,7 @@ export function PostCard({
                 <div key={comment.id} className="flex gap-3">
                   <Link href={`/users/${comment.userId}`}>
                     <Avatar className="h-8 w-8 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                      <AvatarImage src={comment.userPhoto} />
+                      <AvatarImage src={comment.userPhoto} referrerPolicy="no-referrer" />
                       <AvatarFallback className="bg-muted text-xs">
                         {comment.userName?.charAt(0)?.toUpperCase()}
                       </AvatarFallback>
